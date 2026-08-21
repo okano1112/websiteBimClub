@@ -1,0 +1,92 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  font-family: sans-serif;
+}
+circle {
+  position: absolute;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.6;
+  filter: blur(3px);
+}
+.circle-left {
+  width: 300px;
+  height: 300px;
+  top: 20%;
+  left: 5%;
+  background-image: url("https://picsum.photos/300/300?random=1");
+  animation: floatLeft 8s infinite alternate ease-in-out;
+}
+.circle-center {
+  width: 450px;
+  height: 450px;
+  top: 25%;
+  left: 50%;
+  transform: translateX(-50%); /* จัดให้อยู่กึ่งกลางแกน X เป๊ะๆ */
+  background-image: url("https://picsum.photos/450/450?random=2");
+  animation: floatCenter 10s infinite alternate ease-in-out;
+}
+
+/* วงกลมขวา */
+.circle-right {
+  width: 250px;
+  height: 250px;
+  bottom: 15%;
+  right: 10%;
+  background-image: url("https://picsum.photos/250/250?random=3");
+  animation: floatRight 7s infinite alternate ease-in-out;
+}
+@keyframes floatLeft {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, -30px) scale(1.1);
+  }
+}
+@keyframes floatCenter {
+  0% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50px) scale(1.05);
+  }
+}
+@keyframes floatRight {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-30px, 40px) scale(1.1);
+  }
+}
+.content {
+  position: relative;
+  z-index: 10; /* บังคับให้อยู่เลเยอร์บนสุด ทับวงกลม */
+  display: flex; /* ใช้ Flexbox... */
+  justify-content: center; /* ...เพื่อจัดให้อยู่กึ่งกลางแนวนอน */
+  align-items: center; /* ...และจัดให้อยู่กึ่งกลางแนวตั้ง */
+  height: 100vh;
+}
+.Homebutton {
+  width: 100px;
+  height: 30px;
+  display: flex;
+  padding: 10px;
+  color: white;
+  background-color: #ad0f0f;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 20px;
+  text-decoration: none;
+}
