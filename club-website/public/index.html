@@ -1,23 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BimClub</title>
-  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="main.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 
 <body>
-  <div class="Logo">
-    <img src="../../assets/img/logobranding/logobim.png" width="150px" height="100px">
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="logo">
+      <!-- ปรับ path โลโก้ให้อ้างอิงจากหน้า index -->
+      <a href="index.html">
+        <img src="../../assets/img/logobranding/logobim.png" width="80px" height="50px" alt="BimClub Logo" />
+      </a>
+    </div>
+
+    <nav class="menu">
+      <ul>
+        <!-- เปลี่ยนลิงก์ Home ให้ชี้มาที่ตัวเอง -->
+        <li><a href="index.html">Home</a></li>
+        <!-- ปรับ path ของหน้าอื่นๆ ให้เข้าผ่านโฟลเดอร์ page/ -->
+        <li><a href="./page/about.html">About</a></li>
+        <li><a href="#">Activities</a></li>
+        <li><a href="#">Achievements</a></li>
+        <li><a href="./page/login.html">Login</a></li>
+        <li><a href="./page/register.html">Register</a></li>
+      </ul>
+    </nav>
   </div>
-  <div class="circle circle-left"></div>
-  <div class="circle circle-center"></div>
-  <div class="circle circle-right"></div>
-  <div class="content">
-    <a href="./page/home.html" class="Homebutton">เข้าสู่เว็บไซต์</a>
+
+  <div class="carousel-section">
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="slide-image">
+            <img src="../../assets/img/swiperimg/bimActivity.jpg" alt="Slide 1" />
+          </div>
+          <div class="slide-content">
+            <span class="slide-tag">BIM Activity</span>
+            <h2>Workshop &amp; Training</h2>
+            <p>
+              เรียนรู้เทคนิคการสร้างสรรค์งาน BIM ผ่านกิจกรรมอบรมและสถานที่จริง
+              เพื่อพัฒนาทักษะของสมาชิกให้ก้าวไปสู่ระดับใหม่.
+            </p>
+            <a href="#">Read More</a>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="slide-image">
+            <img src="../../assets/img/swiperimg/bimActivity2.jpg" alt="Slide 2" />
+          </div>
+          <div class="slide-content">
+            <span class="slide-tag">Club Project</span>
+            <h2>Creative Collaboration</h2>
+            <p>
+              ร่วมกันออกแบบและพัฒนางานระดับทีม พร้อมแลกเปลี่ยนไอเดียและแนวทาง
+              เพื่อส่งเสริมความคิดสร้างสรรค์และการทำงานร่วมกัน.
+            </p>
+            <a href="#">Read More</a>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="slide-image">
+            <img src="../../assets/img/swiperimg/bimActivity3.jpg" alt="Slide 3" />
+          </div>
+          <div class="slide-content">
+            <span class="slide-tag">Innovation</span>
+            <h2>Learning by Doing</h2>
+            <p>
+              กิจกรรมที่ผสมผสานความรู้และประสบการณ์จริง ทำให้สมาชิกได้ฝึกปฏิบัติ
+              เสริมความมั่นใจและการคิดเชิงวิเคราะห์ในงาน BIM.
+            </p>
+            <a href="#">Read More</a>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="slide-image">
+            <img src="../../assets/img/swiperimg/bimActivity4.jpg" alt="Slide 4" />
+          </div>
+          <div class="slide-content">
+            <span class="slide-tag">Member Experience</span>
+            <h2>Growing together</h2>
+            <p>
+              ทุกกิจกรรมถูกออกแบบเพื่อสร้างประสบการณ์ที่มีคุณค่า พร้อมโอกาสในการ
+              เรียนรู้และเติบโตไปพร้อมกับสมาชิกทุกคนในชุมชน.
+            </p>
+            <a href="#">Read More</a>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="slide-image">
+            <img src="../../assets/img/swiperimg/bimActivity5.jpg" alt="Slide 5" />
+          </div>
+          <div class="slide-content">
+            <span class="slide-tag">Future</span>
+            <h2>Building the Next Generation</h2>
+            <p>
+              เราเชื่อว่าความรู้และการเรียนรู้ที่ต่อเนื่องจะช่วยพัฒนาความสามารถและ
+              เปิดโอกาสใหม่ ๆ ให้กับสมาชิกทุกคนในอนาคต.
+            </p>
+            <a href="#">Read More</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+      <div class="swiper-pagination"></div>
+    </div>
   </div>
+
+  <section class="info-blocks">
+    <div class="block-card">
+      <h3>กิจกรรม</h3>
+      <p>Workshop, training, and project-based experience for all members.</p>
+    </div>
+    <div class="block-card">
+      <h3>ผลงาน</h3>
+      <p>Showcase BIM projects that reflect creativity, accuracy, and teamwork.</p>
+    </div>
+    <div class="block-card">
+      <h3>ชุมชน</h3>
+      <p>Supportive environment for learning, sharing, and professional growth.</p>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+
+  <script>
+    var swiper = new Swiper(".mySwiper", {
+      loop: true,
+      slidesPerView: 1,
+      spaceBetween: 20,
+      speed: 1000,
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false,
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
+    });
+  </script>
 </body>
 
 </html>

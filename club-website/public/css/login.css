@@ -13,7 +13,7 @@ body{
     align-items: center;
     font-family: 'Lato', sans-serif;
 }
-h1{
+h1{ 
     font-size: 70px;
     margin-bottom: 60px;
 }
@@ -27,17 +27,25 @@ h1{
     border-bottom: 1px solid #ad0f0f;
     outline: none;
     display: block;
-    padding: 12px 0;
+    padding: 20px 0 10px;
     width: 100%;
     font-size: 20px;
-    margin-top: 10px;
+    background: transparent;
 }
 .form-control label{
     position: absolute;
-    top: 0;
     left: 0;
-    font-size: 20px;
+    top: 22px;
+    font-size: 18px;
     color: gray;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+.form-control input:focus + label, 
+.form-control input:not(:placeholder-shown) + label{
+    top: 0;
+    font-size: 14px;
+    color: #ad0f0f;
 }
 .button-login{
     cursor: pointer;
@@ -57,7 +65,9 @@ h1{
     top: 1.2rem;
     cursor: pointer;
 }
-.register {
+.regis-forget a{ 
     text-decoration: none;
     color: black;
+    flex-direction: row;
+    justify-content: space-between;
 }

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="pavit">
     <title>BimClub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css">
     <link rel="stylesheet" href="../css/login.css">
     <script src="script.js"></script>
 
@@ -16,19 +17,26 @@
     <h1>BimClub</h1>
     <form>
         <div class="form-control">
+            <input type="email" id="email" required placeholder=" ">
             <label for="email">email</label>
-            <input type="email" required>
         </div>
         <div class="form-control">
+            <input type="password" required id="password" placeholder=" ">
             <label for="password">password</label>
-            <input type="password" required id="password">
             <i class="fa-solid fa-eye" id="eye"></i>
         </div>
     </form>
     <div class="form-control">
         <button class="button-login">เข้าสู่ระบบ</button>
     </div>
-    <a class="register" href="register.html">Register</a>
+    <div class="regis-forget">
+        <div>
+            <a id="register" href="../page/register.html">สมัครสมาชิก</a>
+        </div>
+
+        <a id="forget" href="../page/forget.html">ลืมรหัสผ่าน</a>
+    </div>
+
     <script src="../js/script.js"></script>
 </body>
 
