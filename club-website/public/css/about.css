@@ -1,0 +1,486 @@
+/* ========== About Page Styles ========== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  font-family: 'Noto Sans Thai', sans-serif;
+  background: #f5f5f5;
+  color: #111827;
+}
+
+/* ---- Hero Section with faded background image ---- */
+.about-hero {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.about-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.about-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(2px);
+}
+
+.about-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(17, 24, 39, 0.78) 0%,
+    rgba(17, 24, 39, 0.60) 50%,
+    rgba(17, 24, 39, 0.85) 100%
+  );
+  z-index: 1;
+}
+
+.about-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 60px 28px;
+  text-align: center;
+  color: #fff;
+}
+
+.hero-badge {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(173, 15, 15, 0.75);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-hero-content h1 {
+  margin-bottom: 20px;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.about-hero-content > p {
+  max-width: 640px;
+  margin: 0 auto 32px;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.hero-highlights {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.highlight-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.highlight-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.highlight-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.04em;
+}
+
+/* ---- Vision / Mission Section ---- */
+.vision-section {
+  width: min(1100px, 92vw);
+  margin: -40px auto 0;
+  position: relative;
+  z-index: 3;
+}
+
+.vision-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.vision-card {
+  background: #fff;
+  padding: 32px 24px;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.1);
+  text-align: center;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  /* animation initial state */
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.vision-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.vision-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.14);
+}
+
+.vision-icon {
+  font-size: 2.4rem;
+  margin-bottom: 14px;
+}
+
+.vision-card h3 {
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+  color: #111827;
+}
+
+.vision-card p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #4b5563;
+}
+
+/* ---- Team Section ---- */
+.team-section {
+  width: min(1100px, 92vw);
+  margin: 60px auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.section-header p {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+
+.team-card {
+  display: flex;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+  transition: transform 0.5s ease, box-shadow 0.4s ease, opacity 0.5s ease;
+  /* animation initial state */
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.team-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.team-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px rgba(17, 24, 39, 0.13);
+}
+
+.card-avatar {
+  flex: 0 0 160px;
+  overflow: hidden;
+}
+
+.card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.team-card:hover .card-avatar img {
+  transform: scale(1.06);
+}
+
+.card-info {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-info h3 {
+  font-size: 1.2rem;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.card-role {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #fef2f2;
+  color: #ad0f0f;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.card-info p {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #4b5563;
+  margin-bottom: 12px;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.card-tags span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ---- Timeline Section ---- */
+.timeline-section {
+  width: min(900px, 92vw);
+  margin: 60px auto 80px;
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+/* center vertical line */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #ad0f0f 0%, #f87171 100%);
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.timeline-item {
+  position: relative;
+  width: 50%;
+  padding: 16px 40px;
+  /* animation initial state */
+  opacity: 0;
+}
+
+.timeline-item.left {
+  left: 0;
+  text-align: right;
+  transform: translateX(-30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.timeline-item.right {
+  left: 50%;
+  text-align: left;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.timeline-item.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* dot on the line */
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ad0f0f;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px #ad0f0f;
+  z-index: 1;
+}
+
+.timeline-item.left::after {
+  right: -8px;
+}
+
+.timeline-item.right::after {
+  left: -8px;
+}
+
+.timeline-content {
+  background: #fff;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-content:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.12);
+}
+
+.timeline-date {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #fef2f2;
+  color: #ad0f0f;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.timeline-content h3 {
+  font-size: 1.1rem;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.timeline-content p {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #4b5563;
+}
+
+/* ---- CTA Section ---- */
+.cta-section {
+  background: linear-gradient(135deg, #ad0f0f, #7f1d1d);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.cta-content h2 {
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.cta-content p {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 24px;
+}
+
+.cta-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 999px;
+  background: #fff;
+  color: #ad0f0f;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cta-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 900px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    min-height: 420px;
+  }
+
+  .about-hero-content {
+    padding: 40px 20px;
+  }
+
+  .hero-highlights {
+    gap: 24px;
+  }
+
+  .vision-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .vision-section {
+    margin-top: -24px;
+  }
+
+  .team-card {
+    flex-direction: column;
+  }
+
+  .card-avatar {
+    flex: 0 0 200px;
+    height: 200px;
+  }
+
+  /* Timeline — switch to single column */
+  .timeline::before {
+    left: 20px;
+  }
+
+  .timeline-item {
+    width: 100%;
+    padding-left: 56px;
+    padding-right: 16px;
+    text-align: left;
+  }
+
+  .timeline-item.left,
+  .timeline-item.right {
+    left: 0;
+  }
+
+  .timeline-item.left::after,
+  .timeline-item.right::after {
+    left: 12px;
+    right: auto;
+  }
+}
