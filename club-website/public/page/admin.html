@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการโพสต์ - BimClub</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="admin-container">
+        <div class="admin-nav">
+            <a href="admin.html" class="active">จัดการโพสต์</a>
+            <a href="admin-cms.html">จัดการเนื้อหา</a>
+            <a href="admin-instructor-requests.html">คำขอสิทธิ์อาจารย์</a>
+        </div>
+
+        <h1 class="page-title">จัดการโพสต์</h1>
+        
+        <!-- Create Post -->
+        <div class="admin-card">
+            <h2 class="card-title">สร้างโพสต์ใหม่</h2>
+            <form id="createPostForm">
+                <div class="form-group">
+                    <textarea id="postContent" placeholder="เขียนข้อความอะไรบางอย่าง..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="file-label" for="postImages">เลือกรูปภาพ (หลายรูปได้)</label>
+                    <input type="file" id="postImages" multiple accept="image/*" class="file-input">
+                    <div id="imagePreviews" class="image-previews"></div>
+                </div>
+                <button type="submit" class="btn-submit" id="btnSubmit">เผยแพร่</button>
+            </form>
+        </div>
+
+        <!-- Post List -->
+        <div class="admin-card">
+            <h2 class="card-title">โพสต์ทั้งหมด</h2>
+            <div id="postsList" class="posts-list">
+                <div class="loading-text">กำลังโหลดข้อมูล...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

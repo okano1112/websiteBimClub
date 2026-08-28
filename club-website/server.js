@@ -1,65 +1,61 @@
-// 1. นำเข้าเครื่องมือที่เรา npm install ไว้มาใช้งาน
 const express = require('express');
-const mysql = require('mysql2');
-const session = require('express-session');
-const bcrypt = require('bcryptjs');
 const path = require('path');
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+const db = require('./config/database');
 
-// 2. สร้างตัวแปร app เพื่อเริ่มใช้งานเว็บเซิร์ฟเวอร์ Express
 const app = express();
 
-// 3. ตั้งค่าให้เซิร์ฟเวอร์อ่านข้อมูลจากฟอร์ม HTML ได้ และเปิดระบบ Session
-app.use(express.urlencoded({ extended: true })); 
+// Middleware เพื่ออ่านข้อมูล JSON และ URL-encoded
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ตั้งค่า Session Store ใน MySQL
+const sessionStoreOptions = {
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'club_database',
+    clearExpired: true,
+    checkExpirationInterval: 900000, // ตรวจทุก 15 นาที
+    expiration: 86400000 // 1 วัน
+};
+
+const sessionStore = new MySQLStore(sessionStoreOptions);
+
 app.use(session({
-    secret: 'secret-key-club', 
+    secret: process.env.SESSION_SECRET || 'bimclub-secret-key-12345',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: sessionStore,
+    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 } // 1 วัน
 }));
 
-// 4. อนุญาตให้ผู้ใช้ทั่วไปเข้าถึงไฟล์ในโฟลเดอร์ public ได้โดยตรง (เช่น รูปภาพ, css, หน้า index.html)
+// ให้บริการไฟล์ Static
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
-// 5. ตั้งค่าเชื่อมต่อฐานข้อมูล MariaDB
-const db = mysql.createPool({
-    host: 'localhost',       
-    user: 'root',            // ใส่ Username ของ MariaDB (ค่าเริ่มต้นคือ root)
-    password: '',            // ใส่ Password (ถ้าใช้ XAMPP ปกติจะว่างไว้)
-    database: 'club_database', // ชื่อฐานข้อมูลที่คุณสร้างเตรียมไว้
+// ติดตั้ง API Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/posts', require('./routes/posts'));
+app.use('/api/portfolios', require('./routes/portfolios'));
+app.use('/api/upload', require('./routes/upload'));
+app.use('/api/activities', require('./routes/activities'));
+app.use('/api/achievements', require('./routes/achievements'));
+app.use('/api/cms-content', require('./routes/cmsContent'));
+app.use('/api/instructor-requests', require('./routes/instructorRequests'));
+app.use('/api/courses', require('./routes/courses'));
+
+// Middleware จัดการข้อผิดพลาด
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ success: false, message: err.message || 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
 });
 
-// 6. โค้ดส่วนระบบเข้าสู่ระบบ (Login)
-app.post('/login', (req, res) => {
-    const username = req.body.username; // ดึงชื่อผู้ใช้ที่กรอกจากฟอร์ม
-    const password = req.body.password; // ดึงรหัสผ่านที่กรอกจากฟอร์ม
-
-    // สั่งให้ฐานข้อมูลค้นหาชื่อผู้ใช้คนนี้
-    db.query(`SELECT * FROM users WHERE username = ?`, [username], (err, results) => {
-        if (err) throw err;
-        
-        // เช็คว่าเจอผู้ใช้ไหม และรหัสผ่านที่ถอดรหัสแล้วตรงกันไหม
-        if (results.length > 0 && bcrypt.compareSync(password, results[0].password)) {
-            // ถ้าถูกต้อง ให้ประทับตรา Session ว่าล็อกอินแล้ว และส่งไปหน้าวิดีโอ (dashboard)
-            req.session.loggedIn = true;
-            res.redirect('/dashboard');
-        } else {
-            res.send("ชื่อผู้ใช้หรือรหัสผ่านผิด <a href='/'>กลับไปล็อกอิน</a>");
-        }
-    });
-});
-
-// 7. โค้ดส่วนหน้าวิดีโอที่ต้องล็อกอินก่อน (Protected Route)
-app.get('/dashboard', (req, res) => {
-    // เช็คว่ามีตราประทับ Session ว่า loggedIn หรือไม่
-    if (req.session.loggedIn) {
-        // ถ้ามี ให้ส่งไฟล์ dashboard.html ไปให้ดู
-        res.sendFile(path.join(__dirname, 'protected', 'dashboard.html'));
-    } else {
-        // ถ้าไม่มี (แอบเข้า) ให้เตะกลับไปหน้าแรก
-        res.redirect('/');
-    }
-});
-
-// 8. สั่งให้เซิร์ฟเวอร์เริ่มทำงานและรอรับคำขอที่ช่องทาง (Port) 3000
-app.listen(3000, () => {
-    console.log("เซิร์ฟเวอร์เปิดทำงานแล้วที่ http://localhost:3000");
+// เริ่มเซิร์ฟเวอร์
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });

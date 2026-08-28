@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำขอสิทธิ์อาจารย์ - BimClub</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/instructor-requests.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="admin-container admin-request-page">
+        <div class="admin-nav">
+            <a href="admin.html">จัดการโพสต์</a>
+            <a href="admin-cms.html">จัดการเนื้อหา</a>
+            <a href="admin-instructor-requests.html" class="active">คำขอสิทธิ์อาจารย์</a>
+        </div>
+
+        <h1>คำขอสิทธิ์อาจารย์</h1>
+        <p class="request-lead">ยืนยันหรือปฏิเสธคำขอแบบฟีด — เมื่อกดยืนยัน บัญชีผู้ขอจะเป็นอาจารย์ทันที</p>
+
+        <div class="request-tabs" role="tablist">
+            <button type="button" class="request-tab active" data-status="pending">รออนุมัติ</button>
+            <button type="button" class="request-tab" data-status="approved">อนุมัติแล้ว</button>
+            <button type="button" class="request-tab" data-status="rejected">ปฏิเสธแล้ว</button>
+        </div>
+
+        <div id="requestFeed" class="request-feed">
+            <div class="empty-feed">กำลังโหลดคำขอ...</div>
+        </div>
+    </main>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin-instructor-requests.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พอร์ตโฟลิโอของฉัน - BimClub</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/portfolio.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="portfolio-container">
+        <h1 class="page-title">จัดการพอร์ตโฟลิโอ</h1>
+        
+        <!-- Section 1: ข้อมูลพื้นฐาน -->
+        <section class="port-section">
+            <h2 class="section-title">ข้อมูลพื้นฐาน</h2>
+            <form id="basicInfoForm">
+                <div class="form-group">
+                    <label>หัวข้อหลัก (Headline)</label>
+                    <input type="text" id="headline" placeholder="เช่น นักศึกษาจบใหม่สายไอที">
+                </div>
+                <div class="form-group">
+                    <label>สรุปประวัติ (Summary)</label>
+                    <textarea id="summary" placeholder="เล่าเกี่ยวกับตัวคุณสั้นๆ"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>เว็บไซต์ (Website URL)</label>
+                    <input type="url" id="websiteUrl" placeholder="https://...">
+                </div>
+                
+                <div class="toggle-group">
+                    <label class="toggle">
+                        <input type="checkbox" id="isPublic">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">เปิดเป็นสาธารณะ</span>
+                </div>
+                
+                <div class="share-link" id="shareLinkContainer" style="display:none">
+                    ลิงก์สำหรับแชร์: <a href="#" id="shareLink" target="_blank"></a>
+                </div>
+                
+                <button type="submit" class="btn-save">บันทึกข้อมูล</button>
+            </form>
+        </section>
+
+        <!-- Section 2: ทักษะ -->
+        <section class="port-section">
+            <h2 class="section-title">ทักษะ (Skills)</h2>
+            <div class="skills-container" id="skillsContainer"></div>
+            <div class="add-inline-form">
+                <input type="text" id="newSkill" placeholder="เพิ่มทักษะใหม่ เช่น HTML, CSS">
+                <button type="button" class="btn-add" id="btnAddSkill">เพิ่ม</button>
+            </div>
+        </section>
+
+        <!-- Section 3: ประสบการณ์ -->
+        <section class="port-section">
+            <h2 class="section-title">ประสบการณ์ (Experience)</h2>
+            <div id="expList" class="item-list"></div>
+            
+            <form id="addExpForm" class="add-form">
+                <h3>เพิ่มประสบการณ์ใหม่</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>บริษัท/องค์กร</label>
+                        <input type="text" id="expCompany" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ตำแหน่ง</label>
+                        <input type="text" id="expPosition" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>วันที่เริ่ม</label>
+                        <input type="month" id="expStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>วันที่สิ้นสุด (เว้นว่างถ้าปัจจุบัน)</label>
+                        <input type="month" id="expEndDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียดงาน</label>
+                    <textarea id="expDescription"></textarea>
+                </div>
+                <button type="submit" class="btn-add-full">เพิ่มประสบการณ์</button>
+            </form>
+        </section>
+
+        <!-- Section 4: การศึกษา -->
+        <section class="port-section">
+            <h2 class="section-title">การศึกษา (Education)</h2>
+            <div id="eduList" class="item-list"></div>
+            
+            <form id="addEduForm" class="add-form">
+                <h3>เพิ่มประวัติการศึกษาใหม่</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>สถาบันการศึกษา</label>
+                        <input type="text" id="eduInstitution" required>
+                    </div>
+                    <div class="form-group">
+                        <label>วุฒิการศึกษา</label>
+                        <input type="text" id="eduDegree" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>สาขาวิชา</label>
+                        <input type="text" id="eduField" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ปีที่จบการศึกษา</label>
+                        <input type="number" id="eduYear" placeholder="เช่น 2024" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-add-full">เพิ่มการศึกษา</button>
+            </form>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/portfolio.js"></script>
+</body>
+</html>

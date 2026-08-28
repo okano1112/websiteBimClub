@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - BimClub</title>
+    <title>สมัครสมาชิก - BimClub</title>
     <link rel="icon" type="image/png" href="../../../assets/img/logobranding/logobim.png">
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/register.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <!-- Navbar -->
     <div class="navbar">
@@ -18,31 +21,56 @@
         </div>
         <nav class="menu">
             <ul>
-                <li><a href="../index.html">Home</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="activity.html">Activities</a></li>
-                <li><a href="achievement.html">Achievements</a></li>
-                <li><a href="login.html">Login</a></li>
-                <li><a href="register.html">Register</a></li>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
             </ul>
         </nav>
     </div>
 
-    <h1>Register</h1>
-    <form>
-        <div>
-        <label for="email">Username / Email</label>
-        <input type="email">
+    <div class="register-page">
+        <div class="register-card">
+            <h1>สมัครสมาชิก</h1>
+
+            <div class="register-error" id="regError"></div>
+            <div class="register-success" id="regSuccess"></div>
+
+            <form id="registerForm">
+                <div class="register-field">
+                    <label for="username">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" required placeholder="เช่น somchai">
+                </div>
+                <div class="register-field">
+                    <label for="email">อีเมล</label>
+                    <input type="email" id="email"  required placeholder="example@email.com">
+                </div>
+                <div class="register-field">
+                    <label for="fullName">ชื่อ-นามสกุล</label>
+                    <input type="text" id="fullName" required placeholder="ชื่อจริง นามสกุล">
+                </div>
+                <div class="register-field">
+                    <label for="password">รหัสผ่าน</label>
+                    <input type="password" id="password" required placeholder="อย่างน้อย 6 ตัวอักษร" minlength="6">
+                </div>
+                <div class="register-field">
+                    <label for="confirmPassword">ยืนยันรหัสผ่าน</label>
+                    <input type="password" id="confirmPassword" required placeholder="กรอกรหัสผ่านอีกครั้ง">
+                </div>
+                <button type="submit" class="register-submit">สมัครสมาชิก</button>
+            </form>
+
+            <div class="register-footer">
+                มีบัญชีแล้ว? <a href="login.html">เข้าสู่ระบบ</a><br>
+                <a href="forget.html">ลืมรหัสผ่าน</a>
+            </div>
         </div>
-        <div>
-        <label for="password">password</label>
-        <input type="password" required>
-        </div>
-        <label for="confirm">Confirm Password</label>
-        <input type="password" required>
-        <label for="phone">เบอร์โทรศัพท์</label>
-        <input type="tel">
-    </form>
-    <a href="../page/login.html">Login</a>
+    </div>
+
+    <script src="../js/register.js"></script>
+    <script src="../js/auth.js"></script>
 </body>
+
 </html>

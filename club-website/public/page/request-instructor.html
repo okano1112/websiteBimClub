@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ขอสิทธิ์อาจารย์ - BimClub</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/instructor-requests.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="request-page">
+        <h1>ขอสิทธิ์อาจารย์</h1>
+        <p class="request-lead">กรอกข้อมูลเพื่อส่งคำขอเป็นอาจารย์ของ BimClub ผู้ดูแลระบบจะเป็นผู้อนุมัติ</p>
+
+        <div id="statusBox" class="request-status-box" style="display:none;"></div>
+        <div id="formMessage" class="request-message"></div>
+
+        <form id="requestForm" class="request-card">
+            <div class="request-field">
+                <label for="faculty">คณะ</label>
+                <input type="text" id="faculty" required maxlength="200" placeholder="เช่น คณะวิศวกรรมศาสตร์">
+            </div>
+            <div class="request-field">
+                <label for="fullName">ชื่อ-นามสกุล</label>
+                <input type="text" id="fullName" required maxlength="100" placeholder="ชื่อที่ใช้แสดงในคำขอ">
+            </div>
+            <div class="request-field">
+                <label for="phone">เบอร์โทร</label>
+                <input type="tel" id="phone" required maxlength="30" placeholder="เช่น 0812345678">
+            </div>
+            <button type="submit" class="request-submit" id="submitBtn">ส่งคำขอ</button>
+        </form>
+    </main>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/request-instructor.js"></script>
+</body>
+</html>

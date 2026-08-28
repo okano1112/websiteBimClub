@@ -484,3 +484,29 @@ body {
     right: auto;
   }
 }
+
+.section-title {
+	position: sticky;
+	top: 20px;
+}
+
+.section-content {
+	display: flex;
+	flex-direction: column;
+}
+.dot {
+	--size: .5rem;
+	width: var(--size);
+	height: var(--size);
+	margin: calc((1rem - var(--size))/2);
+	border-radius: 50%;
+	background-color: var(--color-font);
+	flex-grow: 0;
+}
+
+.line {
+	flex-grow: 1;
+	margin: 8px 0;
+	width: 3px;
+	background-color: var(--color-font);
+}

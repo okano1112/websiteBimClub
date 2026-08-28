@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>แก้ไขคอร์ส - BimClub</title>
+  <link rel="icon" href="../../../assets/img/logobranding/logobim.png"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/courses.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar"><div class="logo"><a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a></div><div class="menu"><ul><li><a href="manage-courses.html">จัดการคอร์ส</a></li><li><a href="login.html">เข้าสู่ระบบ</a></li></ul></div></nav>
+  <main class="course-shell editor-shell"><a class="back-link" href="manage-courses.html">← กลับไปจัดการคอร์ส</a><header><p class="eyebrow">COURSE EDITOR</p><h1 id="editorTitle">สร้างคอร์ส</h1></header><div id="courseMessage" class="notice" hidden></div>
+    <form id="courseForm" class="editor-form">
+      <section class="editor-card"><h2>รายละเอียดคอร์ส</h2><label>ชื่อคอร์ส<input id="title" required maxlength="255" placeholder="เช่น พื้นฐานการทำงาน BIM"></label><label>รายละเอียด<textarea id="description" rows="4" placeholder="อธิบายสิ่งที่ผู้เรียนจะได้รับ"></textarea></label><div class="form-split"><label>คะแนนผ่าน (%)<input id="passScore" type="number" min="0" max="100" value="70" required></label><label class="check-label"><input id="isPublished" type="checkbox"> เผยแพร่คอร์สให้ผู้เรียนเห็น</label></div></section>
+      <section class="editor-card"><h2>สื่อการเรียน</h2><label>รูปปกคอร์ส<input id="thumbnailFile" type="file" accept="image/jpeg,image/png,image/gif,image/webp"><input id="thumbnailUrl" type="hidden"></label><div id="thumbnailPreview" class="upload-preview"></div><label>อัปโหลดวิดีโอคอร์ส<input id="videoFile" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime"><input id="videoUrl" type="hidden"></label><p class="help-text">รองรับ MP4, WebM, OGG และ MOV ขนาดไม่เกิน 200 MB</p><label>หรือวางลิงก์ / โค้ดฝัง YouTube<input id="youtubeEmbed" placeholder="https://youtu.be/... หรือ &lt;iframe ...&gt;"></label><p class="help-text">ระบบจะบันทึกเฉพาะรหัสวิดีโอ YouTube และใช้ตัวเล่นแบบฝังที่ปลอดภัย</p><div id="videoPreview" class="upload-preview"></div><button id="clearVideo" type="button" class="button danger media-delete">ลบวิดีโอออกจากคอร์ส</button></section>
+      <section class="editor-card"><div class="section-heading"><div><h2>คำถามระหว่างวิดีโอ</h2><p>ไม่บังคับ: วิดีโอจะหยุดตามเวลาที่ระบุจนกว่าจะตอบคำถาม</p></div><button class="button secondary" type="button" id="addStop">+ เพิ่มจุดหยุด</button></div><div id="stops" class="question-list"></div></section>
+      <section class="editor-card"><div class="section-heading"><div><h2>แบบทดสอบท้ายคอร์ส</h2><p>ผู้เรียนจะได้รับใบเซอร์โดยอัตโนมัติเมื่อผ่านเกณฑ์คะแนน</p></div><button class="button secondary" type="button" id="addQuiz">+ เพิ่มคำถาม</button></div><div id="quizQuestions" class="question-list"></div></section>
+      <div class="editor-actions"><button class="button primary" type="submit">บันทึกคอร์ส</button></div>
+    </form>
+  </main><script src="../js/auth.js"></script><script src="../js/course-editor.js"></script>
+</body>
+</html>

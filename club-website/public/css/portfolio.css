@@ -1,0 +1,56 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans Thai', sans-serif; background: #f9fafb; color: #111827; }
+
+.portfolio-container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+.page-title { font-size: 2rem; margin-bottom: 24px; color: #111827; }
+
+.port-section { background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px; }
+.section-title { font-size: 1.25rem; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px; margin-bottom: 20px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; color: #374151; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 0.95rem; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: #ad0f0f; box-shadow: 0 0 0 3px rgba(173,15,15,0.1); }
+.form-group textarea { min-height: 120px; resize: vertical; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+/* Toggle */
+.toggle-group { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.toggle { position: relative; display: inline-block; width: 48px; height: 24px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d5db; transition: .3s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: #ad0f0f; }
+input:checked + .slider:before { transform: translateX(24px); }
+.toggle-label { font-weight: 500; font-size: 0.95rem; }
+
+.share-link { margin-bottom: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px; font-size: 0.85rem; word-break: break-all; }
+.share-link a { color: #2563eb; text-decoration: none; }
+
+/* Buttons */
+.btn-save { background: #ad0f0f; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 500; }
+.btn-save:hover { background: #8c0c0c; }
+.btn-add { background: #10b981; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; }
+.btn-add-full { background: #10b981; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 10px; }
+.btn-delete { background: #dc2626; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+
+/* Skills */
+.skills-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.skill-tag { display: flex; align-items: center; gap: 6px; background: #fef2f2; color: #ad0f0f; padding: 6px 12px; border-radius: 99px; font-size: 0.85rem; font-weight: 500; }
+.skill-tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 1.1rem; line-height: 1; }
+.add-inline-form { display: flex; gap: 8px; }
+.add-inline-form input { flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; }
+
+/* Lists */
+.item-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.list-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; position: relative; }
+.list-card h4 { margin-bottom: 4px; color: #111827; }
+.list-card p { color: #4b5563; font-size: 0.9rem; margin-bottom: 4px; }
+.list-card .desc { font-size: 0.95rem; color: #374151; margin-top: 8px; }
+.list-card .btn-delete { position: absolute; top: 16px; right: 16px; }
+
+/* Add Forms */
+.add-form { border: 2px dashed #d1d5db; border-radius: 12px; padding: 20px; background: #fafafa; }
+.add-form h3 { margin-bottom: 16px; font-size: 1.1rem; color: #374151; }

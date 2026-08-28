@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าบัญชี - BimClub</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/settings.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="settings-page">
+        <section class="settings-header">
+            <h1>ตั้งค่าบัญชี</h1>
+            <p id="settingsRole">กำลังโหลดข้อมูลผู้ใช้...</p>
+        </section>
+
+        <section class="settings-layout">
+            <form id="profileForm" class="settings-card">
+                <h2>ข้อมูลโปรไฟล์</h2>
+                <div id="profileMessage" class="settings-message"></div>
+
+                <div class="avatar-editor">
+                    <div id="avatarPreview" class="settings-avatar">U</div>
+                    <div class="avatar-actions">
+                        <label for="avatarFile" class="file-button">เลือกรูปโปรไฟล์</label>
+                        <input type="file" id="avatarFile" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="settings-field">
+                    <label for="fullName">ชื่อ-นามสกุล</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="settings-field">
+                    <label for="phone">เบอร์โทร</label>
+                    <input type="tel" id="phone" inputmode="tel">
+                </div>
+
+                <button type="submit" class="settings-submit">บันทึกข้อมูลโปรไฟล์</button>
+            </form>
+
+            <form id="passwordForm" class="settings-card">
+                <h2>เปลี่ยนรหัสผ่าน</h2>
+                <div id="passwordMessage" class="settings-message"></div>
+
+                <div class="settings-field">
+                    <label for="currentPassword">รหัสผ่านปัจจุบัน</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+
+                <div class="settings-field">
+                    <label for="newPassword">รหัสผ่านใหม่</label>
+                    <input type="password" id="newPassword" minlength="6" required>
+                </div>
+
+                <div class="settings-field">
+                    <label for="confirmPassword">ยืนยันรหัสผ่านใหม่</label>
+                    <input type="password" id="confirmPassword" minlength="6" required>
+                </div>
+
+                <button type="submit" class="settings-submit">เปลี่ยนรหัสผ่าน</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/settings.js"></script>
+</body>
+</html>

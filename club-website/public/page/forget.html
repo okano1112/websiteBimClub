@@ -1,32 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ลืมรหัสผ่าน - BimClub</title>
     <link rel="icon" type="image/png" href="../../../assets/img/logobranding/logobim.png">
     <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .forgot-container { max-width: 420px; margin: 80px auto 40px; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; }
+        .forgot-container h1 { color: #ad0f0f; margin-bottom: 8px; font-size: 1.5rem; }
+        .forgot-container p { color: #666; margin-bottom: 20px; font-size: 0.9rem; }
+        .forgot-field { text-align: left; margin-bottom: 16px; }
+        .forgot-field label { display: block; font-weight: 600; margin-bottom: 6px; color: #333; }
+        .forgot-field input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; font-family: inherit; }
+        .forgot-btn { width: 100%; padding: 14px; background: #ad0f0f; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .forgot-btn:hover { background: #8b0c0c; }
+        .forgot-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .forgot-msg { padding: 12px; border-radius: 8px; margin-bottom: 16px; display: none; font-size: 0.9rem; }
+        .forgot-msg.success { background: #dcfce7; color: #166534; display: block; }
+        .forgot-msg.error { background: #fef2f2; color: #dc2626; display: block; }
+        .forgot-back { margin-top: 16px; }
+        .forgot-back a { color: #ad0f0f; text-decoration: none; font-weight: 500; }
+    </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
-    <div class="logo">
-      <a href="../index.html">
-        <img src="../../../assets/img/logobranding/logobim.png" width="80px" height="50px" alt="BimClub Logo" />
-      </a>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <a href="../index.html">
+                <img src="../../../assets/img/logobranding/logobim.png" width="80px" height="50px" alt="BimClub Logo" />
+            </a>
+        </div>
+        <nav class="menu">
+            <ul>
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                <li><a href="activity.html">กิจกรรม</a></li>
+                <li><a href="achievement.html">ผลงาน</a></li>
+                <li><a href="login.html">เข้าสู่ระบบ</a></li>
+                <li><a href="register.html">สมัครสมาชิก</a></li>
+            </ul>
+        </nav>
     </div>
-    <nav class="menu">
-      <ul>
-        <li><a href="../index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="activity.html">Activities</a></li>
-        <li><a href="achievement.html">Achievements</a></li>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="register.html">Register</a></li>
-      </ul>
-    </nav>
-  </div>
 
-  <h1>กู้คืนรหัสผ่าน</h1>
+    <div class="forgot-container">
+        <h1>ลืมรหัสผ่าน</h1>
+        <p>กรอกอีเมลที่ใช้สมัครสมาชิก ระบบจะส่งลิงก์กู้คืนรหัสผ่านไปให้ทางอีเมล</p>
+
+        <div id="forgotMsg" class="forgot-msg"></div>
+
+        <form id="forgotForm">
+            <div class="forgot-field">
+                <label for="email">อีเมล</label>
+                <input type="email" id="email" required placeholder="example@email.com">
+            </div>
+            <button type="submit" class="forgot-btn" id="forgotBtn">ส่งลิงก์กู้คืน</button>
+        </form>
+
+        <div class="forgot-back">
+            <a href="login.html">← กลับไปหน้าเข้าสู่ระบบ</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgDiv = document.getElementById('forgotMsg');
+            const btn = document.getElementById('forgotBtn');
+            msgDiv.className = 'forgot-msg';
+            msgDiv.style.display = 'none';
+
+            btn.textContent = 'กำลังส่ง...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: document.getElementById('email').value })
+                });
+                const data = await res.json();
+
+                msgDiv.textContent = data.message;
+                msgDiv.className = 'forgot-msg success';
+            } catch (err) {
+                msgDiv.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+                msgDiv.className = 'forgot-msg error';
+            }
+
+            btn.textContent = 'ส่งลิงก์กู้คืน';
+            btn.disabled = false;
+        });
+    </script>
+    <script src="../js/auth.js"></script>
 </body>
 </html>
