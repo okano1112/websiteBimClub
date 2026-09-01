@@ -18,10 +18,10 @@ router.get('/', async (req, res) => {
 // POST /api/activities
 router.post('/', requireLogin, requireAdmin, async (req, res) => {
     try {
-        const { title, description, event_date, participants, image_url } = req.body;
+        const { title, description, event_date, start_date, end_date, participants, image_url } = req.body;
         const [result] = await db.query(
-            'INSERT INTO activities (title, description, event_date, participants, image_url) VALUES (?, ?, ?, ?, ?)',
-            [title, description, event_date, participants || 0, image_url]
+            'INSERT INTO activities (title, description, event_date, start_date, end_date, participants, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [title, description, event_date, start_date || null, end_date || null, participants || 0, image_url]
         );
         const [newActivity] = await db.query('SELECT * FROM activities WHERE id = ?', [result.insertId]);
         res.status(201).json({ success: true, activity: newActivity[0] });
@@ -34,10 +34,10 @@ router.post('/', requireLogin, requireAdmin, async (req, res) => {
 // PUT /api/activities/:id
 router.put('/:id', requireLogin, requireAdmin, async (req, res) => {
     try {
-        const { title, description, event_date, participants, image_url } = req.body;
+        const { title, description, event_date, start_date, end_date, participants, image_url } = req.body;
         await db.query(
-            'UPDATE activities SET title=?, description=?, event_date=?, participants=?, image_url=? WHERE id=?',
-            [title, description, event_date, participants, image_url, req.params.id]
+            'UPDATE activities SET title=?, description=?, event_date=?, start_date=?, end_date=?, participants=?, image_url=? WHERE id=?',
+            [title, description, event_date, start_date || null, end_date || null, participants, image_url, req.params.id]
         );
         res.json({ success: true, message: 'อัปเดตกิจกรรมสำเร็จ' });
     } catch (error) {

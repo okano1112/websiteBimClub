@@ -1,0 +1,25 @@
+/* Portfolio Public View Styles */
+
+.resume-container { max-width: 800px; margin: 40px auto; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+.resume-header { background: var(--primary-color); color: var(--white); padding: var(--space-6); text-align: center; }
+.resume-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--white); margin: 0 auto var(--space-3); object-fit: cover; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; }
+.resume-name { font-size: var(--fs-h2); margin-bottom: var(--space-1); }
+.resume-headline { font-size: 1.1rem; opacity: 0.9; margin-bottom: var(--space-3); }
+.resume-website { display: inline-block; padding: 6px 16px; background: rgba(255,255,255,0.1); border-radius: var(--radius-full); color: var(--white); text-decoration: none; font-size: var(--fs-small); }
+
+.resume-body { padding: var(--space-6); }
+.resume-section { margin-bottom: var(--space-5); }
+.resume-section-title { font-size: var(--fs-h3); color: var(--primary-color); border-bottom: 2px solid #fef2f2; padding-bottom: var(--space-1); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 1px; }
+
+.resume-summary { font-size: var(--fs-body); line-height: 1.7; color: var(--text-body); }
+
+.resume-skills { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.resume-skill { background: var(--secondary-color); color: var(--text-dark); padding: 6px 14px; border-radius: var(--radius-full); font-size: var(--fs-small); font-weight: 500; }
+
+.resume-item { margin-bottom: var(--space-4); }
+.resume-item-title { font-weight: 600; font-size: 1.1rem; color: var(--text-dark); }
+.resume-item-subtitle { color: var(--text-body); font-size: 0.95rem; margin: 4px 0; }
+.resume-item-date { color: var(--text-muted); font-size: var(--fs-small); margin-bottom: var(--space-1); }
+.resume-item-desc { color: var(--text-body); font-size: 0.95rem; line-height: 1.6; }
+
+.resume-error { text-align: center; padding: var(--space-7); color: var(--text-muted); font-size: 1.1rem; }

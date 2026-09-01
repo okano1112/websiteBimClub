@@ -1,144 +1,78 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BimClub - เข้าสู่ระบบ</title>
     <link rel="icon" type="image/png" href="../../../assets/img/logobranding/logobim.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/navbar.css">
-    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/auth-layout.css">
+  <script src="../js/navbar-component.js"></script>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-            <a href="../index.html">
-                <img src="../../../assets/img/logobranding/logobim.png" width="80px" height="50px" alt="BimClub Logo" />
-            </a>
+    <!-- Navbar Component -->
+  <site-navbar></site-navbar>
+
+    <main class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="../../../assets/img/logobranding/logobim.png" alt="BimClub">
+                <h1>เข้าสู่ระบบ</h1>
+            </div>
+
+            <div id="loginError" class="text-danger text-center mb-3 d-none"></div>
+            <div id="loginVerify" class="bg-warning-light text-center mb-3 p-3 rounded-sm d-none">
+                กรุณายืนยันอีเมลของคุณก่อนเข้าสู่ระบบ
+                <button id="resendVerifyBtn" class="btn btn-outline" class="btn btn-outline w-100 mt-3">ส่งอีเมลยืนยันอีกครั้ง</button>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">ชื่อผู้ใช้ (Username)</label>
+                    <input type="text" id="username" class="form-control" placeholder="กรอกชื่อผู้ใช้" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">รหัสผ่าน (Password)</label>
+                    <input type="password" id="password" class="form-control" placeholder="กรอกรหัสผ่าน" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Log in</button>
+                <div class="auth-links">
+                    <a href="register.html">สมัครสมาชิก</a>
+                    <a href="forget.html">ลืมรหัสผ่าน?</a>
+                </div>
+            </form>
         </div>
-        <nav class="menu">
-            <ul>
-                <li><a href="../index.html">หน้าแรก</a></li>
-                <li><a href="about.html">เกี่ยวกับเรา</a></li>
-                <li><a href="activity.html">กิจกรรม</a></li>
-                <li><a href="achievement.html">ผลงาน</a></li>
-                <li><a href="login.html">เข้าสู่ระบบ</a></li>
-                <li><a href="register.html">สมัครสมาชิก</a></li>
-            </ul>
-        </nav>
-    </div>
+    </main>
 
-    <img src="../../../assets/img/logobranding/logobim.png" width="150" height="100px">
-    <h1>BimClub</h1>
-
-    <div id="loginError" style="color:#dc2626; text-align:center; margin-bottom:10px; display:none;"></div>
-    <div id="loginVerify" style="background:#fef3c7; color:#92400e; text-align:center; margin-bottom:10px; padding:12px; border-radius:8px; display:none;">
-        <p id="verifyMsg" style="margin-bottom:8px;"></p>
-        <input type="email" id="verifyEmail" placeholder="กรอกอีเมลของคุณ" style="padding:8px; border:1px solid #ccc; border-radius:6px; margin-bottom:8px; width:100%;">
-        <button id="resendBtn" style="padding:8px 16px; background:#ad0f0f; color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit;">ส่งอีเมลยืนยันอีกครั้ง</button>
-        <div id="resendResult" style="margin-top:8px; font-size:0.85rem;"></div>
-    </div>
-
-    <form id="loginForm">
-        <div class="form-control">
-            <input type="email" id="email"  placeholder=" ">
-            <label for="email">อีเมล</label>
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
         </div>
-        <div class="form-control">
-            <input type="password" required id="password" placeholder=" ">
-            <label for="password">รหัสผ่าน</label>
-            <i class="fa-solid fa-eye" id="eye"></i>
-        </div>
-        <div class="form-control">
-            <button type="submit" class="button-login">เข้าสู่ระบบ</button>
-        </div>
-    </form>
-    <div class="regis-forget">
-        <div>
-            <a id="register" href="register.html">สมัครสมาชิก</a>
-        </div>
-        <a id="forget" href="forget.html">ลืมรหัสผ่าน</a>
-    </div>
-
-    <script>
-        // Toggle password visibility
-        const eyeIcon = document.getElementById('eye');
-        const passwordInput = document.getElementById('password');
-        if (eyeIcon && passwordInput) {
-            eyeIcon.addEventListener('click', () => {
-                const isPassword = passwordInput.type === 'password';
-                passwordInput.type = isPassword ? 'text' : 'password';
-                eyeIcon.classList.toggle('fa-eye-slash', isPassword);
-            });
-        }
-
-        // Login form submission
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const errorDiv = document.getElementById('loginError');
-            const verifyDiv = document.getElementById('loginVerify');
-            errorDiv.style.display = 'none';
-            verifyDiv.style.display = 'none';
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    window.location.href = '../index.html';
-                } else if (data.needVerify) {
-                    // แสดงกล่องส่งอีเมลยืนยันซ้ำ
-                    document.getElementById('verifyMsg').textContent = data.message;
-                    document.getElementById('verifyEmail').value = email;
-                    verifyDiv.style.display = 'block';
-                } else {
-                    errorDiv.textContent = data.message;
-                    errorDiv.style.display = 'block';
-                }
-            } catch (err) {
-                errorDiv.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่';
-                errorDiv.style.display = 'block';
-            }
-        });
-
-        // Resend verify email
-        document.getElementById('resendBtn').addEventListener('click', async () => {
-            const resultDiv = document.getElementById('resendResult');
-            const email = document.getElementById('verifyEmail').value;
-            const btn = document.getElementById('resendBtn');
-
-            btn.textContent = 'กำลังส่ง...';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/auth/resend-verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                resultDiv.textContent = data.message;
-                resultDiv.style.color = '#166534';
-            } catch (err) {
-                resultDiv.textContent = 'เกิดข้อผิดพลาด';
-                resultDiv.style.color = '#dc2626';
-            }
-
-            btn.textContent = 'ส่งอีเมลยืนยันอีกครั้ง';
-            btn.disabled = false;
-        });
-    </script>
+    </footer>
     <script src="../js/auth.js"></script>
 </body>
-
 </html>

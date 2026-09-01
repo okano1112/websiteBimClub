@@ -172,6 +172,32 @@ async function fetchCertificate(userId, courseId) {
     return rows[0] || null;
 }
 
+async function fetchCourseComments(courseId) {
+    const [comments] = await db.query(
+        `SELECT c.id, c.content, c.created_at, u.full_name, u.username, u.avatar_url, u.role, u.id AS author_id
+         FROM course_comments c
+         JOIN users u ON u.id = c.author_id
+         WHERE c.course_id = ?
+         ORDER BY c.created_at ASC`,
+        [courseId]
+    );
+    return comments;
+}
+
+async function fetchCourseLikes(courseIds, viewerId) {
+    if (!courseIds.length) return new Map();
+    const placeholders = courseIds.map(() => '?').join(', ');
+    const [rows] = await db.query(
+        `SELECT course_id, COUNT(*) AS like_count,
+                MAX(CASE WHEN user_id = ? THEN 1 ELSE 0 END) AS is_liked
+         FROM course_likes WHERE course_id IN (${placeholders}) GROUP BY course_id`,
+        [viewerId || 0, ...courseIds]
+    );
+    return new Map(rows.map((row) => [Number(row.course_id), {
+        likeCount: Number(row.like_count), isLiked: Boolean(row.is_liked)
+    }]));
+}
+
 async function issueCertificate(connection, userId, courseId, issuedVia) {
     const [existing] = await connection.query(
         'SELECT * FROM certificates WHERE user_id = ? AND course_id = ?',
@@ -344,11 +370,15 @@ router.get('/:id', requireLogin, async (req, res) => {
             return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
         }
 
-        const [stops, quizQuestions, certificate] = await Promise.all([
+        const [stops, quizQuestions, certificate, comments] = await Promise.all([
             fetchStops(id),
             fetchQuizQuestions(id, false),
-            fetchCertificate(req.currentUser.id, id)
+            fetchCertificate(req.currentUser.id, id),
+            fetchCourseComments(id)
         ]);
+
+        const likes = await fetchCourseLikes([id], req.currentUser.id);
+        const likeData = likes.get(Number(id)) || { likeCount: 0, isLiked: false };
 
         res.json({
             success: true,
@@ -356,6 +386,9 @@ router.get('/:id', requireLogin, async (req, res) => {
                 // เฉลยของคำถามระหว่างวิดีโอเป็นข้อมูลของผู้สอนเท่านั้น
                 stops: manager ? stops : withoutAnswers(stops),
                 quizQuestions,
+                comments,
+                likeCount: likeData.likeCount,
+                isLiked: likeData.isLiked,
                 certificate: certificate ? {
                     id: certificate.id,
                     certificateCode: certificate.certificate_code,
@@ -585,6 +618,110 @@ router.post('/:id/admin-grant-certificate', requireAdmin, async (req, res) => {
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการออกใบเซอร์' });
     } finally {
         connection.release();
+    }
+});
+
+router.post('/:id/comments', requireLogin, async (req, res) => {
+    try {
+        const courseId = parseId(req.params.id);
+        const content = cleanText(req.body.content);
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        if (!content) return res.status(400).json({ success: false, message: 'กรุณากรอกข้อความความคิดเห็น' });
+        if (content.length > 2000) {
+            return res.status(400).json({ success: false, message: 'ความคิดเห็นยาวเกินไป' });
+        }
+
+        const [courses] = await db.query('SELECT id, instructor_id, is_published FROM courses WHERE id = ?', [courseId]);
+        if (courses.length === 0) return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+        
+        const course = courses[0];
+        if (!course.is_published && !canManage(req.currentUser, course)) {
+            return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+        }
+
+        const [result] = await db.query(
+            'INSERT INTO course_comments (course_id, author_id, content) VALUES (?, ?, ?)',
+            [courseId, req.currentUser.id, content]
+        );
+
+        const [comments] = await db.query(
+            `SELECT c.id, c.content, c.created_at, u.full_name, u.username, u.avatar_url, u.role, u.id AS author_id
+             FROM course_comments c
+             JOIN users u ON u.id = c.author_id
+             WHERE c.id = ?`,
+            [result.insertId]
+        );
+
+        res.status(201).json({ success: true, comment: comments[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการแสดงความคิดเห็น' });
+    }
+});
+
+router.delete('/:id/comments/:commentId', requireLogin, async (req, res) => {
+    try {
+        const courseId = parseId(req.params.id);
+        const commentId = parseId(req.params.commentId);
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        if (!commentId) return res.status(400).json({ success: false, message: 'รหัสความคิดเห็นไม่ถูกต้อง' });
+
+        const [comments] = await db.query('SELECT author_id FROM course_comments WHERE id = ? AND course_id = ?', [commentId, courseId]);
+        if (comments.length === 0) return res.status(404).json({ success: false, message: 'ไม่พบความคิดเห็น' });
+        
+        const [courses] = await db.query('SELECT instructor_id FROM courses WHERE id = ?', [courseId]);
+        const course = courses[0];
+
+        // สิทธิ์ลบ: เจ้าของคอมเมนต์, แอดมิน, หรืออาจารย์เจ้าของคอร์ส
+        const isAuthor = Number(req.currentUser.id) === Number(comments[0].author_id);
+        const isCourseInstructor = course && Number(req.currentUser.id) === Number(course.instructor_id);
+        const isAdmin = req.currentUser.role === 'admin';
+
+        if (!isAuthor && !isCourseInstructor && !isAdmin) {
+            return res.status(403).json({ success: false, message: 'คุณไม่มีสิทธิ์ลบความคิดเห็นนี้' });
+        }
+
+        await db.query('DELETE FROM course_comments WHERE id = ?', [commentId]);
+        res.json({ success: true, message: 'ลบความคิดเห็นสำเร็จ' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการลบความคิดเห็น' });
+    }
+});
+
+router.post('/:id/likes', requireLogin, async (req, res) => {
+    try {
+        const courseId = parseId(req.params.id);
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        
+        const [courses] = await db.query('SELECT id, is_published, instructor_id FROM courses WHERE id = ?', [courseId]);
+        if (!courses.length) return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+        
+        const course = courses[0];
+        if (!course.is_published && !canManage(req.currentUser, course)) {
+            return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+        }
+
+        await db.query('INSERT IGNORE INTO course_likes (course_id, user_id) VALUES (?, ?)', [courseId, req.currentUser.id]);
+        const likes = await fetchCourseLikes([courseId], req.currentUser.id);
+        res.json({ success: true, ...(likes.get(courseId) || { likeCount: 0, isLiked: true }) });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการกดถูกใจ' });
+    }
+});
+
+router.delete('/:id/likes', requireLogin, async (req, res) => {
+    try {
+        const courseId = parseId(req.params.id);
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        
+        await db.query('DELETE FROM course_likes WHERE course_id = ? AND user_id = ?', [courseId, req.currentUser.id]);
+        const likes = await fetchCourseLikes([courseId], req.currentUser.id);
+        res.json({ success: true, ...(likes.get(courseId) || { likeCount: 0, isLiked: false }) });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการยกเลิกถูกใจ' });
     }
 });
 

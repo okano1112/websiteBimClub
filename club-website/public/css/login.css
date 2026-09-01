@@ -1,18 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-body{
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Lato', sans-serif;
-}
+
+
 h1{ 
     font-size: 70px;
     margin-bottom: 60px;
@@ -24,7 +12,7 @@ h1{
 }
 .form-control input{
     border: 0;
-    border-bottom: 1px solid #ad0f0f;
+    border-bottom: 1px solid var(--primary-color);
     outline: none;
     display: block;
     padding: 20px 0 10px;
@@ -45,13 +33,13 @@ h1{
 .form-control input:not(:placeholder-shown) + label{
     top: 0;
     font-size: 14px;
-    color: #ad0f0f;
+    color: var(--primary-color);
 }
 .button-login{
     cursor: pointer;
     display: inline-block;
     width: 100%;
-    background-color: #ad0f0f;
+    background-color: var(--primary-color);
     color: white;
     padding: 15px;
     font-size: 16px;

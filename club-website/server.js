@@ -46,7 +46,9 @@ app.use('/api/activities', require('./routes/activities'));
 app.use('/api/achievements', require('./routes/achievements'));
 app.use('/api/cms-content', require('./routes/cmsContent'));
 app.use('/api/instructor-requests', require('./routes/instructorRequests'));
+app.use('/api/admin/users', require('./routes/admin-users'));
 app.use('/api/courses', require('./routes/courses'));
+app.use('/api/honors', require('./routes/honors'));
 
 // Middleware จัดการข้อผิดพลาด
 app.use((err, req, res, next) => {

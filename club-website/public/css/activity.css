@@ -1,21 +1,12 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-body {
-  font-family: 'Noto Sans Thai', sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
-  overflow-x: hidden;
-}
+
+
 
 /* ===== Hero Section ===== */
 .activity-hero {
   position: relative;
   height: 340px;
-  background: linear-gradient(135deg, #ad0f0f 0%, #7f1d1d 50%, #450a0a 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #7f1d1d 50%, #450a0a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +46,7 @@ body {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
-  color: #fff;
+  color: var(--white);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -65,7 +56,7 @@ body {
 .hero-content h1 {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--white);
   margin-bottom: 14px;
   line-height: 1.2;
 }
@@ -85,12 +76,12 @@ body {
 .section-header h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   margin-bottom: 10px;
 }
 
 .section-header p {
-  color: #64748b;
+  color: var(--text-body);
   font-size: 1.05rem;
 }
 
@@ -112,7 +103,7 @@ body {
 
 /* ===== Activity Card ===== */
 .activity-card {
-  background: #fff;
+  background: var(--white);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
@@ -129,8 +120,10 @@ body {
 
 .card-image {
   position: relative;
-  height: 220px;
+  aspect-ratio: 16/9;
+  width: 100%;
   overflow: hidden;
+  background: var(--secondary-color);
 }
 
 .card-image img {
@@ -150,8 +143,8 @@ body {
   left: 14px;
   padding: 6px 16px;
   border-radius: 999px;
-  background: #ad0f0f;
-  color: #fff;
+  background: var(--primary-color);
+  color: var(--white);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -159,19 +152,14 @@ body {
   box-shadow: 0 4px 12px rgba(173, 15, 15, 0.3);
 }
 
-.card-body {
-  padding: 22px 20px 20px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
+.card-
 
 .card-date {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
@@ -182,13 +170,17 @@ body {
 .card-body h3 {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   margin-bottom: 10px;
   line-height: 1.4;
 }
 
 .card-body p {
-  color: #64748b;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--text-body);
   font-size: 0.92rem;
   line-height: 1.7;
   flex: 1;
@@ -200,7 +192,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding-top: 14px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-color);
 }
 
 .participants {
@@ -208,7 +200,7 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .participants .icon {
@@ -216,7 +208,7 @@ body {
 }
 
 .card-btn {
-  color: #ad0f0f;
+  color: var(--primary-color);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -234,14 +226,14 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--white);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .featured-section .swiper-button-next:hover,
 .featured-section .swiper-button-prev:hover {
-  background: #ad0f0f;
+  background: var(--primary-color);
   box-shadow: 0 8px 24px rgba(173, 15, 15, 0.25);
 }
 
@@ -249,13 +241,13 @@ body {
 .featured-section .swiper-button-prev::after {
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   transition: color 0.2s;
 }
 
 .featured-section .swiper-button-next:hover::after,
 .featured-section .swiper-button-prev:hover::after {
-  color: #fff;
+  color: var(--white);
 }
 
 .featured-pagination {
@@ -274,13 +266,13 @@ body {
 }
 
 .featured-pagination .swiper-pagination-bullet-active {
-  background: #ad0f0f;
+  background: var(--primary-color);
   width: 28px;
 }
 
 /* ===== Stats Section ===== */
 .stats-section {
-  background: linear-gradient(135deg, #ad0f0f 0%, #7f1d1d 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #7f1d1d 100%);
   padding: 60px 24px;
 }
 
@@ -301,7 +293,7 @@ body {
   display: block;
   font-size: 2.8rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--white);
   margin-bottom: 6px;
   opacity: 0;
   transform: translateY(20px);
@@ -339,7 +331,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   width: 3px;
-  background: linear-gradient(to bottom, #ad0f0f, #fecaca, #ad0f0f);
+  background: linear-gradient(to bottom, var(--primary-color), #fecaca, var(--primary-color));
   border-radius: 999px;
 }
 
@@ -375,8 +367,8 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #ad0f0f;
-  border: 3px solid #fff;
+  background: var(--primary-color);
+  border: 3px solid var(--white);
   box-shadow: 0 2px 12px rgba(173, 15, 15, 0.3);
   z-index: 1;
 }
@@ -390,7 +382,7 @@ body {
 }
 
 .timeline-content {
-  background: #fff;
+  background: var(--white);
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
@@ -406,7 +398,7 @@ body {
   padding: 4px 12px;
   border-radius: 999px;
   background: #fef2f2;
-  color: #ad0f0f;
+  color: var(--primary-color);
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 10px;
@@ -415,12 +407,12 @@ body {
 .timeline-content h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   margin-bottom: 8px;
 }
 
 .timeline-content p {
-  color: #64748b;
+  color: var(--text-body);
   font-size: 0.9rem;
   line-height: 1.7;
 }
@@ -435,12 +427,12 @@ body {
 .cta-content h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   margin-bottom: 12px;
 }
 
 .cta-content p {
-  color: #64748b;
+  color: var(--text-body);
   font-size: 1.05rem;
   margin-bottom: 28px;
 }
@@ -449,8 +441,8 @@ body {
   display: inline-block;
   padding: 14px 36px;
   border-radius: 999px;
-  background: #ad0f0f;
-  color: #fff;
+  background: var(--primary-color);
+  color: var(--white);
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
@@ -523,8 +515,12 @@ body {
   }
 
   .card-image {
-    height: 180px;
-  }
+  position: relative;
+  aspect-ratio: 16/9;
+  width: 100%;
+  overflow: hidden;
+  background: var(--secondary-color);
+}
 
   .cta-content h2 {
     font-size: 1.5rem;

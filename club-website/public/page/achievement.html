@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="stylesheet" href="../css/global.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Achievements - BimClub</title>
@@ -13,27 +14,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
+  <script src="../js/navbar-component.js"></script>
 </head>
 
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
-    <div class="logo">
-      <a href="../index.html">
-        <img src="../../../assets/img/logobranding/logobim.png" width="80px" height="50px" alt="BimClub Logo" />
-      </a>
-    </div>
-    <nav class="menu">
-      <ul>
-        <li><a href="../index.html">หน้าแรก</a></li>
-        <li><a href="about.html">เกี่ยวกับเรา</a></li>
-        <li><a href="activity.html">กิจกรรม</a></li>
-        <li><a href="achievement.html">ผลงาน</a></li>
-        <li><a href="login.html">เข้าสู่ระบบ</a></li>
-        <li><a href="register.html">สมัครสมาชิก</a></li>
-      </ul>
-    </nav>
-  </div>
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
 
   <!-- Hero Section -->
   <section class="achieve-hero">
@@ -54,126 +40,7 @@
 
     <div class="cards-grid">
 
-      <!-- Card 1 -->
-      <div class="achieve-card" data-project="project1">
-        <div class="card-thumbnail">
-          <img src="../../../assets/img/swiperimg/bimActivity.jpg" alt="Project 1" />
-          <div class="card-overlay">
-            <span class="view-icon">🔍</span>
-            <span>ดูผลงาน</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">BIM Modeling</span>
-          <h3>อาคารพาณิชย์จำลอง</h3>
-          <p>โมเดล BIM ระดับ LOD 300 ของอาคารพาณิชย์ 5 ชั้น ออกแบบด้วย Revit</p>
-          <div class="card-meta">
-            <span>👥 ทีม 4 คน</span>
-            <span>📅 2025</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 2 -->
-      <div class="achieve-card" data-project="project2">
-        <div class="card-thumbnail">
-          <img src="../../../assets/img/swiperimg/bimActivity2.jpg" alt="Project 2" />
-          <div class="card-overlay">
-            <span class="view-icon">🔍</span>
-            <span>ดูผลงาน</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">Clash Detection</span>
-          <h3>ระบบตรวจสอบ Clash</h3>
-          <p>ระบบตรวจสอบการชนกันของงานระบบ MEP กับโครงสร้างอัตโนมัติ</p>
-          <div class="card-meta">
-            <span>👥 ทีม 3 คน</span>
-            <span>📅 2025</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="achieve-card" data-project="project3">
-        <div class="card-thumbnail">
-          <img src="../../../assets/img/swiperimg/bimActivity3.jpg" alt="Project 3" />
-          <div class="card-overlay">
-            <span class="view-icon">🔍</span>
-            <span>ดูผลงาน</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">4D Simulation</span>
-          <h3>จำลองแผนก่อสร้าง 4D</h3>
-          <p>การจำลองลำดับการก่อสร้างแบบ 4D BIM พร้อมแผนงานจริง</p>
-          <div class="card-meta">
-            <span>👥 ทีม 5 คน</span>
-            <span>📅 2025</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 4 -->
-      <div class="achieve-card" data-project="project4">
-        <div class="card-thumbnail">
-          <img src="../../../assets/img/swiperimg/bimActivity4.jpg" alt="Project 4" />
-          <div class="card-overlay">
-            <span class="view-icon">🔍</span>
-            <span>ดูผลงาน</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">Competition</span>
-          <h3>แข่งขัน BIM ระดับประเทศ</h3>
-          <p>ผลงานที่ส่งเข้าแข่งขันและได้รับรางวัลจากเวทีระดับประเทศ</p>
-          <div class="card-meta">
-            <span>👥 ทีม 4 คน</span>
-            <span>🏆 รางวัลชนะเลิศ</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 5 -->
-      <div class="achieve-card" data-project="project5">
-        <div class="card-thumbnail">
-          <img src="../../../assets/img/swiperimg/bimActivity5.jpg" alt="Project 5" />
-          <div class="card-overlay">
-            <span class="view-icon">🔍</span>
-            <span>ดูผลงาน</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">Research</span>
-          <h3>วิจัย BIM ในงานบำรุงรักษา</h3>
-          <p>งานวิจัยการประยุกต์ใช้ BIM สำหรับงาน Facility Management</p>
-          <div class="card-meta">
-            <span>👥 ทีม 2 คน</span>
-            <span>📅 2026</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 6 -->
-      <div class="achieve-card" data-project="project6">
-        <div class="card-thumbnail">
-          <img src="../../../assets/img/swiperimg/bimActivity.jpg" alt="Project 6" />
-          <div class="card-overlay">
-            <span class="view-icon">🔍</span>
-            <span>ดูผลงาน</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">Automation</span>
-          <h3>Dynamo Script อัตโนมัติ</h3>
-          <p>พัฒนา Script อัตโนมัติสำหรับสร้าง Schedule และ Quantity Take-off</p>
-          <div class="card-meta">
-            <span>👥 ทีม 3 คน</span>
-            <span>📅 2026</span>
-          </div>
-        </div>
-      </div>
-
+      <!-- Cards will be injected by achievement-dynamic.js -->
     </div>
   </section>
 
@@ -208,66 +75,12 @@
     </div>
   </div>
 
+    
   <script>
     // ============================================
     // Project data — replace images & text later
     // ============================================
-    const projectsData = {
-      project1: {
-        title: 'อาคารพาณิชย์จำลอง',
-        slides: [
-          { img: '../../../assets/img/swiperimg/bimActivity.jpg',  caption: 'ภาพรวมโมเดล 3D — มุมมอง Perspective ของอาคาร 5 ชั้น' },
-          { img: '../../../assets/img/swiperimg/bimActivity2.jpg', caption: 'แปลนชั้น 1 — แสดงรายละเอียดพื้นที่ใช้สอยและระบบโครงสร้าง' },
-          { img: '../../../assets/img/swiperimg/bimActivity3.jpg', caption: 'Section ตัดตามขวาง — แสดงระบบ MEP และโครงสร้าง' },
-          { img: '../../../assets/img/swiperimg/bimActivity4.jpg', caption: 'รายละเอียดงานตกแต่งภายใน — Rendering คุณภาพสูง' },
-          { img: '../../../assets/img/swiperimg/bimActivity5.jpg', caption: 'Quantity Take-off — ตาราง BOQ ที่ดึงจากโมเดลโดยตรง' },
-        ]
-      },
-      project2: {
-        title: 'ระบบตรวจสอบ Clash',
-        slides: [
-          { img: '../../../assets/img/swiperimg/bimActivity2.jpg', caption: 'Dashboard ระบบ — แสดงผลสรุปจุดชนกันทั้งหมด' },
-          { img: '../../../assets/img/swiperimg/bimActivity3.jpg', caption: 'Clash Report — ระบุตำแหน่งและประเภทการชนกัน' },
-          { img: '../../../assets/img/swiperimg/bimActivity4.jpg', caption: 'การแก้ไข Clash — กระบวนการ Coordination ระหว่างสาขา' },
-          { img: '../../../assets/img/swiperimg/bimActivity.jpg',  caption: 'ผลลัพธ์สุดท้าย — โมเดลที่ผ่านการตรวจสอบแล้ว' },
-        ]
-      },
-      project3: {
-        title: 'จำลองแผนก่อสร้าง 4D',
-        slides: [
-          { img: '../../../assets/img/swiperimg/bimActivity3.jpg', caption: 'Timeline การก่อสร้าง — เชื่อมโยงแผนงานกับโมเดล 3D' },
-          { img: '../../../assets/img/swiperimg/bimActivity.jpg',  caption: 'Phase 1: งานฐานราก — แสดงลำดับขั้นตอนการทำงาน' },
-          { img: '../../../assets/img/swiperimg/bimActivity5.jpg', caption: 'Phase 2: งานโครงสร้าง — จำลองการยกชิ้นส่วนสำเร็จรูป' },
-          { img: '../../../assets/img/swiperimg/bimActivity2.jpg', caption: 'Phase 3: งานสถาปัตย์ — จำลองการติดตั้งผนังและหลังคา' },
-        ]
-      },
-      project4: {
-        title: 'แข่งขัน BIM ระดับประเทศ',
-        slides: [
-          { img: '../../../assets/img/swiperimg/bimActivity4.jpg', caption: 'ทีม BimClub บนเวที — นำเสนอผลงานต่อกรรมการ' },
-          { img: '../../../assets/img/swiperimg/bimActivity5.jpg', caption: 'ผลงานประกวด — โมเดลอาคารสีเขียวประหยัดพลังงาน' },
-          { img: '../../../assets/img/swiperimg/bimActivity.jpg',  caption: 'พิธีมอบรางวัล — รับรางวัลชนะเลิศอันดับ 1' },
-          { img: '../../../assets/img/swiperimg/bimActivity2.jpg', caption: 'ภาพหมู่ทีมแข่งขัน — ฉลองความสำเร็จร่วมกัน' },
-        ]
-      },
-      project5: {
-        title: 'วิจัย BIM ในงานบำรุงรักษา',
-        slides: [
-          { img: '../../../assets/img/swiperimg/bimActivity5.jpg', caption: 'แนวคิดงานวิจัย — การนำ BIM มาใช้ใน Facility Management' },
-          { img: '../../../assets/img/swiperimg/bimActivity3.jpg', caption: 'กรณีศึกษา — อาคารมหาวิทยาลัยที่ใช้เป็นตัวอย่าง' },
-          { img: '../../../assets/img/swiperimg/bimActivity.jpg',  caption: 'ผลวิเคราะห์ — เปรียบเทียบต้นทุนก่อนและหลังใช้ BIM' },
-        ]
-      },
-      project6: {
-        title: 'Dynamo Script อัตโนมัติ',
-        slides: [
-          { img: '../../../assets/img/swiperimg/bimActivity.jpg',  caption: 'Dynamo Workspace — แสดงโหนดและ Logic การทำงาน' },
-          { img: '../../../assets/img/swiperimg/bimActivity4.jpg', caption: 'ผลลัพธ์ Schedule — ตารางที่ถูกสร้างอัตโนมัติจาก Script' },
-          { img: '../../../assets/img/swiperimg/bimActivity2.jpg', caption: 'Quantity Take-off — ดึงปริมาณวัสดุอัตโนมัติจากโมเดล' },
-          { img: '../../../assets/img/swiperimg/bimActivity5.jpg', caption: 'คู่มือการใช้งาน — เอกสารสำหรับสมาชิกนำไปต่อยอด' },
-        ]
-      },
-    };
+    // Projects data is now fetched from the API via achievement-dynamic.js
 
     // ============================================
     // 3D Carousel Logic
@@ -389,8 +202,39 @@
 
     document.querySelectorAll('.achieve-card').forEach(c => observer.observe(c));
   </script>
+    
   <script src="../js/achievement-dynamic.js"></script>
   <script src="../js/auth.js"></script>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
 </body>
 
 </html>

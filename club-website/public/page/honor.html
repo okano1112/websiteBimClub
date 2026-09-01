@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <link rel="stylesheet" href="../css/global.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกียรติยศแห่งชมรม - BimClub</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/honor.css">
+  <script src="../js/navbar-component.js"></script>
+</head>
+<body>
+
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
+
+    <!-- Hero Section -->
+    <section class="honor-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>เกียรติยศแห่งชมรม</h1>
+            <p>บุคคลผู้สร้างชื่อเสียง ความสำเร็จ และมีคุณูปการสำคัญให้แก่ชมรม BimClub</p>
+        </div>
+    </section>
+
+    <!-- Intro Section -->
+    <section class="honor-intro">
+        <div class="container">
+            <div class="intro-box">
+                <h2>Hall of Honor</h2>
+                <p>พื้นที่แห่งนี้จัดทำขึ้นเพื่อยกย่องและเชิดชูเกียรติบุคคลที่สร้างคุณประโยชน์ ชื่อเสียง หรือความสำเร็จอันโดดเด่นให้แก่ชมรม ไม่ว่าจะเป็นศิษย์เก่าที่ประสบความสำเร็จ หรือสมาชิกที่ทุ่มเทสร้างสรรค์ผลงานที่เป็นที่ประจักษ์ เราขอจารึกเรื่องราวของท่านไว้เป็นแรงบันดาลใจให้แก่สมาชิกรุ่นต่อไป</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Honor Members Section -->
+    <section class="honor-members">
+        <div class="container">
+            <div class="honor-grid" id="honorGrid">
+                <!-- Data will be injected here via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Honor Detail Modal -->
+    <div id="honorDetailModal" class="honor-modal">
+        <div class="honor-modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <img id="modalImage" src="" alt="Profile">
+                </div>
+                <div class="modal-right">
+                    <h2 id="modalName"></h2>
+                    <div class="modal-subtitle" id="modalSubtitle"></div>
+                    <div class="modal-info-list">
+                        <div class="info-item"><span class="info-label">ปีที่เข้าร่วม:</span> <span id="modalJoined"></span></div>
+                        <div class="info-item"><span class="info-label">ความสำเร็จ:</span> <span id="modalAchievement"></span></div>
+                        <div class="info-item"><span class="info-label">ปัจจุบัน:</span> <span id="modalCurrent"></span></div>
+                    </div>
+                    <div class="modal-desc">
+                        <h3>ประวัติและคุณูปการ</h3>
+                        <p id="modalDesc"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="../js/auth.js"></script>
+    <script src="../js/honor.js"></script>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

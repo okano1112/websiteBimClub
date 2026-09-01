@@ -1,59 +1,20 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <link rel="stylesheet" href="../css/global.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>พอร์ตโฟลิโอ - BimClub</title>
     <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
     <link rel="stylesheet" href="../css/navbar.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Noto Sans Thai', sans-serif; background: #f3f4f6; color: #111827; }
-        
-        .resume-container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
-        .resume-header { background: #ad0f0f; color: #fff; padding: 40px; text-align: center; }
-        .resume-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #fff; margin: 0 auto 16px; object-fit: cover; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; }
-        .resume-name { font-size: 2rem; margin-bottom: 8px; }
-        .resume-headline { font-size: 1.1rem; opacity: 0.9; margin-bottom: 16px; }
-        .resume-website { display: inline-block; padding: 6px 16px; background: rgba(255,255,255,0.1); border-radius: 99px; color: #fff; text-decoration: none; font-size: 0.9rem; }
-        
-        .resume-body { padding: 40px; }
-        .resume-section { margin-bottom: 32px; }
-        .resume-section-title { font-size: 1.25rem; color: #ad0f0f; border-bottom: 2px solid #fef2f2; padding-bottom: 8px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .resume-summary { font-size: 1rem; line-height: 1.7; color: #4b5563; }
-        
-        .resume-skills { display: flex; flex-wrap: wrap; gap: 8px; }
-        .resume-skill { background: #f3f4f6; color: #374151; padding: 6px 14px; border-radius: 99px; font-size: 0.9rem; font-weight: 500; }
-        
-        .resume-item { margin-bottom: 20px; }
-        .resume-item-title { font-weight: 600; font-size: 1.1rem; color: #111827; }
-        .resume-item-subtitle { color: #4b5563; font-size: 0.95rem; margin: 4px 0; }
-        .resume-item-date { color: #9ca3af; font-size: 0.85rem; margin-bottom: 8px; }
-        .resume-item-desc { color: #4b5563; font-size: 0.95rem; line-height: 1.6; }
-        
-        .resume-error { text-align: center; padding: 60px; color: #6b7280; font-size: 1.1rem; }
-    </style>
+    <link rel="stylesheet" href="../css/portfolio-public.css">
+  <script src="../js/navbar-component.js"></script>
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="logo">
-            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
-        </div>
-        <div class="menu">
-            <ul>
-                <li><a href="../index.html">หน้าแรก</a></li>
-                <li><a href="about.html">เกี่ยวกับเรา</a></li>
-                <li><a href="activity.html">กิจกรรม</a></li>
-                <li><a href="achievement.html">ผลงาน</a></li>
-                <li><a href="login.html">เข้าสู่ระบบ</a></li>
-                <li><a href="register.html">สมัครสมาชิก</a></li>
-            </ul>
-        </div>
-    </nav>
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
 
     <!-- Content -->
     <div id="resumeContainer">
@@ -61,6 +22,7 @@
     </div>
 
     <!-- Scripts -->
+    
     <script src="../js/auth.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -119,6 +81,21 @@
                     eduHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
                 }
 
+                let projHtml = '';
+                if (port.projects && port.projects.length > 0) {
+                    projHtml = port.projects.map(proj => `
+                        <div class="resume-item" style="overflow:hidden;">
+                            ${proj.image_url ? `<img src="${proj.image_url}" style="width:120px; height:80px; object-fit:cover; float:left; margin-right:16px; border-radius:8px;">` : ''}
+                            <div class="resume-item-title">${proj.title}</div>
+                            <div class="resume-item-desc">${proj.description || ''}</div>
+                            ${proj.project_url ? `<a href="${proj.project_url}" target="_blank" style="font-size:0.9rem; color:#ad0f0f; display:inline-block; margin-top:4px;">ดูลิงก์ผลงาน</a>` : ''}
+                            <div style="clear:both;"></div>
+                        </div>
+                    `).join('');
+                } else {
+                    projHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
+                }
+
                 container.innerHTML = `
                     <div class="resume-container">
                         <div class="resume-header">
@@ -151,6 +128,11 @@
                                 <h2 class="resume-section-title">ประวัติการศึกษา</h2>
                                 ${eduHtml}
                             </div>
+
+                            <div class="resume-section">
+                                <h2 class="resume-section-title">ผลงานส่วนตัว</h2>
+                                ${projHtml}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -162,5 +144,35 @@
             }
         });
     </script>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
 </body>
 </html>

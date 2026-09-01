@@ -1,18 +1,8 @@
 /* ========== Achievement Page Styles ========== */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-body {
-  width: 100%;
-  min-height: 100vh;
-  font-family: 'Noto Sans Thai', sans-serif;
-  background: #f5f5f5;
-  color: #111827;
-}
+
+
 
 /* ---- Hero ---- */
 .achieve-hero {
@@ -36,7 +26,7 @@ body {
   position: relative;
   z-index: 1;
   text-align: center;
-  color: #fff;
+  color: var(--white);
   padding: 0 20px;
 }
 
@@ -97,7 +87,7 @@ body {
 
 /* ---- Individual Card ---- */
 .achieve-card {
-  background: #fff;
+  background: var(--white);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
@@ -121,7 +111,7 @@ body {
 /* Thumbnail */
 .card-thumbnail {
   position: relative;
-  height: 200px;
+  aspect-ratio: 16/9; width: 100%;
   overflow: hidden;
 }
 
@@ -146,7 +136,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #fff;
+  color: var(--white);
   font-weight: 600;
   font-size: 0.95rem;
   opacity: 0;
@@ -162,9 +152,7 @@ body {
 }
 
 /* Card body */
-.card-body {
-  padding: 20px 22px 24px;
-}
+.card-
 
 .card-category {
   display: inline-block;
@@ -172,7 +160,7 @@ body {
   padding: 4px 12px;
   border-radius: 999px;
   background: #fef2f2;
-  color: #ad0f0f;
+  color: var(--primary-color);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -230,7 +218,7 @@ body {
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: var(--white);
   font-size: 1.3rem;
   cursor: pointer;
   transition: background 0.3s, transform 0.3s;
@@ -302,7 +290,7 @@ body {
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: var(--white);
   font-size: 1.8rem;
   cursor: pointer;
   transition: background 0.3s, transform 0.3s;
@@ -345,19 +333,19 @@ body {
 }
 
 .dot.active {
-  background: #ad0f0f;
-  border-color: #ad0f0f;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
   transform: scale(1.2);
 }
 
 .dot:hover {
-  border-color: #fff;
+  border-color: var(--white);
 }
 
 /* Info panel below carousel */
 .carousel-info {
   text-align: center;
-  color: #fff;
+  color: var(--white);
   max-width: 520px;
   padding: 0 16px;
 }

@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateShareLink();
                 renderExp(data.experiences || []);
                 renderEdu(data.education || []);
+                if (typeof renderProjects !== 'undefined') renderProjects(data.projects || []);
             }
         } catch (err) {
             console.error('Failed to load portfolio', err);
@@ -137,6 +138,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
+    const renderProjects = (projects) => {
+        const projectList = document.getElementById('projectList');
+        if (!projectList) return;
+        projectList.innerHTML = '';
+        projects.forEach(proj => {
+            const card = document.createElement('div');
+            card.className = 'list-card';
+            card.innerHTML = `
+                ${proj.image_url ? `<img src="${proj.image_url}" style="width:100px; height:70px; object-fit:cover; float:left; margin-right:15px; border-radius:6px;">` : ''}
+                <h4>${proj.title}</h4>
+                <div class="desc">${proj.description || ''}</div>
+                ${proj.project_url ? `<a href="${proj.project_url}" target="_blank" style="font-size:0.85rem; color:#ad0f0f;">ดูลิงก์ผลงาน</a><br>` : ''}
+                <button type="button" class="btn-delete" style="margin-top:10px;" data-id="${proj.id}">ลบผลงาน</button>
+                <div style="clear:both;"></div>
+            `;
+            projectList.appendChild(card);
+        });
+
+        projectList.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.getAttribute('data-id');
+                if(confirm('ต้องการลบผลงานนี้?')) {
+                    await fetch(`/api/portfolios/me/projects/${id}`, { method: 'DELETE' });
+                    loadPortfolio();
+                }
+            });
+        });
+    };
+
     // 4. Save functions
     const saveBasicInfo = async (e) => {
         if(e) e.preventDefault();
@@ -209,6 +239,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         addEduForm.reset();
         loadPortfolio();
     });
+
+    const addProjectForm = document.getElementById('addProjectForm');
+    if (addProjectForm) {
+        addProjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.textContent = 'กำลังอัปโหลด...';
+            btn.disabled = true;
+
+            let imageUrl = '';
+            const fileInput = document.getElementById('projImage');
+            if (fileInput.files.length > 0) {
+                const fd = new FormData();
+                fd.append('images', fileInput.files[0]);
+                const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd });
+                const uploadData = await uploadRes.json();
+                if (uploadData.success && uploadData.urls.length > 0) {
+                    imageUrl = uploadData.urls[0];
+                }
+            }
+
+            const payload = {
+                title: document.getElementById('projTitle').value,
+                projectUrl: document.getElementById('projUrl').value,
+                description: document.getElementById('projDescription').value,
+                imageUrl: imageUrl
+            };
+
+            await fetch('/api/portfolios/me/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            btn.textContent = 'เพิ่มผลงาน';
+            btn.disabled = false;
+            addProjectForm.reset();
+            loadPortfolio();
+        });
+    }
 
     // Init
     loadPortfolio();

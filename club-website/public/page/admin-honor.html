@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <link rel="stylesheet" href="../css/global.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการเกียรติยศ - BimClub Admin</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="../js/navbar-component.js"></script>
+</head>
+<body>
+
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
+
+    <!-- Main Content -->
+    <div class="admin-container" >
+        <div class="admin-nav">
+            <a href="admin.html">จัดการโพสต์</a>
+            <a href="admin-cms.html">จัดการเนื้อหา</a>
+            <a href="admin-instructor-requests.html">คำขอสิทธิ์อาจารย์</a>
+            <a href="admin-users.html">จัดการผู้ใช้งาน</a>
+            <a href="admin-honor.html" class="active">เกียรติยศ / Honor</a>
+        </div>
+
+        <div class="header-actions">
+            <h1 class="page-title">จัดการเกียรติยศ (Hall of Honor)</h1>
+            <button class="btn-add" id="btnAdd">เพิ่มบุคคล</button>
+        </div>
+        
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>รูป</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>รุ่น</th>
+                            <th>ตำแหน่งในชมรม</th>
+                            <th>ลำดับ</th>
+                            <th>สถานะ</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="honorTableBody">
+                        <tr><td colspan="7" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div id="honorModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">เพิ่มบุคคล</h2>
+            <form id="honorForm">
+                <input type="hidden" id="honorId">
+                <div class="form-group">
+                    <label>ชื่อ-นามสกุล (ต้องระบุ)</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>ชื่อเล่น</label>
+                        <input type="text" id="nickname">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>รุ่น</label>
+                        <input type="text" id="generation">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ตำแหน่งหรือบทบาทในชมรม</label>
+                    <input type="text" id="position">
+                </div>
+                <div class="form-group">
+                    <label>อัปโหลดรูปโปรไฟล์</label>
+                    <input type="file" id="profileImageFile" accept="image/*" class="w-100 mb-2">
+                    <input type="hidden" id="profileImage">
+                    <div id="previewContainer" class="mt-3 d-none">
+                        <img id="imagePreview" class="rounded-sm" style="height:100px; object-fit:cover;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ความสำเร็จ/รางวัลโดดเด่น</label>
+                    <input type="text" id="achievement">
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียด/ผลงาน/คุณูปการ</label>
+                    <textarea id="description" rows="4"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>ปีที่เข้าร่วม</label>
+                        <input type="text" id="joinedYear">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>ตำแหน่ง/ความสำเร็จปัจจุบัน</label>
+                        <input type="text" id="currentPosition">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>ลำดับการแสดงผล (น้อยแสดงก่อน)</label>
+                        <input type="number" id="displayOrder" value="0">
+                    </div>
+                    <div class="form-group flex-1 d-flex align-items-center gap-2 mt-3">
+                        <input type="checkbox" id="isPublished" checked >
+                        <label >เผยแพร่ทันที</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn modal-cancel" id="btnCancel">ยกเลิก</button>
+                    <button type="submit" class="modal-btn modal-save" id="btnSave">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin-honor.js"></script>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

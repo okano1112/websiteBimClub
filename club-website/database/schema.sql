@@ -10,6 +10,8 @@ DROP TABLE IF EXISTS post_likes;
 DROP TABLE IF EXISTS post_comments;
 DROP TABLE IF EXISTS portfolio_education;
 DROP TABLE IF EXISTS portfolio_experiences;
+DROP TABLE IF EXISTS course_comments;
+DROP TABLE IF EXISTS course_likes;
 DROP TABLE IF EXISTS portfolios;
 DROP TABLE IF EXISTS post_images;
 DROP TABLE IF EXISTS posts;
@@ -147,6 +149,25 @@ CREATE TABLE certificates (
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );
 
+CREATE TABLE course_comments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  author_id INT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE course_likes (
+  course_id INT NOT NULL,
+  user_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (course_id, user_id),
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE portfolios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNIQUE NOT NULL,
@@ -244,3 +265,34 @@ INSERT INTO achievements (title, category, description, team_size, project_year)
 INSERT INTO achievement_images (achievement_id, image_url, caption, display_order) VALUES
 (1, '../../../assets/img/swiperimg/bimActivity.jpg', 'ภาพรวมโมเดล 3D', 0),
 (1, '../../../assets/img/swiperimg/bimActivity2.jpg', 'แปลนชั้น 1', 1);
+
+CREATE TABLE IF NOT EXISTS portfolio_projects (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  portfolio_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  image_url VARCHAR(500),
+  project_url VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id) ON DELETE CASCADE
+);
+
+ALTER TABLE users 
+ADD COLUMN is_banned TINYINT(1) DEFAULT 0,
+ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL;
+CREATE TABLE IF NOT EXISTS honors (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  nickname VARCHAR(50),
+  generation VARCHAR(50),
+  position VARCHAR(150),
+  profile_image VARCHAR(255),
+  achievement TEXT,
+  description TEXT,
+  current_position VARCHAR(150),
+  joined_year VARCHAR(50),
+  display_order INT DEFAULT 0,
+  is_published TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

@@ -1,76 +1,85 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สมัครสมาชิก - BimClub</title>
+    <title>BimClub - สมัครสมาชิก</title>
     <link rel="icon" type="image/png" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/navbar.css">
-    <link rel="stylesheet" href="../css/register.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/auth-layout.css">
+  <script src="../js/navbar-component.js"></script>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-            <a href="../index.html">
-                <img src="../../../assets/img/logobranding/logobim.png" width="80px" height="50px" alt="BimClub Logo" />
-            </a>
-        </div>
-        <nav class="menu">
-            <ul>
-                <li><a href="../index.html">หน้าแรก</a></li>
-                <li><a href="about.html">เกี่ยวกับเรา</a></li>
-                <li><a href="activity.html">กิจกรรม</a></li>
-                <li><a href="achievement.html">ผลงาน</a></li>
-                <li><a href="login.html">เข้าสู่ระบบ</a></li>
-                <li><a href="register.html">สมัครสมาชิก</a></li>
-            </ul>
-        </nav>
-    </div>
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
 
-    <div class="register-page">
-        <div class="register-card">
-            <h1>สมัครสมาชิก</h1>
+    <main class="auth-wrapper">
+        <div class="auth-card" >
+            <div class="auth-header">
+                <img src="../../../assets/img/logobranding/logobim.png" alt="BimClub">
+                <h1>สมัครสมาชิก</h1>
+            </div>
 
-            <div class="register-error" id="regError"></div>
-            <div class="register-success" id="regSuccess"></div>
+            <div id="registerError" class="text-danger text-center mb-3 d-none"></div>
+            <div id="registerSuccess" class="bg-success-light text-center mb-3 p-3 rounded-sm d-none"></div>
 
             <form id="registerForm">
-                <div class="register-field">
-                    <label for="username">ชื่อผู้ใช้</label>
-                    <input type="text" id="username" required placeholder="เช่น somchai">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">ชื่อผู้ใช้ (Username)</label>
+                        <input type="text" id="regUsername" class="form-control" placeholder="ตั้งชื่อผู้ใช้งาน" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">อีเมล (Email)</label>
+                        <input type="email" id="regEmail" class="form-control" placeholder="example@email.com" required>
+                    </div>
                 </div>
-                <div class="register-field">
-                    <label for="email">อีเมล</label>
-                    <input type="email" id="email"  required placeholder="example@email.com">
+                <div class="form-group">
+                    <label class="form-label">ชื่อ - นามสกุล (Full Name)</label>
+                    <input type="text" id="regFullName" class="form-control" placeholder="ชื่อจริง นามสกุล" required>
                 </div>
-                <div class="register-field">
-                    <label for="fullName">ชื่อ-นามสกุล</label>
-                    <input type="text" id="fullName" required placeholder="ชื่อจริง นามสกุล">
+                <div class="form-group">
+                    <label class="form-label">รหัสผ่าน (Password)</label>
+                    <input type="password" id="regPassword" class="form-control" placeholder="อย่างน้อย 6 ตัวอักษร" required minlength="6">
                 </div>
-                <div class="register-field">
-                    <label for="password">รหัสผ่าน</label>
-                    <input type="password" id="password" required placeholder="อย่างน้อย 6 ตัวอักษร" minlength="6">
+                
+                <button type="submit" class="btn btn-primary btn-block">ยืนยันการสมัคร</button>
+                <div class="auth-links" class="auth-links justify-content-center mt-3">
+                    <span>มีบัญชีอยู่แล้ว? <a href="login.html" >เข้าสู่ระบบที่นี่</a></span>
                 </div>
-                <div class="register-field">
-                    <label for="confirmPassword">ยืนยันรหัสผ่าน</label>
-                    <input type="password" id="confirmPassword" required placeholder="กรอกรหัสผ่านอีกครั้ง">
-                </div>
-                <button type="submit" class="register-submit">สมัครสมาชิก</button>
             </form>
+        </div>
+    </main>
 
-            <div class="register-footer">
-                มีบัญชีแล้ว? <a href="login.html">เข้าสู่ระบบ</a><br>
-                <a href="forget.html">ลืมรหัสผ่าน</a>
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
             </div>
         </div>
-    </div>
-
-    <script src="../js/register.js"></script>
+    </footer>
     <script src="../js/auth.js"></script>
 </body>
-
 </html>

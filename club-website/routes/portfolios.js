@@ -37,8 +37,14 @@ router.get('/me', requireLogin, async (req, res) => {
             [portfolio.id]
         );
         
+        const [projects] = await db.query(
+            'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
+            [portfolio.id]
+        );
+        
         portfolio.experiences = experiences;
         portfolio.education = education;
+        portfolio.projects = projects;
         portfolio.certificates = await fetchCertificates(userId);
         
         res.json({ success: true, portfolio });
@@ -166,6 +172,53 @@ router.delete('/me/education/:id', requireLogin, async (req, res) => {
     }
 });
 
+// POST /me/projects
+router.post('/me/projects', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { title, description, imageUrl, projectUrl } = req.body;
+        
+        const [portfolios] = await db.query('SELECT id FROM portfolios WHERE user_id = ?', [userId]);
+        const portfolioId = portfolios[0].id;
+        
+        const [result] = await db.query(
+            'INSERT INTO portfolio_projects (portfolio_id, title, description, image_url, project_url) VALUES (?, ?, ?, ?, ?)',
+            [portfolioId, title, description, imageUrl, projectUrl]
+        );
+        
+        const [newProj] = await db.query('SELECT * FROM portfolio_projects WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, project: newProj[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการเพิ่มผลงานส่วนตัว' });
+    }
+});
+
+// DELETE /me/projects/:id
+router.delete('/me/projects/:id', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const projId = req.params.id;
+        
+        const [projs] = await db.query(
+            `SELECT pp.id FROM portfolio_projects pp 
+            JOIN portfolios p ON pp.portfolio_id = p.id 
+            WHERE pp.id = ? AND p.user_id = ?`,
+            [projId, userId]
+        );
+        
+        if (projs.length === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบผลงานนี้' });
+        }
+        
+        await db.query('DELETE FROM portfolio_projects WHERE id = ?', [projId]);
+        res.json({ success: true, message: 'ลบผลงานสำเร็จ' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการลบผลงานส่วนตัว' });
+    }
+});
+
 // GET /public/:userId
 router.get('/public/:userId', async (req, res) => {
     try {
@@ -195,9 +248,15 @@ router.get('/public/:userId', async (req, res) => {
             [portfolio.id]
         );
         
+        const [projects] = await db.query(
+            'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
+            [portfolio.id]
+        );
+        
         portfolio.experiences = experiences;
         portfolio.education = education;
-        portfolio.certificates = await fetchCertificates(targetUserId);
+        portfolio.projects = projects;
+        portfolio.certificates = await fetchCertificates(targetUserId || userId);
         
         res.json({ success: true, portfolio });
     } catch (error) {

@@ -13,10 +13,10 @@ services:
       - DB_NAME=club_database
       - PORT=3000
       - SESSION_SECRET=bimclub-super-secret-2026-change-me
-      - SMTP_HOST=smtp.gmail.com
+      - SMTP_HOST=smtp.ethereal.email
       - SMTP_PORT=587
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_USER=lie37hz5l6fb4gpv@ethereal.email
+      - SMTP_PASS=F1NhNsRAW2gNBeVVrt
       - APP_URL=http://localhost:3000
     volumes:
       - ./uploads:/usr/src/app/uploads

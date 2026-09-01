@@ -1,0 +1,2 @@
+ALTER TABLE activities ADD COLUMN start_date DATE DEFAULT NULL;
+ALTER TABLE activities ADD COLUMN end_date DATE DEFAULT NULL;

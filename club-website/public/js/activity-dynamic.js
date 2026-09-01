@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const swiperWrapper = document.querySelector('.featuredSwiper .swiper-wrapper');
     const timelineContainer = document.querySelector('.timeline');
-    const heroSection = document.querySelector('.hero-section');
+    const heroSection = document.querySelector('.activity-hero');
     
     // Check if user is admin
     let isAdmin = false;
@@ -22,15 +22,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await fetch('/api/activities');
             const data = await res.json();
             if (data.success && data.activities.length > 0) {
-                // We will replace the entire swiper and timeline with data from DB
                 swiperWrapper.innerHTML = '';
                 timelineContainer.innerHTML = '';
 
-                data.activities.forEach((act, index) => {
-                    let deleteBtn = isAdmin ? `<button onclick="deleteActivity(${act.id})" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; z-index:100;">ลบกิจกรรม</button>` : '';
+                // 1. Filter only news activities (those with description) for Cards & Timeline
+                const newsActivities = data.activities.filter(act => act.description && act.description.trim() !== '');
+
+                newsActivities.forEach((act, index) => {
+                    let deleteBtn = isAdmin ? `<button onclick="deleteActivity(${act.id})" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; z-index:100;">ลบโพสต์</button>` : '';
                     let img = act.image_url || '../../../assets/img/swiperimg/bimActivity.jpg';
                     
-                    // 1. Add to Swiper Carousel
+                    // Add to Swiper Carousel
                     swiperWrapper.innerHTML += `
                     <div class="swiper-slide">
                         <div class="activity-card" style="position:relative;">
@@ -53,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>`;
 
-                    // 2. Add to Timeline
+                    // Add to Timeline
                     const alignment = index % 2 === 0 ? 'left' : 'right';
                     timelineContainer.innerHTML += `
                     <div class="timeline-item ${alignment}">
@@ -66,9 +68,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 // Re-initialize or update Swiper instance
-                if (window.featuredSwiper) {
-                    window.featuredSwiper.update();
+                
+                if (window.featuredSwiper && window.featuredSwiper.destroy) {
+                    window.featuredSwiper.destroy(true, true);
                 }
+                
+                window.featuredSwiper = new Swiper(".featuredSwiper", {
+                    loop: false, // Changed from true to false because dynamic loading with loop can cause duplicated slides bugs
+                    slidesPerView: 1,
+                    spaceBetween: 24,
+                    speed: 800,
+                    grabCursor: true,
+                    autoplay: {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
+                    },
+                    navigation: {
+                        nextEl: ".swiper-button-next",
+                        prevEl: ".swiper-button-prev",
+                    },
+                    pagination: {
+                        el: ".featured-pagination",
+                        clickable: true,
+                        dynamicBullets: true,
+                    },
+                    breakpoints: {
+                        640: { slidesPerView: 2, spaceBetween: 20 },
+                        1024: { slidesPerView: 3, spaceBetween: 28 },
+                    },
+                });
+
 
                 // Re-init observer for animation
                 const timelineItems = document.querySelectorAll('.timeline-item');
@@ -81,6 +111,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }, { threshold: 0.2 });
                 timelineItems.forEach(item => timelineObserver.observe(item));
 
+                // Initialize Calendar with all activities
+                initCalendar(data.activities, isAdmin);
+
             }
         } catch (err) { console.error(err); }
     }
@@ -91,20 +124,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const boxHTML = `
         <section class="admin-create-box" style="max-width: 1000px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <h3 style="margin-bottom: 15px; display:flex; align-items:center; gap:10px;">
-                <span style="background:#ad0f0f; color:#fff; padding:4px 8px; border-radius:4px; font-size:12px;">ผู้ดูแลระบบ</span> เพิ่มข่าวสาร/กิจกรรมใหม่ (จะแสดงในรูปสไลด์อัตโนมัติ)
+                <span style="background:#ad0f0f; color:#fff; padding:4px 8px; border-radius:4px; font-size:12px;">ผู้ดูแลระบบ</span> อัปเดตความเคลื่อนไหว (แสดงในรูปสไลด์และไทม์ไลน์)
             </h3>
             <form id="addActivityForm" style="display:flex; flex-direction:column; gap:10px;">
-                <input type="text" id="actTitle" placeholder="หัวเรื่องกิจกรรม" required style="padding:10px; border:1px solid #ccc; border-radius:6px;">
-                <input type="text" id="actDate" placeholder="วันที่ (เช่น ตุลาคม 2026)" required style="padding:10px; border:1px solid #ccc; border-radius:6px;">
+                <input type="text" id="actTitle" placeholder="หัวเรื่องโพสต์" required style="padding:10px; border:1px solid #ccc; border-radius:6px;">
+                <input type="text" id="actDate" placeholder="วันที่แสดงข้อความ (เช่น ตุลาคม 2026)" required style="padding:10px; border:1px solid #ccc; border-radius:6px;">
                 <input type="number" id="actParts" placeholder="จำนวนคนที่เข้าร่วม (เช่น 50)" style="padding:10px; border:1px solid #ccc; border-radius:6px;">
                 <textarea id="actDesc" placeholder="รายละเอียด..." required style="padding:10px; border:1px solid #ccc; border-radius:6px; min-height:80px;"></textarea>
                 
                 <div style="display:flex; gap:10px; align-items:center; background:#f9f9f9; padding:10px; border-radius:6px; border:1px dashed #ccc;">
                     <label style="font-weight:bold;">รูปภาพประกอบ:</label>
                     <input type="file" id="actImgFile" accept="image/*" style="font-size:14px;">
-                    <button type="submit" style="padding:10px 20px; background:#ad0f0f; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; margin-left:auto;">โพสต์ลงสไลด์</button>
+                    <button type="submit" style="padding:10px 20px; background:#ad0f0f; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; margin-left:auto;">โพสต์อัปเดต</button>
                 </div>
             </form>
+            <p style="margin-top:15px; font-size:13px; color:#666;">* หมายเหตุ: หากต้องการเพิ่มกิจกรรมลงปฏิทิน ให้เลื่อนไปกดที่วันที่บนปฏิทินได้เลย</p>
         </section>
         `;
         heroSection.insertAdjacentHTML('afterend', boxHTML);
@@ -131,6 +165,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: document.getElementById('actTitle').value,
                 description: document.getElementById('actDesc').value,
                 event_date: document.getElementById('actDate').value,
+                start_date: null,
+                end_date: null,
                 participants: document.getElementById('actParts').value || 0,
                 image_url: imageUrl
             };
@@ -144,10 +180,70 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.reload();
         });
     }
+
+    function initCalendar(activities, isAdmin) {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        
+        const events = activities
+            .filter(act => act.start_date)
+            .map(act => ({
+                id: act.id,
+                title: act.title,
+                start: act.start_date.split('T')[0],
+                end: act.end_date ? act.end_date.split('T')[0] : null,
+                backgroundColor: '#ad0f0f',
+                borderColor: '#ad0f0f'
+            }));
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'th',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listMonth'
+            },
+            selectable: isAdmin,
+            select: async function(info) {
+                if (!isAdmin) return;
+                const title = prompt('เพิ่มกิจกรรมในปฏิทิน: โปรดระบุชื่อกิจกรรม\n(กด OK เพื่อยืนยัน)');
+                if (title && title.trim() !== '') {
+                    const body = {
+                        title: title.trim(),
+                        description: '',
+                        event_date: '',
+                        start_date: info.startStr,
+                        end_date: info.endStr,
+                        participants: 0,
+                        image_url: ''
+                    };
+                    await fetch('/api/activities', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    window.location.reload();
+                }
+            },
+            events: events,
+            eventClick: async function(info) {
+                if (isAdmin) {
+                    if (confirm('กิจกรรม: ' + info.event.title + '\n\nคุณต้องการลบกิจกรรมนี้ออกจากปฏิทินหรือไม่?')) {
+                        await fetch('/api/activities/' + info.event.id, { method: 'DELETE' });
+                        window.location.reload();
+                    }
+                } else {
+                    alert('กิจกรรม: ' + info.event.title);
+                }
+            }
+        });
+        calendar.render();
+    }
 });
 
 window.deleteActivity = async function(id) {
-    if(!confirm('ยืนยันลบกิจกรรม?')) return;
+    if(!confirm('ยืนยันลบโพสต์?')) return;
     await fetch('/api/activities/' + id, { method: 'DELETE' });
     window.location.reload();
 }

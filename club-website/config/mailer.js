@@ -26,7 +26,16 @@ async function sendMail(to, subject, html) {
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log('Email sent:', info.messageId);
+        console.log('----------------------------------------------------');
+        console.log('✅ Email sent successfully!');
+        console.log('Message ID:', info.messageId);
+        
+        // ถ้าใช้ Ethereal (สำหรับทดสอบ) ให้แสดงลิงก์เปิดดูอีเมลจำลอง
+        if (process.env.SMTP_HOST && process.env.SMTP_HOST.includes('ethereal')) {
+            console.log('👀 Preview URL (Ethereal):', nodemailer.getTestMessageUrl(info));
+        }
+        console.log('----------------------------------------------------');
+        
         return { success: true, messageId: info.messageId };
     } catch (error) {
         console.error('Email send error:', error);

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <link rel="stylesheet" href="../css/global.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ตั้งค่าบัญชี - BimClub</title>
@@ -8,23 +9,11 @@
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/settings.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="../js/navbar-component.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">
-            <a href="../index.html"><img src="../../../assets/img/logobranding/logobim.png" alt="BimClub Logo"></a>
-        </div>
-        <div class="menu">
-            <ul>
-                <li><a href="../index.html">หน้าแรก</a></li>
-                <li><a href="about.html">เกี่ยวกับเรา</a></li>
-                <li><a href="activity.html">กิจกรรม</a></li>
-                <li><a href="achievement.html">ผลงาน</a></li>
-                <li><a href="login.html">เข้าสู่ระบบ</a></li>
-                <li><a href="register.html">สมัครสมาชิก</a></li>
-            </ul>
-        </div>
-    </nav>
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
 
     <main class="settings-page">
         <section class="settings-header">
@@ -58,31 +47,53 @@
                 <button type="submit" class="settings-submit">บันทึกข้อมูลโปรไฟล์</button>
             </form>
 
-            <form id="passwordForm" class="settings-card">
-                <h2>เปลี่ยนรหัสผ่าน</h2>
-                <div id="passwordMessage" class="settings-message"></div>
-
-                <div class="settings-field">
-                    <label for="currentPassword">รหัสผ่านปัจจุบัน</label>
-                    <input type="password" id="currentPassword" required>
-                </div>
-
-                <div class="settings-field">
-                    <label for="newPassword">รหัสผ่านใหม่</label>
-                    <input type="password" id="newPassword" minlength="6" required>
-                </div>
-
-                <div class="settings-field">
-                    <label for="confirmPassword">ยืนยันรหัสผ่านใหม่</label>
-                    <input type="password" id="confirmPassword" minlength="6" required>
-                </div>
-
-                <button type="submit" class="settings-submit">เปลี่ยนรหัสผ่าน</button>
-            </form>
-        </section>
+                <section class="settings-section">
+                    <div class="section-header">
+                        <h2>🔒 ความปลอดภัย</h2>
+                        <p>เปลี่ยนรหัสผ่านเพื่อความปลอดภัยของบัญชี</p>
+                    </div>
+                    
+                    <div class="security-card">
+                        <p style="color: #4b5563; font-size: 0.95rem; margin-bottom: 16px;">
+                            ระบบจะส่งลิงก์สำหรับเปลี่ยนรหัสผ่านไปยังอีเมลของคุณเพื่อยืนยันตัวตน
+                        </p>
+                        <a href="forget.html" class="button outline" style="display: inline-block; text-decoration: none; text-align: center;">เปลี่ยนรหัสผ่านผ่านอีเมล</a>
+                    </div>
+                </section>
     </main>
 
+    
     <script src="../js/auth.js"></script>
     <script src="../js/settings.js"></script>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
 </body>
 </html>

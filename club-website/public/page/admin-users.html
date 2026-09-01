@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <link rel="stylesheet" href="../css/global.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการผู้ใช้งาน - BimClub Admin</title>
+    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="../js/navbar-component.js"></script>
+</head>
+<body>
+
+  <!-- Navbar Component -->
+  <site-navbar></site-navbar>
+
+    <!-- Main Content -->
+    <div class="admin-container" style="max-width: 1200px;">
+        <div class="admin-nav">
+            <a href="admin.html">จัดการโพสต์</a>
+            <a href="admin-cms.html">จัดการเนื้อหา</a>
+            <a href="admin-instructor-requests.html">คำขอสิทธิ์อาจารย์</a>
+            <a href="admin-users.html" class="active">จัดการผู้ใช้งาน</a>
+            <a href="admin-honor.html">เกียรติยศ / Honor</a>
+        </div>
+
+        <h1 class="page-title">จัดการผู้ใช้งานระบบ</h1>
+        
+        <div class="admin-card" style="overflow-x: auto;">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ชื่อผู้ใช้ (Username)</th>
+                        <th>อีเมล</th>
+                        <th>ชื่อ-นามสกุล</th>
+                        <th>บทบาท (Role)</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="usersList">
+                    <tr><td colspan="7" style="text-align: center;">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h2>เปลี่ยนรหัสผ่านผู้ใช้</h2>
+            <p id="passwordModalUser" style="margin-bottom: 15px; color: #666; font-size: 14px;"></p>
+            <input type="password" id="newPassword" placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)" minlength="6">
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-cancel" onclick="closeModal()">ยกเลิก</button>
+                <button type="button" class="modal-btn modal-save" id="savePasswordBtn">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin-users.js"></script>
+
+    <!-- Global Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>BimClub</h3>
+                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
+                </div>
+                <div class="footer-col">
+                    <h3>เมนู</h3>
+                    <ul>
+                        <li><a href="../index.html">หน้าแรก</a></li>
+                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
+                        <li><a href="activity.html">กิจกรรม</a></li>
+                        <li><a href="achievement.html">ผลงาน</a></li>
+                        <li><a href="honor.html">เกียรติยศ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>ติดต่อเรา</h3>
+                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,14 +1,5 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  font-family: "Noto Sans Thai", sans-serif;
-  background: #f5f5f5;
-  color: #111827;
-  min-height: 100vh;
-}
+
+
 .register-page {
   min-height: calc(100vh - 60px);
   display: flex;
@@ -17,7 +8,7 @@ body {
   padding: 40px 20px;
 }
 .register-card {
-  background: #fff;
+  background: var(--white);
   padding: 40px 36px;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -49,13 +40,13 @@ body {
   transition: border-color 0.2s;
 }
 .register-field input:focus {
-  border-color: #ad0f0f;
+  border-color: var(--primary-color);
 }
 .register-submit {
   width: 100%;
   padding: 12px;
-  background: #ad0f0f;
-  color: #fff;
+  background: var(--primary-color);
+  color: var(--white);
   border: none;
   border-radius: 10px;
   font-size: 1rem;
@@ -87,7 +78,7 @@ body {
   color: #6b7280;
 }
 .register-footer a {
-  color: #ad0f0f;
+  color: var(--primary-color);
   font-weight: 600;
   text-decoration: none;
 }

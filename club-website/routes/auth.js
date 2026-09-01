@@ -13,23 +13,27 @@ const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 // POST /register — สมัครสมาชิก + ส่งอีเมลยืนยัน
 // ============================================================
 router.post('/register', async (req, res) => {
+    const connection = await db.getConnection();
     try {
         const { username, email, password, fullName } = req.body;
 
         if (!username || !email || !password || !fullName) {
+            connection.release();
             return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
         }
 
         if (password.length < 6) {
+            connection.release();
             return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' });
         }
 
-        const [existingUsers] = await db.query(
+        const [existingUsers] = await connection.query(
             'SELECT id FROM users WHERE username = ? OR email = ?',
             [username, email]
         );
 
         if (existingUsers.length > 0) {
+            connection.release();
             return res.status(400).json({ success: false, message: 'ชื่อผู้ใช้งานหรืออีเมลนี้มีในระบบแล้ว' });
         }
 
@@ -39,7 +43,9 @@ router.post('/register', async (req, res) => {
         const verifyToken = crypto.randomBytes(32).toString('hex');
         const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 ชั่วโมง
 
-        const [result] = await db.query(
+        await connection.beginTransaction();
+
+        const [result] = await connection.query(
             `INSERT INTO users (username, email, password, full_name, is_verified, verify_token, verify_token_expires) 
              VALUES (?, ?, ?, ?, 0, ?, ?)`,
             [username, email, hashedPassword, fullName, verifyToken, verifyExpires]
@@ -47,7 +53,7 @@ router.post('/register', async (req, res) => {
 
         const userId = result.insertId;
 
-        await db.query('INSERT INTO portfolios (user_id) VALUES (?)', [userId]);
+        await connection.query('INSERT INTO portfolios (user_id) VALUES (?)', [userId]);
 
         // ส่งอีเมลยืนยัน
         const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${verifyToken}`;
@@ -73,13 +79,18 @@ router.post('/register', async (req, res) => {
             `
         );
 
+        await connection.commit();
+        connection.release();
+
         res.status(201).json({
             success: true,
             message: 'สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลของคุณเพื่อยืนยันบัญชี'
         });
     } catch (error) {
+        await connection.rollback();
+        connection.release();
         console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการสมัครสมาชิก' });
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการสมัครสมาชิก (อาจเกิดจากระบบส่งอีเมล)' });
     }
 });
 
@@ -204,6 +215,14 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ success: false, message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
         }
 
+        if (user.deleted_at) {
+            return res.status(403).json({ success: false, message: 'บัญชีนี้ถูกระงับการใช้งานหรือถูกลบไปแล้ว' });
+        }
+
+        if (user.is_banned) {
+            return res.status(403).json({ success: false, message: 'บัญชีนี้ถูกแบนโดยผู้ดูแลระบบ' });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -298,6 +317,13 @@ router.post('/forgot-password', async (req, res) => {
         if (!email) {
             return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
         }
+        
+        // ถ้าล็อกอินอยู่แล้ว ต้องใช้อีเมลตัวเองเท่านั้น
+        if (req.session && req.session.user) {
+            if (req.session.user.email !== email) {
+                return res.status(403).json({ success: false, message: 'คุณสามารถเปลี่ยนรหัสผ่านได้เฉพาะบัญชีที่กำลังเข้าสู่ระบบเท่านั้น' });
+            }
+        }
 
         const [users] = await db.query('SELECT id, full_name FROM users WHERE email = ?', [email]);
 
@@ -387,41 +413,6 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// ============================================================
-// PUT /change-password — เปลี่ยนรหัสผ่านขณะล็อกอิน
-// ============================================================
-router.put('/change-password', requireLogin, async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
-        }
-
-        if (newPassword.length < 6) {
-            return res.status(400).json({ success: false, message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร' });
-        }
-
-        const [users] = await db.query('SELECT password FROM users WHERE id = ?', [req.session.user.id]);
-
-        if (users.length === 0) {
-            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งาน' });
-        }
-
-        const isMatch = await bcrypt.compare(currentPassword, users[0].password);
-        if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 12);
-        await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, req.session.user.id]);
-
-        res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาด' });
-    }
-});
 
 
 // ============================================================

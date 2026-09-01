@@ -113,42 +113,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    passwordForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-
-        if (newPassword !== confirmPassword) {
-            showMessage(passwordMessage, 'error', 'รหัสผ่านใหม่ไม่ตรงกัน');
-            return;
-        }
-
-        const btn = passwordForm.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.textContent = 'กำลังเปลี่ยนรหัสผ่าน...';
-
-        try {
-            const res = await fetch('/api/auth/change-password', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currentPassword, newPassword })
-            });
-            const data = await res.json();
-
-            if (!res.ok || !data.success) {
-                throw new Error(data.message || 'เปลี่ยนรหัสผ่านไม่สำเร็จ');
-            }
-
-            passwordForm.reset();
-            showMessage(passwordMessage, 'success', data.message);
-        } catch (error) {
-            showMessage(passwordMessage, 'error', error.message || 'เกิดข้อผิดพลาด');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'เปลี่ยนรหัสผ่าน';
-        }
-    });
-
     loadProfile();
 });
