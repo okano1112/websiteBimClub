@@ -15,8 +15,8 @@ services:
       - SESSION_SECRET=bimclub-super-secret-2026-change-me
       - SMTP_HOST=smtp.ethereal.email
       - SMTP_PORT=587
-      - SMTP_USER=lie37hz5l6fb4gpv@ethereal.email
-      - SMTP_PASS=F1NhNsRAW2gNBeVVrt
+      - SMTP_USER=nfuc6qldtcuvfxoj@ethereal.email
+      - SMTP_PASS=QpDP8H5ajhHqbJrHcT
       - APP_URL=http://localhost:3000
     volumes:
       - ./uploads:/usr/src/app/uploads

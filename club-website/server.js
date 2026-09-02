@@ -3,8 +3,16 @@ const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const db = require('./config/database');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+// Security Middleware: Helmet (with config to allow existing inline scripts/styles if needed, 
+// but starting with default and disabling CSP for simplicity first as this is an existing app)
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 
 // Middleware เพื่ออ่านข้อมูล JSON และ URL-encoded
 app.use(express.json());
@@ -25,7 +33,7 @@ const sessionStoreOptions = {
 const sessionStore = new MySQLStore(sessionStoreOptions);
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'bimclub-secret-key-12345',
+    secret: process.env.SESSION_SECRET || (() => { if (process.env.NODE_ENV === 'production') throw new Error('SESSION_SECRET is required in production!'); return 'bimclub-secret-key-12345'; })(),
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
@@ -38,7 +46,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 // ติดตั้ง API Routes
-app.use('/api/auth', require('./routes/auth'));
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // limit each IP to 50 requests per windowMs
+  message: { success: false, message: 'คำขอมากเกินไป กรุณาลองใหม่ในภายหลัง' }
+});
+app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/portfolios', require('./routes/portfolios'));
 app.use('/api/upload', require('./routes/upload'));
@@ -53,7 +66,10 @@ app.use('/api/honors', require('./routes/honors'));
 // Middleware จัดการข้อผิดพลาด
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ success: false, message: err.message || 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
+    const message = process.env.NODE_ENV === 'production' 
+        ? 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' 
+        : (err.message || 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์');
+    res.status(500).json({ success: false, message });
 });
 
 // เริ่มเซิร์ฟเวอร์

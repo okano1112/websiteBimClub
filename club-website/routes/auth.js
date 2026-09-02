@@ -40,7 +40,7 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12);
 
         // สร้าง verify token
-        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const verifyToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
         const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 ชั่วโมง
 
         await connection.beginTransaction();
@@ -56,7 +56,7 @@ router.post('/register', async (req, res) => {
         await connection.query('INSERT INTO portfolios (user_id) VALUES (?)', [userId]);
 
         // ส่งอีเมลยืนยัน
-        const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${verifyToken}`;
+        
         await sendMail(
             email,
             'ยืนยันอีเมลสำหรับบัญชี BimClub',
@@ -66,12 +66,9 @@ router.post('/register', async (req, res) => {
                     <h1 style="color: #ad0f0f;">BimClub</h1>
                 </div>
                 <h2>สวัสดี ${fullName} 👋</h2>
-                <p>ขอบคุณที่สมัครสมาชิก BimClub! กรุณากดปุ่มด้านล่างเพื่อยืนยันอีเมลของคุณ</p>
+                <p>ขอบคุณที่สมัครสมาชิก BimClub! รหัส OTP สำหรับยืนยันอีเมลของคุณคือ:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${verifyUrl}" 
-                       style="background: #ad0f0f; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                       ยืนยันอีเมล
-                    </a>
+                    <h2 style="background: #f4f4f4; padding: 15px; border-radius: 8px; text-align: center; letter-spacing: 5px; font-size: 24px; color: #ad0f0f;">${verifyToken}</h2>
                 </div>
                 <p style="color: #666; font-size: 14px;">ลิงก์นี้จะหมดอายุภายใน 24 ชั่วโมง</p>
                 <p style="color: #999; font-size: 12px;">หากคุณไม่ได้สมัครสมาชิก กรุณาเพิกเฉยอีเมลนี้</p>
@@ -95,30 +92,30 @@ router.post('/register', async (req, res) => {
 });
 
 // ============================================================
-// GET /verify-email?token=xxx — ยืนยันอีเมล
+// POST /verify-otp — ยืนยัน OTP
 // ============================================================
-router.get('/verify-email', async (req, res) => {
+router.post('/verify-otp', async (req, res) => {
     try {
-        const { token } = req.query;
+        const { email, otp } = req.body;
 
-        if (!token) {
-            return res.send(verifyResultPage(false, 'ไม่พบ token ยืนยัน'));
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมลและรหัส OTP' });
         }
 
         const [users] = await db.query(
-            'SELECT id, verify_token_expires FROM users WHERE verify_token = ? AND is_verified = 0',
-            [token]
+            'SELECT id, verify_token_expires FROM users WHERE email = ? AND verify_token = ? AND is_verified = 0',
+            [email, otp]
         );
 
         if (users.length === 0) {
-            return res.send(verifyResultPage(false, 'ลิงก์ยืนยันไม่ถูกต้อง หรือบัญชีนี้ได้รับการยืนยันแล้ว'));
+            return res.status(400).json({ success: false, message: 'รหัส OTP ไม่ถูกต้อง หรือบัญชีนี้ได้รับการยืนยันแล้ว' });
         }
 
         const user = users[0];
 
         // ตรวจ token หมดอายุ
         if (new Date() > new Date(user.verify_token_expires)) {
-            return res.send(verifyResultPage(false, 'ลิงก์ยืนยันหมดอายุแล้ว กรุณาขอส่งอีเมลยืนยันอีกครั้ง'));
+            return res.status(400).json({ success: false, message: 'รหัส OTP หมดอายุแล้ว กรุณาขอรหัสใหม่' });
         }
 
         // ยืนยันสำเร็จ
@@ -127,10 +124,10 @@ router.get('/verify-email', async (req, res) => {
             [user.id]
         );
 
-        return res.send(verifyResultPage(true, 'ยืนยันอีเมลสำเร็จ! คุณสามารถเข้าสู่ระบบได้แล้ว'));
+        res.json({ success: true, message: 'ยืนยันอีเมลสำเร็จ! คุณสามารถเข้าสู่ระบบได้แล้ว' });
     } catch (error) {
         console.error(error);
-        return res.send(verifyResultPage(false, 'เกิดข้อผิดพลาด กรุณาลองใหม่'));
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
     }
 });
 
@@ -162,7 +159,7 @@ router.post('/resend-verify', async (req, res) => {
         }
 
         // สร้าง token ใหม่
-        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const verifyToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
         const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
         await db.query(
@@ -170,7 +167,7 @@ router.post('/resend-verify', async (req, res) => {
             [verifyToken, verifyExpires, user.id]
         );
 
-        const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${verifyToken}`;
+        
         await sendMail(
             email,
             'ยืนยันอีเมลสำหรับบัญชี BimClub (ส่งซ้ำ)',
@@ -178,12 +175,9 @@ router.post('/resend-verify', async (req, res) => {
             <div style="font-family: 'Noto Sans Thai', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h1 style="color: #ad0f0f; text-align:center;">BimClub</h1>
                 <h2>สวัสดี ${user.full_name} 👋</h2>
-                <p>นี่คืออีเมลยืนยันที่ส่งซ้ำ กรุณากดปุ่มด้านล่าง</p>
+                <p>นี่คือรหัส OTP ใหม่สำหรับการยืนยันอีเมลของคุณ:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${verifyUrl}" 
-                       style="background: #ad0f0f; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                       ยืนยันอีเมล
-                    </a>
+                    <h2 style="background: #f4f4f4; padding: 15px; border-radius: 8px; text-align: center; letter-spacing: 5px; font-size: 24px; color: #ad0f0f;">${verifyToken}</h2>
                 </div>
                 <p style="color: #666; font-size: 14px;">ลิงก์นี้จะหมดอายุภายใน 24 ชั่วโมง</p>
             </div>
@@ -208,7 +202,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
         }
 
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const [users] = await db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, email]);
         const user = users[0];
 
         if (!user) {

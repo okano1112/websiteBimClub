@@ -228,7 +228,7 @@
     color: var(--text-dark);
 }
 
-.modal-
+.modal-body { display: flex; flex-wrap: wrap; }
 
 .modal-left {
     flex: 0 0 400px;

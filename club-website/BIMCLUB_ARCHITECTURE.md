@@ -95,3 +95,13 @@
   - *Footer*: ใช้ Snippet มาตรฐานแทรกไว้ก่อนจบ `</body>` ทุกไฟล์ 
   - *Auth Layout*: `auth-layout.css` สำหรับ Login, Register, Forget/Reset password แบบตรงกลางดูทันสมัย 
 - **ห้ามทำลาย Backend:** โค้ด HTML, IDs ของฟอร์ม, การเรียกใช้ API และ Authentication คงเดิมทั้งหมด เพื่อไม่ให้ Logic ภายในเสีย
+
+## 6. Authentication & OTP System
+- **Login / Register**: 
+  - Backend uses `bcryptjs` for password hashing.
+  - Newly registered users have `is_verified = 0` and cannot log in.
+- **OTP Verification**:
+  - The system sends a 6-digit OTP code to the registered email.
+  - Verification is done via `POST /api/auth/verify-otp` using JSON `{ "email": "...", "otp": "..." }`.
+  - OTPs expire in 24 hours (tracked via `verify_token_expires`).
+  - Resend OTP is handled via `POST /api/auth/resend-verify` which overrides the existing OTP.

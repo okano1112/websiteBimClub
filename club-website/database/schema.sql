@@ -243,7 +243,7 @@ CREATE TABLE achievement_images (
 
 -- admin user (password: admin123) — is_verified=1 เพราะเป็น admin เริ่มต้น
 INSERT INTO users (username, email, password, full_name, role, is_verified) VALUES
-('admin', 'admin@bimclub.com', '$2b$12$khHjurP7dWF8xZcS9QwLbOl9ZTu3C59KOeqRVPKtCC75HIpZFvxIi', 'แอดมิน BimClub', 'admin', 1);
+('admin', 'admin@bimclub.com', '$2b$10$NIdi.1sFZd4TBVLfGDxKXOgHg1PWPpXGUwayPPc95OG/pLLYAM2OS', 'แอดมิน BimClub', 'admin', 1);
 
 -- สร้าง portfolio ว่างให้ admin
 INSERT INTO portfolios (user_id) VALUES (1);
@@ -295,4 +295,20 @@ CREATE TABLE IF NOT EXISTS honors (
   is_published TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- admin2 user (password: admin123)
+INSERT INTO users (username, email, password, full_name, role, is_verified) VALUES
+('admin2', 'admin2@bimclub.com', '$2b$10$NIdi.1sFZd4TBVLfGDxKXOgHg1PWPpXGUwayPPc95OG/pLLYAM2OS', 'แอดมินคนที่สอง', 'admin', 1);
+INSERT INTO portfolios (user_id) VALUES (LAST_INSERT_ID());
+
+CREATE TABLE IF NOT EXISTS portfolio_certificates (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  portfolio_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  issuer VARCHAR(255) NOT NULL,
+  issue_date DATE NOT NULL,
+  credential_url VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id) ON DELETE CASCADE
 );

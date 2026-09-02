@@ -3,8 +3,8 @@ const router = express.Router();
 const db = require('../config/database');
 const requireLogin = require('../middleware/requireLogin');
 
-async function fetchCertificates(userId) {
-    const [rows] = await db.query(
+async function fetchCertificates(userId, portfolioId) {
+    const [systemCerts] = await db.query(
         `SELECT cert.id, cert.certificate_code, cert.issued_via, cert.issued_at, c.title AS course_title
          FROM certificates cert
          JOIN courses c ON c.id = cert.course_id
@@ -12,7 +12,22 @@ async function fetchCertificates(userId) {
          ORDER BY cert.issued_at DESC`,
         [userId]
     );
-    return rows;
+    
+    let manualCerts = [];
+    if (portfolioId) {
+        try {
+            const [rows] = await db.query(
+                'SELECT * FROM portfolio_certificates WHERE portfolio_id = ? ORDER BY issue_date DESC',
+                [portfolioId]
+            );
+            manualCerts = rows;
+        } catch (e) {
+            // In case table doesn't exist yet
+            console.warn('portfolio_certificates table might not exist yet', e.message);
+        }
+    }
+    
+    return { system: systemCerts, manual: manualCerts };
 }
 
 // GET /me
@@ -45,7 +60,7 @@ router.get('/me', requireLogin, async (req, res) => {
         portfolio.experiences = experiences;
         portfolio.education = education;
         portfolio.projects = projects;
-        portfolio.certificates = await fetchCertificates(userId);
+        portfolio.certificates = await fetchCertificates(userId, portfolio.id);
         
         res.json({ success: true, portfolio });
     } catch (error) {
@@ -256,12 +271,61 @@ router.get('/public/:userId', async (req, res) => {
         portfolio.experiences = experiences;
         portfolio.education = education;
         portfolio.projects = projects;
-        portfolio.certificates = await fetchCertificates(targetUserId || userId);
+        portfolio.certificates = await fetchCertificates(targetUserId, portfolio.id);
         
         res.json({ success: true, portfolio });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูลพอร์ตโฟลิโอ' });
+    }
+});
+
+
+
+// POST /me/certificates
+router.post('/me/certificates', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { title, issuer, issueDate, credentialUrl } = req.body;
+        
+        const [portfolios] = await db.query('SELECT id FROM portfolios WHERE user_id = ?', [userId]);
+        const portfolioId = portfolios[0].id;
+        
+        const [result] = await db.query(
+            'INSERT INTO portfolio_certificates (portfolio_id, title, issuer, issue_date, credential_url) VALUES (?, ?, ?, ?, ?)',
+            [portfolioId, title, issuer, issueDate, credentialUrl]
+        );
+        
+        const [newCert] = await db.query('SELECT * FROM portfolio_certificates WHERE id = ?', [result.insertId]);
+        res.status(201).json({ success: true, certificate: newCert[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการเพิ่มใบรับรอง' });
+    }
+});
+
+// DELETE /me/certificates/:id
+router.delete('/me/certificates/:id', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const certId = req.params.id;
+        
+        const [certs] = await db.query(
+            `SELECT pc.id FROM portfolio_certificates pc 
+            JOIN portfolios p ON pc.portfolio_id = p.id 
+            WHERE pc.id = ? AND p.user_id = ?`,
+            [certId, userId]
+        );
+        
+        if (certs.length === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบใบรับรองนี้' });
+        }
+        
+        await db.query('DELETE FROM portfolio_certificates WHERE id = ?', [certId]);
+        res.json({ success: true, message: 'ลบใบรับรองสำเร็จ' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการลบใบรับรอง' });
     }
 });
 

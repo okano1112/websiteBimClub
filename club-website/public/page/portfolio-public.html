@@ -81,6 +81,33 @@
                     eduHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
                 }
 
+                
+                let certHtml = '';
+                if (port.certificates && (port.certificates.system.length > 0 || port.certificates.manual.length > 0)) {
+                    if (port.certificates.system.length > 0) {
+                        certHtml += '<h4 style="margin-bottom:10px; color:#ad0f0f;">ใบรับรองจากระบบ (BimClub)</h4>';
+                        certHtml += port.certificates.system.map(cert => `
+                            <div class="resume-item">
+                                <div class="resume-item-title">${cert.course_title}</div>
+                                <div class="resume-item-date">รหัสอ้างอิง: ${cert.certificate_code} | วันที่: ${new Date(cert.issued_at).toLocaleDateString('th-TH')}</div>
+                            </div>
+                        `).join('');
+                    }
+                    if (port.certificates.manual.length > 0) {
+                        certHtml += '<h4 style="margin-top:20px; margin-bottom:10px; color:#ad0f0f;">ใบรับรองอื่นๆ</h4>';
+                        certHtml += port.certificates.manual.map(cert => `
+                            <div class="resume-item">
+                                <div class="resume-item-title">${cert.title}</div>
+                                <div class="resume-item-subtitle">${cert.issuer}</div>
+                                <div class="resume-item-date">วันที่: ${new Date(cert.issue_date).toLocaleDateString('th-TH')}</div>
+                                ${cert.credential_url ? `<a href="${cert.credential_url}" target="_blank" style="font-size:0.9rem; color:#ad0f0f; display:inline-block; margin-top:4px;">ลิงก์ใบรับรอง</a>` : ''}
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    certHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
+                }
+
                 let projHtml = '';
                 if (port.projects && port.projects.length > 0) {
                     projHtml = port.projects.map(proj => `
@@ -129,6 +156,12 @@
                                 ${eduHtml}
                             </div>
 
+                            
+                            <div class="resume-section">
+                                <h2 class="resume-section-title">ใบรับรอง (Certificates)</h2>
+                                ${certHtml}
+                            </div>
+
                             <div class="resume-section">
                                 <h2 class="resume-section-title">ผลงานส่วนตัว</h2>
                                 ${projHtml}
@@ -146,33 +179,8 @@
     </script>
 
     <!-- Global Footer -->
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-col">
-                    <h3>BimClub</h3>
-                    <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
-                </div>
-                <div class="footer-col">
-                    <h3>เมนู</h3>
-                    <ul>
-                        <li><a href="../index.html">หน้าแรก</a></li>
-                        <li><a href="about.html">เกี่ยวกับเรา</a></li>
-                        <li><a href="activity.html">กิจกรรม</a></li>
-                        <li><a href="achievement.html">ผลงาน</a></li>
-                        <li><a href="honor.html">เกียรติยศ</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h3>ติดต่อเรา</h3>
-                    <p>มหาวิทยาลัย xxxx<br>อาคารคณะวิศวกรรมศาสตร์</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <site-footer></site-footer>
 
+<script src="../js/footer-component.js"></script>
 </body>
 </html>

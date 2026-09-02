@@ -403,6 +403,45 @@ router.get('/:id', requireLogin, async (req, res) => {
     }
 });
 
+router.get('/:id/preview', async (req, res) => {
+    try {
+        const id = parseId(req.params.id);
+        if (!id) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+
+        const course = await fetchCourseRow(id);
+        if (!course) return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+
+        // Guests can only see published courses
+        if (!course.is_published) {
+            return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+        }
+
+        const [stops, quizQuestions, comments] = await Promise.all([
+            fetchStops(id),
+            fetchQuizQuestions(id, false),
+            fetchCourseComments(id)
+        ]);
+
+        const likes = await fetchCourseLikes([id], null); // No viewer id
+        const likeData = likes.get(Number(id)) || { likeCount: 0, isLiked: false };
+
+        res.json({
+            success: true,
+            course: mapCourse(course, {
+                stops: withoutAnswers(stops),
+                quizQuestions,
+                comments,
+                likeCount: likeData.likeCount,
+                isLiked: false, // Guests cannot like
+                certificate: null // Guests don't have certificates
+            })
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงคอร์ส' });
+    }
+});
+
 router.put('/:id', requireInstructor, async (req, res) => {
     const id = parseId(req.params.id);
     if (!id) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });

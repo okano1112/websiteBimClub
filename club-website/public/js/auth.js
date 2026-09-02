@@ -24,27 +24,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const getAvatarUrl = (user) => user.avatarUrl || user.avatar_url || '';
   const getRoleLabel = (user) => user.roleLabel || roleLabels[user.role] || roleLabels.user;
 
-  const normalizeStaticNav = (menu) => {
-    const labels = {
-      Home: 'หน้าแรก',
-      About: 'เกี่ยวกับเรา',
-      Activities: 'กิจกรรม',
-      Achievements: 'ผลงาน',
-      Login: 'เข้าสู่ระบบ',
-      Register: 'สมัครสมาชิก'
-    };
-
-    menu.querySelectorAll('li a').forEach((link) => {
-      const text = link.textContent.trim();
-      if (labels[text]) link.textContent = labels[text];
-    });
-  };
-  
   try {
     const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
     const menuUl = document.querySelector('.menu ul') || document.querySelector('.menu');
     if (!menuUl) return;
-    normalizeStaticNav(menuUl);
+
+    // Remove skeleton
+    const skeleton = menuUl.querySelector('.nav-auth-skeleton');
+    if (skeleton) skeleton.remove();
 
     if (res.ok) {
       const data = await res.json();
@@ -53,27 +40,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       const avatarUrl = getAvatarUrl(user);
       const roleLabel = getRoleLabel(user);
       
-      // Remove Login and Register links
-      const links = menuUl.querySelectorAll('li a');
-      links.forEach(link => {
-        if (link.href.includes('login') || link.href.includes('register')) {
-          link.parentElement.remove();
-        }
-      });
+      // Remove Login and Register links completely
+      const guestLinks = menuUl.querySelectorAll('.auth-guest-link');
+      guestLinks.forEach(link => link.remove());
 
-      // Add Feed link
+      // Add Feed link before the dropdown if possible
       const hasFeedLink = Array.from(menuUl.querySelectorAll('a')).some(link => link.href.includes('feed'));
       if (!hasFeedLink) {
         const feedLi = document.createElement('li');
         feedLi.innerHTML = `<a href="${feedUrl}">ฟีด</a>`;
-        menuUl.appendChild(feedLi);
-      }
-
-      const hasCoursesLink = Array.from(menuUl.querySelectorAll('a')).some(link => link.href.includes('courses.html') && !link.classList.contains('nav-course-link'));
-      if (!hasCoursesLink) {
-        const learnLi = document.createElement('li');
-        learnLi.innerHTML = `<a href="${coursesUrl}">คอร์สเรียน</a>`;
-        menuUl.appendChild(learnLi);
+        
+        // Insert after Home (index 0)
+        const firstLi = menuUl.querySelector('li');
+        if (firstLi && firstLi.nextSibling) {
+            menuUl.insertBefore(feedLi, firstLi.nextSibling);
+        } else {
+            menuUl.appendChild(feedLi);
+        }
       }
 
       if (user.role === 'instructor' || user.role === 'admin') {
@@ -105,14 +88,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       profileLi.innerHTML = `
-        <div class="nav-profile-summary" aria-label="โปรไฟล์ผู้ใช้">
+        <button class="nav-profile-summary" aria-haspopup="true" aria-expanded="false" aria-label="โปรไฟล์ผู้ใช้">
           ${avatarHtml}
           <div class="nav-profile-text">
             <span class="nav-profile-name">${escapeHtml(userName)}</span>
             <span class="nav-profile-role">${escapeHtml(roleLabel)}</span>
           </div>
-        </div>
-        <div class="nav-dropdown">
+        </button>
+        <div class="nav-dropdown profile-dropdown">
           <div class="nav-dropdown-header">
             <div class="nav-dropdown-name">${escapeHtml(userName)}</div>
             <div class="nav-dropdown-email">${escapeHtml(user.email || '')}</div>
@@ -131,19 +114,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       menuUl.appendChild(profileLi);
 
-      // Toggle dropdown for touch devices; desktop hover is handled by CSS.
-      profileLi.addEventListener('click', (e) => {
-        if (e.target.closest('.nav-dropdown') && e.target.id !== 'logoutBtn') return;
-        const dropdown = profileLi.querySelector('.nav-dropdown');
-        dropdown.classList.toggle('show');
+      const profileBtn = profileLi.querySelector('.nav-profile-summary');
+      const dropdown = profileLi.querySelector('.nav-dropdown');
+
+      
+      profileBtn.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          const isExpanded = profileBtn.getAttribute('aria-expanded') === 'true';
+          profileBtn.setAttribute('aria-expanded', !isExpanded);
+          dropdown.classList.toggle('show');
+        }
       });
+
 
       // Close dropdown when clicking outside
       document.addEventListener('click', (e) => {
         if (!profileLi.contains(e.target)) {
-          const dropdown = profileLi.querySelector('.nav-dropdown');
           if (dropdown && dropdown.classList.contains('show')) {
             dropdown.classList.remove('show');
+            profileBtn.setAttribute('aria-expanded', 'false');
           }
         }
       });
@@ -167,13 +157,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
     } else {
-      // Not logged in, just add Feed link
-      const hasFeedLink = Array.from(menuUl.querySelectorAll('a')).some(link => link.href.includes('feed'));
-      if (!hasFeedLink) {
-        const feedLi = document.createElement('li');
-        feedLi.innerHTML = `<a href="${feedUrl}">ฟีด</a>`;
-        menuUl.appendChild(feedLi);
-      }
+      // Not logged in
+      const guestLinks = menuUl.querySelectorAll('.auth-guest-link');
+      guestLinks.forEach(link => {
+          link.style.display = 'flex'; // show them
+      });
     }
 
     // Phase 1: Inject Global UI (Footer and Chatbot)
@@ -181,11 +169,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   } catch (error) {
     console.error('Auth check failed:', error);
+    // In case of error, show login/register links just in case
+    const menuUl = document.querySelector('.menu ul');
+    if (menuUl) {
+        const skeleton = menuUl.querySelector('.nav-auth-skeleton');
+        if (skeleton) skeleton.remove();
+        
+        const guestLinks = menuUl.querySelectorAll('.auth-guest-link');
+        guestLinks.forEach(link => {
+            link.style.display = 'flex';
+        });
+    }
   }
 });
 
 function injectGlobalUI() {
-    // 1. Inject Floating AI Chatbot Button
     if (!document.getElementById('ai-chatbot-btn')) {
         const style = document.createElement('style');
         style.innerHTML = `
@@ -237,7 +235,6 @@ function injectGlobalUI() {
         `;
         document.body.appendChild(chatbotBtn);
 
-        // Create Modal
         const modal = document.createElement('div');
         modal.id = 'ai-chatbot-modal';
         modal.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;';
@@ -266,6 +263,4 @@ function injectGlobalUI() {
             if (e.target === modal) modal.style.display = 'none';
         });
     }
-
-    
 }
