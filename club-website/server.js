@@ -8,6 +8,10 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Security Middleware: Helmet (with config to allow existing inline scripts/styles if needed, 
 // but starting with default and disabling CSP for simplicity first as this is an existing app)
 app.use(helmet({
@@ -37,7 +41,12 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 } // 1 วัน
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24
+    }
 }));
 
 // ให้บริการไฟล์ Static

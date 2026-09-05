@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการสมาชิก - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css">
+  <script src="../js/navbar-component.js"></script>
+</head>
+<body>
+  <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Members</span></nav>
+    <header class="admin-page-header"><div><p class="admin-eyebrow">Community</p><h1 class="page-title">สมาชิก</h1><p>ค้นหา ตรวจสอบสถานะ และดูรายละเอียดบัญชีสมาชิกกับอาจารย์</p></div></header>
+    <div id="memberFeedback" class="admin-feedback" role="status" hidden></div>
+    <section class="admin-card">
+      <div class="admin-toolbar">
+        <input id="memberSearch" class="admin-input" type="search" placeholder="ค้นหาชื่อ Username หรืออีเมล" aria-label="ค้นหาสมาชิก">
+        <select id="memberRole" class="admin-select" aria-label="กรอง Role"><option value="all">ทุก Role</option><option value="user">User</option><option value="instructor">Instructor</option></select>
+        <select id="memberStatus" class="admin-select" aria-label="กรองสถานะ"><option value="all">ทุกสถานะ</option><option value="active">ใช้งานได้</option><option value="unverified">ยังไม่ยืนยัน</option><option value="banned">ถูกระงับ</option><option value="deleted">ถูกลบ</option></select>
+      </div>
+      <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>สมาชิก</th><th>Role</th><th>การยืนยัน</th><th>สถานะ</th><th>สมัครเมื่อ</th><th>การทำงาน</th></tr></thead><tbody id="memberRows"><tr><td colspan="6" class="loading-text">กำลังโหลดข้อมูล...</td></tr></tbody></table></div>
+      <div class="admin-pagination"><span id="memberPageInfo"></span><div class="admin-pagination-actions"><button id="memberPrev" type="button">ก่อนหน้า</button><button id="memberNext" type="button">ถัดไป</button></div></div>
+    </section>
+  </main>
+  <div id="memberModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle"><div class="modal-content"><h2 id="memberModalTitle">รายละเอียดสมาชิก</h2><dl id="memberDetails" class="admin-detail-list"></dl><div class="modal-actions"><button class="modal-btn modal-cancel" id="closeMemberModal" type="button">ปิด</button></div></div></div>
+  <script src="../js/auth.js"></script><script src="../js/admin-members.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
+</body>
+</html>

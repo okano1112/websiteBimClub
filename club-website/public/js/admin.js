@@ -1,188 +1,132 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    
-    // Auth Check
+  const createForm = document.getElementById('createPostForm');
+  const postContent = document.getElementById('postContent');
+  const postImages = document.getElementById('postImages');
+  const imagePreviews = document.getElementById('imagePreviews');
+  const submitButton = document.getElementById('btnSubmit');
+  const postsList = document.getElementById('postsList');
+  const search = document.getElementById('postSearch');
+  const sort = document.getElementById('postSort');
+  const pageSize = 8;
+  let posts = [];
+  let page = 1;
+
+  const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
+
+  try {
+    const response = await fetch('/api/auth/me');
+    const data = await response.json();
+    if (!response.ok) return window.location.href = 'login.html';
+    if (data.user?.role !== 'admin') return window.location.href = '../index.html';
+  } catch (error) { return window.location.href = 'login.html'; }
+
+  postImages.addEventListener('change', (event) => {
+    imagePreviews.innerHTML = '';
+    Array.from(event.target.files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        const image = document.createElement('img'); image.src = loadEvent.target.result; image.className = 'image-preview'; image.alt = 'ตัวอย่างรูปที่จะอัปโหลด';
+        imagePreviews.appendChild(image);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  function filteredPosts() {
+    const query = search.value.trim().toLocaleLowerCase('th');
+    const filtered = posts.filter((post) => `${post.content} ${post.full_name || post.username || ''}`.toLocaleLowerCase('th').includes(query));
+    if (sort.value === 'oldest') filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    else filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return filtered;
+  }
+
+  function renderPosts() {
+    const filtered = filteredPosts();
+    const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+    page = Math.min(page, pageCount);
+    const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+    postsList.innerHTML = '';
+    if (!visible.length) postsList.innerHTML = '<div class="admin-empty">ไม่พบโพสต์ตามเงื่อนไข</div>';
+    visible.forEach((post) => {
+      const item = document.createElement('article');
+      item.className = 'post-item';
+      const images = Array.isArray(post.image_urls) ? post.image_urls : [];
+      item.innerHTML = `
+        <div class="post-header"><span class="post-author">โดย: ${escapeHtml(post.full_name || post.username || 'ผู้ใช้งาน')}</span><span class="post-date">${new Date(post.created_at).toLocaleString('th-TH')}</span></div>
+        <div class="post-content-container"><div class="post-content">${escapeHtml(post.content).replace(/\n/g, '<br>')}</div>${images.length ? `<div class="post-images-thumb">${images.map((url) => `<img src="${escapeHtml(url)}" alt="รูปประกอบโพสต์">`).join('')}</div>` : ''}</div>
+        <div class="post-actions"><button class="btn-edit" type="button" data-edit="${post.id}">แก้ไข</button><button class="btn-delete" type="button" data-delete="${post.id}">ลบ</button></div>`;
+      postsList.appendChild(item);
+    });
+    document.getElementById('postPageInfo').textContent = `หน้า ${page} จาก ${pageCount} · ${filtered.length} โพสต์`;
+    document.getElementById('postPrev').disabled = page <= 1;
+    document.getElementById('postNext').disabled = page >= pageCount;
+  }
+
+  async function loadPosts() {
+    const response = await fetch('/api/posts?page=1&limit=100');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'โหลดโพสต์ไม่สำเร็จ');
+    posts = data.posts || [];
+    renderPosts();
+  }
+
+  createForm.addEventListener('submit', async (event) => {
+    event.preventDefault(); submitButton.disabled = true; submitButton.textContent = 'กำลังอัปโหลด...';
     try {
-        const res = await fetch('/api/auth/me');
-        if (!res.ok) throw new Error('Not logged in');
-        const data = await res.json();
-        const user = data.user;
-        if (user.role !== 'admin') {
-            alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
-            window.location.href = '../index.html';
-            return;
-        }
-    } catch (err) {
-        window.location.href = 'login.html';
-        return;
-    }
+      let imageUrls = [];
+      if (postImages.files.length) {
+        const formData = new FormData(); Array.from(postImages.files).forEach((file) => formData.append('images', file));
+        const uploadResponse = await fetch('/api/upload/images', { method: 'POST', body: formData });
+        const uploadData = await uploadResponse.json();
+        if (!uploadResponse.ok || !uploadData.success) throw new Error(uploadData.message || 'อัปโหลดรูปไม่สำเร็จ');
+        imageUrls = uploadData.urls;
+      }
+      const response = await fetch('/api/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: postContent.value, imageUrls }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'สร้างโพสต์ไม่สำเร็จ');
+      createForm.reset(); imagePreviews.innerHTML = ''; page = 1; await loadPosts();
+    } catch (error) { alert(error.message || 'เกิดข้อผิดพลาด'); }
+    finally { submitButton.disabled = false; submitButton.textContent = 'เผยแพร่'; }
+  });
 
-    const createForm = document.getElementById('createPostForm');
-    const postContent = document.getElementById('postContent');
-    const postImages = document.getElementById('postImages');
-    const imagePreviews = document.getElementById('imagePreviews');
-    const btnSubmit = document.getElementById('btnSubmit');
-    const postsList = document.getElementById('postsList');
-
-    // Image preview
-    postImages.addEventListener('change', (e) => {
-        imagePreviews.innerHTML = '';
-        const files = Array.from(e.target.files);
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = document.createElement('img');
-                img.src = ev.target.result;
-                img.className = 'image-preview';
-                imagePreviews.appendChild(img);
-            };
-            reader.readAsDataURL(file);
+  postsList.addEventListener('click', async (event) => {
+    const deleteButton = event.target.closest('[data-delete]');
+    const editButton = event.target.closest('[data-edit]');
+    try {
+      if (deleteButton) {
+        if (!confirm('ยืนยันการลบโพสต์นี้?')) return;
+        const response = await fetch(`/api/posts/${deleteButton.dataset.delete}`, { method: 'DELETE' });
+        const data = await response.json(); if (!response.ok) throw new Error(data.message);
+        return loadPosts();
+      }
+      if (editButton) {
+        const post = posts.find((item) => Number(item.id) === Number(editButton.dataset.edit));
+        const item = editButton.closest('.post-item');
+        const container = item.querySelector('.post-content-container');
+        container.innerHTML = '';
+        const textarea = document.createElement('textarea'); textarea.className = 'edit-textarea'; textarea.value = post.content;
+        const save = document.createElement('button'); save.className = 'btn-save-edit'; save.type = 'button'; save.textContent = 'บันทึก';
+        const cancel = document.createElement('button'); cancel.className = 'btn-cancel-edit'; cancel.type = 'button'; cancel.textContent = 'ยกเลิก';
+        container.append(textarea, save, cancel); item.querySelector('.post-actions').hidden = true;
+        cancel.addEventListener('click', renderPosts);
+        save.addEventListener('click', async () => {
+          save.disabled = true;
+          try {
+            const response = await fetch(`/api/posts/${post.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: textarea.value }) });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'แก้ไขโพสต์ไม่สำเร็จ');
+            await loadPosts();
+          } catch (error) {
+            alert(error.message || 'แก้ไขโพสต์ไม่สำเร็จ');
+            save.disabled = false;
+          }
         });
-    });
+      }
+    } catch (error) { alert(error.message || 'ดำเนินการไม่สำเร็จ'); }
+  });
 
-    // Create post
-    createForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        btnSubmit.disabled = true;
-        btnSubmit.textContent = 'กำลังอัปโหลด...';
-
-        try {
-            let imageUrls = [];
-            
-            // Upload images if any
-            if (postImages.files.length > 0) {
-                const formData = new FormData();
-                Array.from(postImages.files).forEach(file => {
-                    formData.append('images', file); // Field name depends on API config
-                });
-                const uploadRes = await fetch('/api/upload/images', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (uploadRes.ok) {
-                    const uploadData = await uploadRes.json();
-                    imageUrls = uploadData.urls || uploadData; // Adjust based on actual API
-                }
-            }
-
-            // Create post
-            const postRes = await fetch('/api/posts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: postContent.value,
-                    imageUrls: imageUrls
-                })
-            });
-
-            if (postRes.ok) {
-                createForm.reset();
-                imagePreviews.innerHTML = '';
-                loadPosts();
-            } else {
-                alert('เกิดข้อผิดพลาดในการสร้างโพสต์');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-        } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = 'เผยแพร่';
-        }
-    });
-
-    // Load Posts
-    const loadPosts = async () => {
-        try {
-            const res = await fetch('/api/posts?page=1&limit=50');
-            if (!res.ok) throw new Error('Failed');
-            const data = await res.json();
-            const posts = data.posts || data;
-            
-            postsList.innerHTML = '';
-            
-            if (!posts || posts.length === 0) {
-                postsList.innerHTML = '<div class="loading-text">ยังไม่มีโพสต์</div>';
-                return;
-            }
-
-            posts.forEach(post => {
-                const div = document.createElement('div');
-                div.className = 'post-item';
-                
-                const dateStr = new Date(post.created_at).toLocaleString('th-TH');
-                
-                let imgsHtml = '';
-                if (post.image_urls && post.image_urls.length > 0) {
-                    imgsHtml = `<div class="post-images-thumb">` + 
-                        post.image_urls.map(url => `<img src="${url}">`).join('') +
-                        `</div>`;
-                }
-
-                div.innerHTML = `
-                    <div class="post-header">
-                        <span style="font-weight:600">โดย: ${post.author_name || post.full_name || 'ผู้ดูแล'}</span>
-                        <span class="post-date">${dateStr}</span>
-                    </div>
-                    <div class="post-content-container">
-                        <div class="post-content">${post.content}</div>
-                        ${imgsHtml}
-                    </div>
-                    <div class="post-actions">
-                        <button class="btn-edit" data-id="${post.id}">แก้ไข</button>
-                        <button class="btn-delete" data-id="${post.id}">ลบ</button>
-                    </div>
-                `;
-                postsList.appendChild(div);
-            });
-
-            // Bind actions
-            postsList.querySelectorAll('.btn-delete').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    if (confirm('ยืนยันการลบโพสต์นี้?')) {
-                        await fetch(`/api/posts/${id}`, { method: 'DELETE' });
-                        loadPosts();
-                    }
-                });
-            });
-
-            postsList.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    const postItem = e.target.closest('.post-item');
-                    const contentContainer = postItem.querySelector('.post-content-container');
-                    const oldContent = postItem.querySelector('.post-content').textContent;
-                    
-                    contentContainer.innerHTML = `
-                        <textarea class="edit-textarea" style="width:100%; min-height:80px; margin-bottom:10px; padding:8px">${oldContent}</textarea>
-                        <button class="btn-save-edit">บันทึก</button>
-                        <button class="btn-cancel-edit" style="margin-left:8px">ยกเลิก</button>
-                    `;
-                    
-                    const actions = postItem.querySelector('.post-actions');
-                    actions.style.display = 'none';
-
-                    contentContainer.querySelector('.btn-cancel-edit').addEventListener('click', () => {
-                        loadPosts(); // simplest way to reset
-                    });
-
-                    contentContainer.querySelector('.btn-save-edit').addEventListener('click', async () => {
-                        const newContent = contentContainer.querySelector('.edit-textarea').value;
-                        await fetch(`/api/posts/${id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ content: newContent })
-                        });
-                        loadPosts();
-                    });
-                });
-            });
-
-        } catch (err) {
-            console.error(err);
-            postsList.innerHTML = '<div class="loading-text">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
-        }
-    };
-
-    loadPosts();
+  [search, sort].forEach((control) => control.addEventListener('input', () => { page = 1; renderPosts(); }));
+  document.getElementById('postPrev').addEventListener('click', () => { page -= 1; renderPosts(); });
+  document.getElementById('postNext').addEventListener('click', () => { page += 1; renderPosts(); });
+  try { await loadPosts(); } catch (error) { postsList.innerHTML = '<div class="admin-error"></div>'; postsList.firstElementChild.textContent = error.message; }
 });

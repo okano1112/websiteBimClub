@@ -50,6 +50,10 @@ router.get('/:id', async (req, res) => {
 router.post('/', requireLogin, requireAdmin, async (req, res) => {
     try {
         const { name, nickname, generation, position, profile_image, achievement, description, current_position, joined_year, display_order, is_published } = req.body;
+        if (!String(name || '').trim()) return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อ' });
+        if (profile_image && !String(profile_image).startsWith('/uploads/')) {
+            return res.status(400).json({ success: false, message: 'รูปภาพต้องอัปโหลดผ่านระบบเท่านั้น' });
+        }
         const [result] = await db.query(
             `INSERT INTO honors (name, nickname, generation, position, profile_image, achievement, description, current_position, joined_year, display_order, is_published) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -67,6 +71,10 @@ router.post('/', requireLogin, requireAdmin, async (req, res) => {
 router.put('/:id', requireLogin, requireAdmin, async (req, res) => {
     try {
         const { name, nickname, generation, position, profile_image, achievement, description, current_position, joined_year, display_order, is_published } = req.body;
+        if (!String(name || '').trim()) return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อ' });
+        if (profile_image && !String(profile_image).startsWith('/uploads/')) {
+            return res.status(400).json({ success: false, message: 'รูปภาพต้องอัปโหลดผ่านระบบเท่านั้น' });
+        }
         await db.query(
             `UPDATE honors SET name=?, nickname=?, generation=?, position=?, profile_image=?, achievement=?, description=?, current_position=?, joined_year=?, display_order=?, is_published=? WHERE id=?`,
             [name, nickname || null, generation || null, position || null, profile_image || null, achievement || null, description || null, current_position || null, joined_year || null, display_order || 0, is_published !== undefined ? is_published : 1, req.params.id]

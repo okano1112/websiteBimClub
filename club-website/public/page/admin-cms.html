@@ -17,16 +17,9 @@
   <site-navbar></site-navbar>
 
     <main class="admin-container cms-container">
-        <div class="admin-nav">
-            <a href="admin.html">จัดการโพสต์</a>
-            <a href="admin-cms.html" class="active">จัดการเนื้อหา</a>
-            <a href="admin-instructor-requests.html">คำขอสิทธิ์อาจารย์</a>
-            <a href="admin-users.html">จัดการผู้ใช้งาน</a>
-            <a href="admin-honor.html">เกียรติยศ / Honor</a>
-        </div>
-
-        <header class="cms-header">
-            <h1 class="page-title">จัดการเนื้อหา</h1>
+        <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Content</span></nav>
+        <header class="cms-header admin-page-header">
+            <div><p class="admin-eyebrow">Content Management</p><h1 class="page-title">จัดการเนื้อหา</h1><p>กิจกรรมและผลงานที่แสดงบนเว็บไซต์</p></div>
             <div class="cms-tabs" role="tablist" aria-label="เลือกประเภทเนื้อหา">
                 <button type="button" class="cms-tab active" data-section="activities">กิจกรรม</button>
                 <button type="button" class="cms-tab" data-section="achievements">ผลงาน</button>
@@ -66,9 +59,14 @@
 
         <section class="admin-card">
             <h2 class="card-title" id="cmsListTitle">รายการกิจกรรม</h2>
+            <div class="admin-toolbar">
+                <input id="cmsSearch" class="admin-input" type="search" placeholder="ค้นหาหัวข้อหรือรายละเอียด" aria-label="ค้นหาเนื้อหา">
+                <select id="cmsSort" class="admin-select" aria-label="เรียงลำดับ"><option value="newest">ใหม่ล่าสุด</option><option value="title">เรียงตามหัวข้อ</option></select>
+            </div>
             <div id="cmsList" class="cms-list">
                 <div class="loading-text">กำลังโหลดข้อมูล...</div>
             </div>
+            <div class="admin-pagination"><span id="cmsPageInfo"></span><div class="admin-pagination-actions"><button id="cmsPrev" type="button">ก่อนหน้า</button><button id="cmsNext" type="button">ถัดไป</button></div></div>
         </section>
     </main>
 

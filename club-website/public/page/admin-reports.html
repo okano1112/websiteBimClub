@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>รายงาน - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css"><script src="../js/navbar-component.js"></script>
+</head>
+<body>
+  <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Reports</span></nav>
+    <header class="admin-page-header"><div><p class="admin-eyebrow">Analytics</p><h1 class="page-title">รายงาน</h1><p>ตัวอย่างพื้นที่วิเคราะห์แนวโน้มสมาชิก คอร์ส และเนื้อหา</p></div><span class="mockup-badge">MOCKUP</span></header>
+    <div id="reportFeedback" class="admin-feedback" role="status" hidden></div>
+    <!-- MOCKUP-START: ADMIN REPORTS -->
+    <section class="admin-card">
+      <div class="admin-toolbar"><input id="reportSearch" class="admin-input" type="search" placeholder="ค้นหาตัวชี้วัด"><select id="reportCategory" class="admin-select"><option value="all">ทุกหมวด</option><option>สมาชิก</option><option>คอร์ส</option><option>เนื้อหา</option><option>คำขอ</option></select><select id="reportSort" class="admin-select"><option value="newest">ล่าสุดก่อน</option><option value="change-desc">การเปลี่ยนแปลงสูงสุด</option></select></div>
+      <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ช่วงเวลา</th><th>หมวด</th><th>ตัวชี้วัด</th><th>ค่า</th><th>เปลี่ยนแปลง</th><th>สถานะ</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+      <div class="admin-pagination"><span id="reportPageInfo"></span><div class="admin-pagination-actions"><button id="reportPrev" type="button">ก่อนหน้า</button><button id="reportNext" type="button">ถัดไป</button><button id="reportExport" class="admin-button" type="button">Export CSV</button></div></div>
+    </section>
+    <!-- MOCKUP-END: ADMIN REPORTS -->
+  </main>
+  <script src="../js/auth.js"></script><script src="../js/mock/admin-mock-data.js"></script><script src="../js/admin-reports.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
+</body>
+</html>

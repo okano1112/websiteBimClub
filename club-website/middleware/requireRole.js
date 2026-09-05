@@ -28,7 +28,9 @@ async function loadCurrentUser(req, res) {
     }
 
     const [users] = await db.query(
-        'SELECT id, username, email, full_name, phone, avatar_url, role, is_verified FROM users WHERE id = ?',
+        `SELECT id, username, email, full_name, phone, avatar_url, role,
+                is_verified, is_banned, deleted_at
+         FROM users WHERE id = ?`,
         [req.session.user.id]
     );
 
@@ -39,6 +41,12 @@ async function loadCurrentUser(req, res) {
     }
 
     const user = users[0];
+    if (user.deleted_at || user.is_banned) {
+        req.session.destroy(() => {});
+        res.status(403).json({ success: false, message: 'บัญชีนี้ถูกระงับการใช้งาน' });
+        return null;
+    }
+
     if (!user.is_verified) {
         req.session.destroy(() => {});
         res.status(403).json({ success: false, message: 'กรุณายืนยันอีเมลก่อนใช้งานระบบ' });

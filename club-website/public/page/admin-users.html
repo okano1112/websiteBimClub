@@ -1,74 +1,34 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <link rel="stylesheet" href="../css/global.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>จัดการผู้ใช้งาน - BimClub Admin</title>
-    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
-    <link rel="stylesheet" href="../css/navbar.css">
-    <link rel="stylesheet" href="../css/admin.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการผู้ใช้งาน - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css">
   <script src="../js/navbar-component.js"></script>
 </head>
 <body>
-
-  <!-- Navbar Component -->
   <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Users</span></nav>
+    <header class="admin-page-header"><div><p class="admin-eyebrow">Account Administration</p><h1 class="page-title">จัดการผู้ใช้งาน</h1><p>ค้นหา ตรวจสอบ แก้ไข Role และจัดการสถานะบัญชี</p></div></header>
+    <div id="userFeedback" class="admin-feedback" role="status" hidden></div>
+    <section class="admin-card">
+      <div class="admin-toolbar">
+        <input id="userSearch" class="admin-input" type="search" placeholder="ค้นหาชื่อ Username หรืออีเมล" aria-label="ค้นหาผู้ใช้งาน">
+        <select id="userRoleFilter" class="admin-select" aria-label="กรอง Role"><option value="all">ทุก Role</option><option value="admin">Admin</option><option value="instructor">Instructor</option><option value="user">User</option></select>
+        <select id="userStatusFilter" class="admin-select" aria-label="กรองสถานะ"><option value="all">ทุกสถานะ</option><option value="active">ใช้งานได้</option><option value="unverified">ยังไม่ยืนยัน</option><option value="banned">ถูกแบน</option><option value="deleted">ถูกลบ</option></select>
+        <select id="userSort" class="admin-select" aria-label="เรียงลำดับ"><option value="newest">สมัครล่าสุด</option><option value="name">เรียงตามชื่อ</option><option value="role">เรียงตาม Role</option></select>
+      </div>
+      <div class="admin-table-wrap"><table class="users-table"><thead><tr><th>ID</th><th>ผู้ใช้งาน</th><th>Role</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="usersList"><tr><td colspan="5" class="loading-text">กำลังโหลดข้อมูล...</td></tr></tbody></table></div>
+      <div class="admin-pagination"><span id="userPageInfo"></span><div class="admin-pagination-actions"><button id="userPrev" type="button">ก่อนหน้า</button><button id="userNext" type="button">ถัดไป</button></div></div>
+    </section>
+  </main>
 
-    <!-- Main Content -->
-    <div class="admin-container" style="max-width: 1200px;">
-        <div class="admin-nav">
-            <a href="admin.html">จัดการโพสต์</a>
-            <a href="admin-cms.html">จัดการเนื้อหา</a>
-            <a href="admin-instructor-requests.html">คำขอสิทธิ์อาจารย์</a>
-            <a href="admin-users.html" class="active">จัดการผู้ใช้งาน</a>
-            <a href="admin-honor.html">เกียรติยศ / Honor</a>
-        </div>
+  <div id="userDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="userDetailTitle"><div class="modal-content"><h2 id="userDetailTitle">รายละเอียดผู้ใช้งาน</h2><dl id="userDetails" class="admin-detail-list"></dl><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="userDetailModal" type="button">ปิด</button></div></div></div>
+  <div id="editUserModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="editUserTitle"><div class="modal-content"><h2 id="editUserTitle">แก้ไขผู้ใช้งาน</h2><form id="editUserForm"><label class="form-label" for="editFullName">ชื่อ-นามสกุล</label><input id="editFullName" maxlength="100" required><label class="form-label" for="editPhone">เบอร์โทร</label><input id="editPhone" inputmode="tel"><label class="form-label" for="editRole">Role</label><select id="editRole" class="admin-select"><option value="user">User</option><option value="instructor">Instructor</option><option value="admin">Admin</option></select><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="editUserModal" type="button">ยกเลิก</button><button class="modal-btn modal-save" type="submit">บันทึก</button></div></form></div></div>
+  <div id="passwordModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="passwordTitle"><div class="modal-content"><h2 id="passwordTitle">เปลี่ยนรหัสผ่านผู้ใช้</h2><p id="passwordModalUser"></p><label class="form-label" for="newPassword">รหัสผ่านใหม่</label><input type="password" id="newPassword" placeholder="อย่างน้อย 6 ตัวอักษร" minlength="6"><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="passwordModal" type="button">ยกเลิก</button><button class="modal-btn modal-save" id="savePasswordBtn" type="button">บันทึก</button></div></div></div>
 
-        <h1 class="page-title">จัดการผู้ใช้งานระบบ</h1>
-        
-        <div class="admin-card" style="overflow-x: auto;">
-            <table class="users-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>ชื่อผู้ใช้ (Username)</th>
-                        <th>อีเมล</th>
-                        <th>ชื่อ-นามสกุล</th>
-                        <th>บทบาท (Role)</th>
-                        <th>สถานะ</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="usersList">
-                    <tr><td colspan="7" style="text-align: center;">กำลังโหลดข้อมูล...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Password Reset Modal -->
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <h2>เปลี่ยนรหัสผ่านผู้ใช้</h2>
-            <p id="passwordModalUser" style="margin-bottom: 15px; color: #666; font-size: 14px;"></p>
-            <input type="password" id="newPassword" placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)" minlength="6">
-            <div class="modal-actions">
-                <button type="button" class="modal-btn modal-cancel" onclick="closeModal()">ยกเลิก</button>
-                <button type="button" class="modal-btn modal-save" id="savePasswordBtn">บันทึก</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    
-    <script src="../js/auth.js"></script>
-    <script src="../js/admin-users.js"></script>
-
-    <!-- Global Footer -->
-    <site-footer></site-footer>
-
-<script src="../js/footer-component.js"></script>
+  <script src="../js/auth.js"></script><script src="../js/admin-users.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
 </body>
 </html>

@@ -21,6 +21,12 @@ class NavbarComponent extends HTMLElement {
             <img src="${logoPath}" width="80" height="50" alt="BimClub Logo" style="object-fit: contain;" />
           </a>
         </div>
+
+        <button class="system-sidebar-toggle" id="system-sidebar-toggle" type="button"
+          aria-label="เปิดเมนูระบบ" aria-controls="system-sidebar-panel" aria-expanded="false" hidden>
+          <span aria-hidden="true">☰</span>
+          <span class="system-sidebar-toggle-label">เมนูระบบ</span>
+        </button>
         
         <button class="nav-hamburger" aria-label="เปิดเมนูหลัก" aria-expanded="false" id="mobile-menu-btn">
             <span></span>
@@ -58,7 +64,25 @@ class NavbarComponent extends HTMLElement {
       </div>
     `;
 
+    this.loadSystemSidebar(basePath);
     this.setupInteractions();
+  }
+
+  loadSystemSidebar(basePath) {
+    if (!document.querySelector('link[data-system-sidebar-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = `${basePath}css/system-sidebar.css`;
+      stylesheet.dataset.systemSidebarStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (!document.querySelector('script[data-system-sidebar-script]')) {
+      const script = document.createElement('script');
+      script.src = `${basePath}js/system-sidebar-component.js`;
+      script.dataset.systemSidebarScript = 'true';
+      document.head.appendChild(script);
+    }
   }
 
   setupInteractions() {
@@ -79,7 +103,7 @@ class NavbarComponent extends HTMLElement {
     
     if (dropdownToggle && submenu) {
         dropdownToggle.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 900) {
                 e.preventDefault();
                 const isExpanded = dropdownToggle.getAttribute('aria-expanded') === 'true';
                 dropdownToggle.setAttribute('aria-expanded', !isExpanded);
@@ -89,7 +113,7 @@ class NavbarComponent extends HTMLElement {
         
         // Close when clicking outside on mobile
         document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && !this.contains(e.target)) {
+            if (window.innerWidth <= 900 && !this.contains(e.target)) {
                 dropdownToggle.setAttribute('aria-expanded', 'false');
                 submenu.classList.remove('show');
             }

@@ -1,0 +1,78 @@
+.system-sidebar-toggle {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: 600 0.9rem "Noto Sans Thai", sans-serif;
+  cursor: pointer;
+}
+
+.system-sidebar-toggle[hidden] { display: none; }
+.system-sidebar-toggle:hover,
+.system-sidebar-toggle:focus-visible { background: rgba(255, 255, 255, 0.22); outline: 2px solid #fff; outline-offset: 2px; }
+
+system-sidebar { position: relative; z-index: 5000; }
+.system-sidebar-backdrop { position: fixed; inset: 0; z-index: 4998; background: rgba(15, 23, 42, 0.58); backdrop-filter: blur(2px); }
+.system-sidebar-backdrop[hidden] { display: none; }
+
+.system-sidebar-panel {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 4999;
+  width: min(340px, calc(100vw - 28px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  color: #334155;
+  box-shadow: 20px 0 48px rgba(15, 23, 42, 0.22);
+  transform: translateX(-105%);
+  visibility: hidden;
+  transition: transform 220ms ease, visibility 220ms ease;
+}
+
+.system-sidebar-panel.open { transform: translateX(0); visibility: visible; }
+.system-sidebar-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 24px; background: #991b1b; color: #fff; }
+.system-sidebar-header h2 { margin: 2px 0 0; color: #fff; font-size: 1.45rem; }
+.system-sidebar-eyebrow { margin: 0; color: #fecaca; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; }
+.system-sidebar-close { width: 40px; height: 40px; border: 0; border-radius: 10px; background: rgba(255,255,255,.14); color: #fff; font-size: 1.65rem; cursor: pointer; }
+.system-sidebar-close:hover,
+.system-sidebar-close:focus-visible { background: rgba(255,255,255,.24); outline: 2px solid #fff; }
+
+.system-sidebar-user { display: flex; align-items: center; gap: 12px; padding: 18px 22px; border-bottom: 1px solid #e2e8f0; background: #fff7f7; }
+.system-sidebar-avatar { width: 42px; height: 42px; display: grid; place-items: center; flex: 0 0 42px; border-radius: 50%; background: #fee2e2; color: #991b1b; font-weight: 800; }
+.system-sidebar-user div { min-width: 0; display: flex; flex-direction: column; }
+.system-sidebar-user strong { overflow: hidden; color: #0f172a; text-overflow: ellipsis; white-space: nowrap; }
+.system-sidebar-user span:last-child { color: #64748b; font-size: .8rem; }
+
+.system-sidebar-nav { flex: 1; overflow-y: auto; padding: 12px; }
+.system-sidebar-group { margin-bottom: 16px; }
+.system-sidebar-group-title { margin: 0; padding: 5px 10px; color: #94a3b8; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.system-sidebar-link { display: flex; flex-direction: column; gap: 1px; margin: 2px 0; padding: 10px 12px; border-radius: 10px; color: #334155; text-decoration: none; }
+.system-sidebar-link strong { color: #0f172a; font-size: .92rem; }
+.system-sidebar-link span { color: #64748b; font-size: .76rem; }
+.system-sidebar-link:hover,
+.system-sidebar-link:focus-visible { background: #f1f5f9; outline: none; }
+.system-sidebar-link.active { background: #fff1f2; box-shadow: inset 3px 0 #ad0f0f; }
+.system-sidebar-link.active strong { color: #991b1b; }
+
+.system-sidebar-footer { padding: 14px 18px 20px; border-top: 1px solid #e2e8f0; }
+.system-sidebar-logout { width: 100%; min-height: 44px; border: 1px solid #fecaca; border-radius: 10px; background: #fff; color: #b91c1c; font: 700 .9rem "Noto Sans Thai", sans-serif; cursor: pointer; }
+.system-sidebar-logout:hover,
+.system-sidebar-logout:focus-visible { background: #fff1f2; outline: 2px solid #fecaca; }
+body.system-sidebar-is-open { overflow: hidden; }
+
+@media (max-width: 900px) {
+  .system-sidebar-toggle-label { display: none; }
+  .system-sidebar-toggle { margin-left: 0; padding: 0 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .system-sidebar-panel { transition: none; }
+}

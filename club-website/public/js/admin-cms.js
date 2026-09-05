@@ -30,10 +30,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const submitBtn = document.getElementById('cmsSubmitBtn');
     const cancelBtn = document.getElementById('cmsCancelBtn');
     const messageBox = document.getElementById('cmsMessage');
+    const searchInput = document.getElementById('cmsSearch');
+    const sortControl = document.getElementById('cmsSort');
+    const pageSize = 6;
 
     const initialSection = new URLSearchParams(window.location.search).get('section');
     let activeSection = sections[initialSection] ? initialSection : 'activities';
     let items = [];
+    let page = 1;
 
     function escapeHtml(value = '') {
         return String(value)
@@ -73,6 +77,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function setActiveSection(section) {
         activeSection = section;
+        page = 1;
+        searchInput.value = '';
         tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.section === section));
         listTitle.textContent = sections[section].listTitle;
         const url = new URL(window.location.href);
@@ -130,30 +136,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderItems() {
-        if (items.length === 0) {
+        const query = searchInput.value.trim().toLocaleLowerCase('th');
+        const filtered = items.filter(item => !query || `${item.title} ${item.description || ''}`.toLocaleLowerCase('th').includes(query));
+        if (sortControl.value === 'title') filtered.sort((a, b) => a.title.localeCompare(b.title, 'th'));
+        const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+        page = Math.min(page, pageCount);
+        const visibleItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+        if (visibleItems.length === 0) {
             list.innerHTML = `<div class="loading-text">${sections[activeSection].emptyText}</div>`;
-            return;
-        }
+        } else {
+            list.innerHTML = visibleItems.map(item => {
+                const imageHtml = item.image_url
+                    ? `<img class="cms-item-image" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">`
+                    : '<div class="cms-item-empty-image">ไม่มีรูปภาพ</div>';
 
-        list.innerHTML = items.map(item => {
-            const imageHtml = item.image_url
-                ? `<img class="cms-item-image" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">`
-                : '<div class="cms-item-empty-image">ไม่มีรูปภาพ</div>';
-
-            return `
-                <article class="cms-item">
-                    ${imageHtml}
-                    <div class="cms-item-body">
-                        <h3 class="cms-item-title">${escapeHtml(item.title)}</h3>
-                        <p class="cms-item-description">${escapeHtml(item.description)}</p>
-                        <div class="cms-item-actions">
-                            <button type="button" class="cms-edit-btn" data-id="${item.id}">แก้ไข</button>
-                            <button type="button" class="cms-delete-btn" data-id="${item.id}">ลบ</button>
+                return `
+                    <article class="cms-item">
+                        ${imageHtml}
+                        <div class="cms-item-body">
+                            <h3 class="cms-item-title">${escapeHtml(item.title)}</h3>
+                            <p class="cms-item-description">${escapeHtml(item.description)}</p>
+                            <div class="cms-item-actions">
+                                <a class="cms-preview-btn" href="${activeSection === 'activities' ? 'activity.html' : 'achievement.html'}">Preview</a>
+                                <button type="button" class="cms-edit-btn" data-id="${item.id}">แก้ไข</button>
+                                <button type="button" class="cms-delete-btn" data-id="${item.id}">ลบ</button>
+                            </div>
                         </div>
-                    </div>
-                </article>
-            `;
-        }).join('');
+                    </article>
+                `;
+            }).join('');
+        }
+        document.getElementById('cmsPageInfo').textContent = `หน้า ${page} จาก ${pageCount} · ${filtered.length} รายการ`;
+        document.getElementById('cmsPrev').disabled = page <= 1;
+        document.getElementById('cmsNext').disabled = page >= pageCount;
     }
 
     function editItem(id) {
@@ -207,6 +223,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     cancelBtn.addEventListener('click', resetForm);
+    searchInput.addEventListener('input', () => { page = 1; renderItems(); });
+    sortControl.addEventListener('input', () => { page = 1; renderItems(); });
+    document.getElementById('cmsPrev').addEventListener('click', () => { page -= 1; renderItems(); });
+    document.getElementById('cmsNext').addEventListener('click', () => { page += 1; renderItems(); });
 
     list.addEventListener('click', event => {
         const editButton = event.target.closest('.cms-edit-btn');

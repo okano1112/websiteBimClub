@@ -232,7 +232,13 @@ router.post('/login', async (req, res) => {
             });
         }
 
+        await new Promise((resolve, reject) => {
+            req.session.regenerate((error) => error ? reject(error) : resolve());
+        });
         req.session.user = normalizeUser(user);
+        await new Promise((resolve, reject) => {
+            req.session.save((error) => error ? reject(error) : resolve());
+        });
 
         res.json({ success: true, user: req.session.user });
     } catch (error) {
@@ -249,6 +255,7 @@ router.post('/logout', (req, res) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการออกจากระบบ' });
         }
+        res.clearCookie('connect.sid');
         res.json({ success: true, message: 'ออกจากระบบสำเร็จ' });
     });
 });

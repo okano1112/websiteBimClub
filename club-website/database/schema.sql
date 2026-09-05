@@ -248,6 +248,8 @@ INSERT INTO users (username, email, password, full_name, role, is_verified) VALU
 -- สร้าง portfolio ว่างให้ admin
 INSERT INTO portfolios (user_id) VALUES (1);
 
+-- MOCKUP-START: DEVELOPMENT SEED DATA
+-- REMOVE BEFORE PRODUCTION or replace with approved initial content.
 -- โพสต์ตัวอย่าง
 INSERT INTO posts (author_id, content) VALUES
 (1, 'ยินดีต้อนรับสู่ BimClub! ชมรมที่จะพาคุณก้าวสู่โลกของ Building Information Modeling'),
@@ -265,6 +267,7 @@ INSERT INTO achievements (title, category, description, team_size, project_year)
 INSERT INTO achievement_images (achievement_id, image_url, caption, display_order) VALUES
 (1, '../../../assets/img/swiperimg/bimActivity.jpg', 'ภาพรวมโมเดล 3D', 0),
 (1, '../../../assets/img/swiperimg/bimActivity2.jpg', 'แปลนชั้น 1', 1);
+-- MOCKUP-END: DEVELOPMENT SEED DATA
 
 CREATE TABLE IF NOT EXISTS portfolio_projects (
   id INT AUTO_INCREMENT PRIMARY KEY,

@@ -146,6 +146,10 @@ router.put('/:id', requireLogin, async (req, res) => {
         const content = cleanText(req.body.content);
         if (!postId) return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
         if (!content) return res.status(400).json({ success: false, message: 'กรุณากรอกเนื้อหาโพสต์' });
+        if (Array.isArray(req.body.imageUrls)
+            && req.body.imageUrls.some((url) => !String(url).startsWith('/uploads/'))) {
+            return res.status(400).json({ success: false, message: 'รูปภาพต้องอัปโหลดผ่านระบบเท่านั้น' });
+        }
 
         const [rows] = await db.query('SELECT author_id FROM posts WHERE id = ?', [postId]);
         if (rows.length === 0) return res.status(404).json({ success: false, message: 'ไม่พบโพสต์' });

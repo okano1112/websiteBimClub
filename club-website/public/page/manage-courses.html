@@ -4,14 +4,21 @@
     <link rel="stylesheet" href="../css/global.css">
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>จัดการคอร์ส - BimClub</title><link rel="icon" href="../../../assets/img/logobranding/logobim.png">
-  <link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/courses.css">
+  <link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css"><link rel="stylesheet" href="../css/courses.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="../js/navbar-component.js"></script>
 </head>
 <body>
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
-  <main class="course-shell"><header class="manage-heading"><div><p class="eyebrow">INSTRUCTOR AREA</p><h1>จัดการคอร์ส</h1><p>สร้าง แก้ไข และเผยแพร่คอร์สของคุณ</p></div><button id="createCourse" class="button primary">+ สร้างคอร์ส</button></header><div id="courseMessage" class="notice" hidden></div><section id="manageCourseGrid" class="course-grid"></section></main>
+  <main class="course-shell">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>Courses</span></nav>
+    <header class="manage-heading"><div><p class="eyebrow">INSTRUCTOR AREA</p><h1>จัดการคอร์ส</h1><p>สร้าง แก้ไข Preview และควบคุมการเผยแพร่คอร์ส</p></div><button id="createCourse" class="button primary">+ สร้างคอร์ส</button></header>
+    <div id="courseMessage" class="notice" role="status" hidden></div>
+    <section class="admin-card course-toolbar-card"><div class="admin-toolbar"><input id="manageCourseSearch" class="admin-input" type="search" placeholder="ค้นหาชื่อคอร์สหรือผู้สอน"><select id="manageCourseStatus" class="admin-select"><option value="all">ทุกสถานะ</option><option value="published">เผยแพร่แล้ว</option><option value="draft">ฉบับร่าง</option></select><select id="manageCourseSort" class="admin-select"><option value="updated">อัปเดตล่าสุด</option><option value="title">เรียงตามชื่อ</option></select></div></section>
+    <section id="manageCourseGrid" class="course-grid" aria-live="polite"><div class="admin-loading">กำลังโหลดคอร์ส...</div></section>
+    <div class="admin-pagination"><span id="manageCoursePageInfo"></span><div class="admin-pagination-actions"><button id="manageCoursePrev" type="button">ก่อนหน้า</button><button id="manageCourseNext" type="button">ถัดไป</button></div></div>
+  </main>
     
   <script src="../js/auth.js"></script><script src="../js/manage-courses.js"></script>
 

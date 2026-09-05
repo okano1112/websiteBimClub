@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const countSpan = document.querySelector('.comment-count');
         const currentCount = parseInt(countSpan.textContent.replace(/[^0-9]/g, '')) || 0;
-        countSpan.textContent = \`ความคิดเห็น \${currentCount + 1}\`;
+        countSpan.textContent = `ความคิดเห็น ${currentCount + 1}`;
       } catch (error) { show(error.message); } finally { btn.disabled = false; }
     });
 
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const countSpan = document.querySelector('.comment-count');
         const currentCount = parseInt(countSpan.textContent.replace(/[^0-9]/g, '')) || 1;
-        countSpan.textContent = \`ความคิดเห็น \${currentCount - 1}\`;
+        countSpan.textContent = `ความคิดเห็น ${Math.max(0, currentCount - 1)}`;
         
         const list = document.getElementById('courseCommentsList');
         if (list.children.length === 0) list.innerHTML = '<p class="no-comments">ยังไม่มีความคิดเห็น</p>';

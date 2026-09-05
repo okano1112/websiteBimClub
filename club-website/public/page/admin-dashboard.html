@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/navbar.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <script src="../js/navbar-component.js"></script>
+</head>
+<body>
+  <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>Dashboard</span></nav>
+    <header class="admin-page-header">
+      <div><p class="admin-eyebrow">Administration</p><h1 class="page-title">Dashboard</h1><p>ภาพรวมสำหรับจัดลำดับงานสำคัญของผู้ดูแลระบบ</p></div>
+      <span class="mockup-badge">MOCKUP</span>
+    </header>
+    <div id="dashboardMessage" class="admin-feedback" hidden></div>
+    <!-- MOCKUP-START: ADMIN DASHBOARD -->
+    <section id="dashboardStats" class="admin-stats-grid" aria-label="สถิติระบบ"><div class="admin-loading">กำลังโหลดข้อมูลตัวอย่าง...</div></section>
+    <div class="admin-grid-2">
+      <section class="admin-card"><h2 class="card-title">กิจกรรมล่าสุด</h2><div id="recentActivity" class="admin-activity-list"></div></section>
+      <section class="admin-card"><h2 class="card-title">ทางลัด</h2><div class="admin-quick-links"><a href="admin-users.html">จัดการผู้ใช้งาน</a><a href="manage-courses.html">จัดการคอร์ส</a><a href="admin-cms.html">จัดการเนื้อหา</a><a href="admin-instructor-requests.html">ตรวจคำขออาจารย์</a></div></section>
+    </div>
+    <section class="admin-card"><h2 class="card-title">ตัวอย่างสถานะ UI</h2><div class="admin-state-grid"><div class="admin-state-sample">Loading State<br><small>กำลังโหลดข้อมูล...</small></div><div class="admin-state-sample">Empty State<br><small>ยังไม่มีรายการ</small></div><div class="admin-state-sample error">Error State<br><small>โหลดข้อมูลไม่สำเร็จ</small></div></div></section>
+    <!-- MOCKUP-END: ADMIN DASHBOARD -->
+  </main>
+  <script src="../js/auth.js"></script>
+  <script src="../js/mock/admin-mock-data.js"></script>
+  <script src="../js/admin-dashboard.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
+</body>
+</html>

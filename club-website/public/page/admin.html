@@ -18,15 +18,8 @@
 
     <!-- Main Content -->
     <div class="admin-container">
-        <div class="admin-nav">
-            <a href="admin.html" class="active">จัดการโพสต์</a>
-            <a href="admin-cms.html">จัดการเนื้อหา</a>
-            <a href="admin-instructor-requests.html">คำขอสิทธิ์อาจารย์</a>
-            <a href="admin-users.html">จัดการผู้ใช้งาน</a>
-            <a href="admin-honor.html">เกียรติยศ / Honor</a>
-        </div>
-
-        <h1 class="page-title">จัดการโพสต์</h1>
+        <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Posts</span></nav>
+        <header class="admin-page-header"><div><p class="admin-eyebrow">Content Operations</p><h1 class="page-title">จัดการโพสต์</h1><p>สร้าง แก้ไข และดูแลโพสต์ของชุมชน</p></div></header>
         
         <!-- Create Post -->
         <div class="admin-card">
@@ -47,9 +40,14 @@
         <!-- Post List -->
         <div class="admin-card">
             <h2 class="card-title">โพสต์ทั้งหมด</h2>
+            <div class="admin-toolbar">
+                <input id="postSearch" class="admin-input" type="search" placeholder="ค้นหาเนื้อหาหรือผู้เขียน" aria-label="ค้นหาโพสต์">
+                <select id="postSort" class="admin-select" aria-label="เรียงโพสต์"><option value="newest">ใหม่ล่าสุด</option><option value="oldest">เก่าสุด</option></select>
+            </div>
             <div id="postsList" class="posts-list">
                 <div class="loading-text">กำลังโหลดข้อมูล...</div>
             </div>
+            <div class="admin-pagination"><span id="postPageInfo"></span><div class="admin-pagination-actions"><button id="postPrev" type="button">ก่อนหน้า</button><button id="postNext" type="button">ถัดไป</button></div></div>
         </div>
 
     </div>

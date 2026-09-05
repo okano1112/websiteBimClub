@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ตั้งค่าระบบ - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css"><script src="../js/navbar-component.js"></script>
+</head>
+<body>
+  <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>System Settings</span></nav>
+    <header class="admin-page-header"><div><p class="admin-eyebrow">Configuration</p><h1 class="page-title">ตั้งค่าระบบ</h1><p>แยกจากการตั้งค่าบัญชีส่วนบุคคลอย่างชัดเจน</p></div><span class="mockup-badge">MOCKUP</span></header>
+    <div id="settingsFeedback" class="admin-feedback" role="status" hidden></div>
+    <!-- MOCKUP-START: ADMIN SYSTEM SETTINGS -->
+    <form id="systemSettingsForm" class="admin-card">
+      <h2 class="card-title">ข้อมูลทั่วไป</h2>
+      <div class="admin-form-grid"><label>ชื่อระบบ<input id="clubName" class="admin-input" required></label><label>อีเมลติดต่อ<input id="contactEmail" class="admin-input" type="email" required></label><label>Role เริ่มต้น<select id="defaultRole" class="admin-select"><option value="user">User</option><option value="instructor">Instructor</option></select></label><label><span>การยืนยันบัญชี</span><span><input id="requireEmailVerification" type="checkbox"> บังคับยืนยันอีเมล</span></label><label><span>คำขออาจารย์</span><span><input id="allowInstructorRequests" type="checkbox"> เปิดรับคำขอ</span></label><label><span>Maintenance</span><span><input id="maintenanceMode" type="checkbox"> เปิดโหมดบำรุงรักษา</span></label></div>
+      <div class="admin-form-actions"><button id="resetSettings" class="admin-button secondary" type="button">ยกเลิกการเปลี่ยนแปลง</button><button class="admin-button" type="submit">บันทึกตัวอย่าง</button></div>
+    </form>
+    <!-- MOCKUP-END: ADMIN SYSTEM SETTINGS -->
+  </main>
+  <script src="../js/auth.js"></script><script src="../js/mock/admin-mock-data.js"></script><script src="../js/admin-system-settings.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
+</body>
+</html>

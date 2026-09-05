@@ -17,16 +17,8 @@
   <site-navbar></site-navbar>
 
     <main class="admin-container admin-request-page">
-        <div class="admin-nav">
-            <a href="admin.html">จัดการโพสต์</a>
-            <a href="admin-cms.html">จัดการเนื้อหา</a>
-            <a href="admin-instructor-requests.html" class="active">คำขอสิทธิ์อาจารย์</a>
-            <a href="admin-users.html">จัดการผู้ใช้งาน</a>
-            <a href="admin-honor.html">เกียรติยศ / Honor</a>
-        </div>
-
-        <h1>คำขอสิทธิ์อาจารย์</h1>
-        <p class="request-lead">ยืนยันหรือปฏิเสธคำขอแบบฟีด — เมื่อกดยืนยัน บัญชีผู้ขอจะเป็นอาจารย์ทันที</p>
+        <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Instructor Requests</span></nav>
+        <header class="admin-page-header"><div><p class="admin-eyebrow">Role Operations</p><h1 class="page-title">คำขอสิทธิ์อาจารย์</h1><p class="request-lead">ยืนยันหรือปฏิเสธคำขอ — เมื่อกดยืนยัน บัญชีผู้ขอจะเป็นอาจารย์ทันที</p></div></header>
 
         <div class="request-tabs" role="tablist">
             <button type="button" class="request-tab active" data-status="pending">รออนุมัติ</button>

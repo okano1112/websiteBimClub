@@ -5,12 +5,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const stopsEl = document.getElementById('stops');
   const quizEl = document.getElementById('quizQuestions');
   const show = (text, type = '') => { message.textContent = text; message.className = `notice ${type}`; message.hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const esc = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
   const questionMarkup = (kind, item = {}) => {
     const radioName = `correct-${kind}-${crypto.randomUUID()}`;
     return `<article class="question-card" data-kind="${kind}">
     <div class="question-top">${kind === 'stop' ? '<label>เวลาที่หยุด (วินาที)<input class="question-time" type="number" min="0" value="' + (item.timeSeconds ?? '') + '" required></label>' : '<strong>คำถามท้ายคอร์ส</strong>'}<button type="button" class="icon-button remove-question" aria-label="ลบคำถาม">×</button></div>
-    <label>คำถาม<input class="question-text" value="${String(item.question || '').replace(/"/g, '&quot;')}" required></label>
-    <div class="option-list">${[0, 1, 2, 3].map((_, index) => `<label class="option-row"><input type="radio" name="${radioName}" value="${index}" ${Number(item.correctIndex) === index ? 'checked' : ''} required><input class="option-text" value="${String((item.options || [])[index] || '').replace(/"/g, '&quot;')}" placeholder="ตัวเลือก ${index + 1}" required></label>`).join('')}</div>
+    <label>คำถาม<input class="question-text" value="${esc(item.question || '')}" required></label>
+    <div class="option-list">${[0, 1, 2, 3].map((_, index) => `<label class="option-row"><input type="radio" name="${radioName}" value="${index}" ${Number(item.correctIndex) === index ? 'checked' : ''} required><input class="option-text" value="${esc((item.options || [])[index] || '')}" placeholder="ตัวเลือก ${index + 1}" required></label>`).join('')}</div>
     <p class="help-text">เลือกวงกลมหน้าตัวเลือกที่ถูกต้อง</p></article>`;
   };
   function addQuestion(kind, item) { (kind === 'stop' ? stopsEl : quizEl).insertAdjacentHTML('beforeend', questionMarkup(kind, item)); }
@@ -31,9 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderMedia() {
     const thumb = document.getElementById('thumbnailUrl').value;
     const video = document.getElementById('videoUrl').value;
-    document.getElementById('thumbnailPreview').innerHTML = thumb ? `<img src="${thumb}" alt="ตัวอย่างรูปปก">` : '';
+    document.getElementById('thumbnailPreview').innerHTML = thumb ? `<img src="${esc(thumb)}" alt="ตัวอย่างรูปปก">` : '';
     document.getElementById('videoPreview').innerHTML = video
-      ? (video.includes('youtube-nocookie.com/embed/') ? `<iframe src="${video}" title="ตัวอย่างวิดีโอ YouTube" allowfullscreen></iframe>` : `<video controls src="${video}"></video>`)
+      ? (video.includes('youtube-nocookie.com/embed/') ? `<iframe src="${esc(video)}" title="ตัวอย่างวิดีโอ YouTube" allowfullscreen></iframe>` : `<video controls src="${esc(video)}"></video>`)
       : '';
   }
   document.getElementById('addStop').addEventListener('click', () => addQuestion('stop'));

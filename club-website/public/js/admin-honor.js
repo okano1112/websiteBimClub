@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const hiddenImg = document.getElementById('profileImage');
     
     let currentId = null;
+    const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
 
     async function loadHonors() {
         try {
@@ -48,15 +49,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         tbody.innerHTML = list.map(item => `
             <tr>
                 <td>
-                    <img src="${item.profile_image || '../../../assets/img/default-avatar.png'}" class="profile-img-preview" alt="Profile">
+                    <img src="${escapeHtml(item.profile_image || '../../../assets/img/default-avatar.png')}" class="profile-img-preview" alt="Profile">
                 </td>
                 <td>
-                    <strong>${item.name}</strong>
-                    ${item.nickname ? `<br><small class="text-gray-500">(${item.nickname})</small>` : ''}
+                    <strong>${escapeHtml(item.name)}</strong>
+                    ${item.nickname ? `<br><small class="text-gray-500">(${escapeHtml(item.nickname)})</small>` : ''}
                 </td>
-                <td>${item.generation || '-'}</td>
-                <td>${item.position || '-'}</td>
-                <td>${item.display_order}</td>
+                <td>${escapeHtml(item.generation || '-')}</td>
+                <td>${escapeHtml(item.position || '-')}</td>
+                <td>${Number(item.display_order) || 0}</td>
                 <td>
                     <span class="badge ${item.is_published ? 'published' : 'hidden'}">
                         ${item.is_published ? 'เผยแพร่' : 'ซ่อน'}
