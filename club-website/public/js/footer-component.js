@@ -9,11 +9,11 @@ class FooterComponent extends HTMLElement {
     <footer class="site-footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-col">
+                <div class="footer-col footer-brand">
                     <h3>BimClub</h3>
                     <p>ชมรมที่สร้างสรรค์และพัฒนาทักษะด้าน BIM (Building Information Modeling) ให้แก่นิสิตและผู้สนใจอย่างมืออาชีพ</p>
                 </div>
-                <div class="footer-col">
+                <nav class="footer-col footer-nav" aria-label="เมนูส่วนท้าย">
                     <h3>เมนู</h3>
                     <ul>
                         <li><a href="${basePath}index.html">หน้าแรก</a></li>
@@ -23,14 +23,14 @@ class FooterComponent extends HTMLElement {
                         <li><a href="${basePath}${pagePath}achievement.html">ผลงานสมาชิก</a></li>
                         <li><a href="${basePath}${pagePath}honor.html">ศิษย์เก่าของชมรม</a></li>
                     </ul>
-                </div>
-                <div class="footer-col">
+                </nav>
+                <address class="footer-col footer-contact">
                     <h3>ติดต่อเรา</h3>
                     <p>มหาวิทยาลัยศรีปทุม<br>อาคารคณะวิศวกรรมศาสตร์</p>
-                </div>
+                </address>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 BimClub. All Rights Reserved.</p>
+                <p>&copy; 2026 BimClub · All Rights Reserved.</p>
             </div>
         </div>
     </footer>

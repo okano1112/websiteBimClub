@@ -87,18 +87,32 @@
 
 /* ===== Featured Section (Carousel) ===== */
 .featured-section {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 24px 40px;
 }
 
 .featuredSwiper {
-  padding: 10px 4px 50px;
-  overflow: visible;
+  padding: 10px 8px 50px;
+  overflow: hidden;
 }
 
 .featuredSwiper .swiper-slide {
   height: auto;
+}
+
+.admin-create-box {
+  width: min(1000px, calc(100% - 32px));
+  box-sizing: border-box;
+}
+
+.admin-create-box form > div {
+  flex-wrap: wrap;
+}
+
+.admin-create-box input[type="file"] {
+  max-width: 100%;
 }
 
 /* ===== Activity Card ===== */
@@ -152,7 +166,14 @@
   box-shadow: 0 4px 12px rgba(173, 15, 15, 0.3);
 }
 
-.card-
+.activity-card .card-body {
+  min-width: 0;
+  min-height: 248px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 20px;
+}
 
 .card-date {
   display: flex;
@@ -173,6 +194,7 @@
   color: var(--text-dark);
   margin-bottom: 10px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .card-body p {
@@ -193,6 +215,9 @@
   justify-content: space-between;
   padding-top: 14px;
   border-top: 1px solid var(--border-color);
+  gap: 12px;
+  margin-top: auto;
+  flex-wrap: wrap;
 }
 
 .participants {
@@ -313,6 +338,7 @@
 
 /* ===== Timeline Section ===== */
 .timeline-section {
+  width: 100%;
   max-width: 900px;
   margin: 0 auto;
   padding: 70px 24px;
@@ -328,8 +354,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 8px;
   width: 3px;
   background: linear-gradient(to bottom, var(--primary-color), #fecaca, var(--primary-color));
   border-radius: 999px;
@@ -337,8 +362,8 @@
 
 .timeline-item {
   position: relative;
-  width: 50%;
-  padding: 16px 40px;
+  width: 100%;
+  padding: 16px 0 16px 48px;
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease, transform 0.6s ease;
@@ -351,11 +376,11 @@
 
 .timeline-item.left {
   left: 0;
-  text-align: right;
+  text-align: left;
 }
 
 .timeline-item.right {
-  left: 50%;
+  left: 0;
   text-align: left;
 }
 
@@ -373,12 +398,9 @@
   z-index: 1;
 }
 
-.timeline-item.left::before {
-  right: -8px;
-}
-
+.timeline-item.left::before,
 .timeline-item.right::before {
-  left: -8px;
+  left: 0;
 }
 
 .timeline-content {
@@ -475,15 +497,14 @@
     font-size: 2rem;
   }
 
-  /* Timeline mobile: single column */
   .timeline::before {
-    left: 20px;
+    left: 8px;
   }
 
   .timeline-item {
     width: 100%;
-    padding-left: 52px;
-    padding-right: 16px;
+    padding-left: 44px;
+    padding-right: 0;
     text-align: left;
   }
 
@@ -495,7 +516,7 @@
 
   .timeline-item.left::before,
   .timeline-item.right::before {
-    left: 12px;
+    left: 0;
     right: auto;
   }
 
@@ -513,6 +534,9 @@
   .section-header h2 {
     font-size: 1.5rem;
   }
+
+  .admin-create-box { width: calc(100% - 24px); padding: 16px !important; }
+  .admin-create-box form > div button { width: 100%; margin-left: 0 !important; }
 
   .card-image {
   position: relative;

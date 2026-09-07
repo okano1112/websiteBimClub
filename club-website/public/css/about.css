@@ -102,63 +102,10 @@
   letter-spacing: 0.04em;
 }
 
-/* ---- Vision / Mission Section ---- */
-.vision-section {
-  width: min(1100px, 92vw);
-  margin: -40px auto 0;
-  position: relative;
-  z-index: 3;
-}
-
-.vision-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-.vision-card {
-  background: var(--white);
-  padding: 32px 24px;
-  border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.1);
-  text-align: center;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-  /* animation initial state */
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.vision-card.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.vision-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.14);
-}
-
-.vision-icon {
-  font-size: 2.4rem;
-  margin-bottom: 14px;
-}
-
-.vision-card h3 {
-  margin-bottom: 10px;
-  font-size: 1.3rem;
-  color: #111827;
-}
-
-.vision-card p {
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: #4b5563;
-}
-
 /* ---- Team Section ---- */
 .team-section {
   width: min(1100px, 92vw);
-  margin: 60px auto;
+  margin: 48px auto 60px;
 }
 
 .section-header {
@@ -279,44 +226,42 @@
   padding: 20px 0;
 }
 
-/* center vertical line */
 .timeline::before {
   content: '';
   position: absolute;
-  left: 50%;
+  left: 8px;
   top: 0;
   bottom: 0;
   width: 3px;
   background: linear-gradient(180deg, var(--primary-color) 0%, #f87171 100%);
-  transform: translateX(-50%);
   border-radius: 999px;
 }
 
 .timeline-item {
   position: relative;
-  width: 50%;
-  padding: 16px 40px;
+  width: 100%;
+  padding: 16px 0 16px 48px;
   /* animation initial state */
   opacity: 0;
 }
 
 .timeline-item.left {
   left: 0;
-  text-align: right;
-  transform: translateX(-30px);
+  text-align: left;
+  transform: translateY(20px);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .timeline-item.right {
-  left: 50%;
+  left: 0;
   text-align: left;
-  transform: translateX(30px);
+  transform: translateY(20px);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .timeline-item.show {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(0);
 }
 
 /* dot on the line */
@@ -333,12 +278,9 @@
   z-index: 1;
 }
 
-.timeline-item.left::after {
-  right: -8px;
-}
-
+.timeline-item.left::after,
 .timeline-item.right::after {
-  left: -8px;
+  left: 0;
 }
 
 .timeline-content {
@@ -433,15 +375,6 @@
     gap: 24px;
   }
 
-  .vision-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .vision-section {
-    margin-top: -24px;
-  }
-
   .team-card {
     flex-direction: column;
   }
@@ -451,15 +384,14 @@
     height: 200px;
   }
 
-  /* Timeline — switch to single column */
   .timeline::before {
-    left: 20px;
+    left: 8px;
   }
 
   .timeline-item {
     width: 100%;
-    padding-left: 56px;
-    padding-right: 16px;
+    padding-left: 44px;
+    padding-right: 0;
     text-align: left;
   }
 
@@ -470,33 +402,7 @@
 
   .timeline-item.left::after,
   .timeline-item.right::after {
-    left: 12px;
+    left: 0;
     right: auto;
   }
-}
-
-.section-title {
-	position: sticky;
-	top: 20px;
-}
-
-.section-content {
-	display: flex;
-	flex-direction: column;
-}
-.dot {
-	--size: .5rem;
-	width: var(--size);
-	height: var(--size);
-	margin: calc((1rem - var(--size))/2);
-	border-radius: 50%;
-	background-color: var(--color-font);
-	flex-grow: 0;
-}
-
-.line {
-	flex-grow: 1;
-	margin: 8px 0;
-	width: 3px;
-	background-color: var(--color-font);
 }

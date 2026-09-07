@@ -3,10 +3,12 @@ const crypto = require('crypto');
 const fs = require('fs/promises');
 const path = require('path');
 const router = express.Router();
-const db = require('../config/database');
-const requireLogin = require('../middleware/requireLogin');
-const requireInstructor = require('../middleware/requireInstructor');
-const requireAdmin = require('../middleware/requireAdmin');
+const db = require('../../config/database');
+const requireLogin = require('../../middleware/requireLogin');
+const requireInstructor = require('../../middleware/requireInstructor');
+const requireAdmin = require('../../middleware/requireAdmin');
+const courseController = require('../controllers/course.controller');
+const { normalizeVideoUrl } = require('../utils/video');
 
 function parseJson(value, fallback) {
     if (value == null) return fallback;
@@ -36,17 +38,6 @@ function isUploadPath(url, extraPrefix) {
     return url.startsWith('/uploads/') || (extraPrefix && url.startsWith(extraPrefix));
 }
 
-function normalizeVideoUrl(value) {
-    const raw = cleanText(value);
-    if (!raw) return '';
-    if (raw.startsWith('/uploads/videos/')) return raw;
-
-    // รับทั้ง URL YouTube และ iframe แต่เก็บเป็น URL embed ที่ควบคุมได้เท่านั้น
-    const match = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-    if (!match) return null;
-    return `https://www.youtube-nocookie.com/embed/${match[1]}`;
-}
-
 async function deleteStoredVideo(url) {
     if (!url || !url.startsWith('/uploads/videos/')) return;
     const filename = path.basename(url);
@@ -54,7 +45,7 @@ async function deleteStoredVideo(url) {
     const [references] = await db.query('SELECT id FROM courses WHERE video_url = ? LIMIT 1', [url]);
     if (references.length) return;
     try {
-        await fs.unlink(path.join(__dirname, '..', 'uploads', 'videos', filename));
+        await fs.unlink(path.join(__dirname, '..', '..', 'uploads', 'videos', filename));
     } catch (error) {
         if (error.code !== 'ENOENT') console.error('ไม่สามารถลบไฟล์วิดีโอเดิม:', error);
     }
@@ -91,6 +82,8 @@ function normalizeQuestions(rawList, label) {
                 return { error: `เวลาของจุดหยุดข้อที่ ${i + 1} ไม่ถูกต้อง` };
             }
             row.timeSeconds = timeSeconds;
+            const activeVal = item.isActive ?? item.is_active ?? item.enabled;
+            row.isActive = (activeVal === false || activeVal === 0 || activeVal === '0' || activeVal === 'false') ? 0 : 1;
         }
         questions.push(row);
     }
@@ -126,17 +119,18 @@ async function fetchCourseRow(id) {
     return rows[0] || null;
 }
 
-async function fetchStops(courseId) {
-    const [rows] = await db.query(
-        'SELECT * FROM course_video_stops WHERE course_id = ? ORDER BY time_seconds ASC, display_order ASC, id ASC',
-        [courseId]
-    );
+async function fetchStops(courseId, onlyActive = false) {
+    let sql = 'SELECT * FROM course_video_stops WHERE course_id = ?';
+    if (onlyActive) sql += ' AND is_active = 1';
+    sql += ' ORDER BY time_seconds ASC, display_order ASC, id ASC';
+    const [rows] = await db.query(sql, [courseId]);
     return rows.map((row) => ({
         id: row.id,
         timeSeconds: row.time_seconds,
         question: row.question,
         options: parseJson(row.options, []),
-        correctIndex: row.correct_index
+        correctIndex: row.correct_index,
+        isActive: row.is_active === undefined || row.is_active === null ? true : Boolean(row.is_active)
     }));
 }
 
@@ -219,9 +213,9 @@ async function replaceStops(connection, courseId, stops) {
     await connection.query('DELETE FROM course_video_stops WHERE course_id = ?', [courseId]);
     for (const stop of stops) {
         await connection.query(
-            `INSERT INTO course_video_stops (course_id, time_seconds, question, options, correct_index, display_order)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [courseId, stop.timeSeconds, stop.question, JSON.stringify(stop.options), stop.correctIndex, stop.displayOrder]
+            `INSERT INTO course_video_stops (course_id, time_seconds, question, options, correct_index, display_order, is_active)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [courseId, stop.timeSeconds, stop.question, JSON.stringify(stop.options), stop.correctIndex, stop.displayOrder, stop.isActive !== 0 ? 1 : 0]
         );
     }
 }
@@ -237,22 +231,7 @@ async function replaceQuiz(connection, courseId, questions) {
     }
 }
 
-router.get('/', async (req, res) => {
-    try {
-        const [rows] = await db.query(
-            `SELECT c.id, c.title, c.description, c.thumbnail_url, c.pass_score, c.created_at,
-                    u.full_name AS instructor_name
-             FROM courses c
-             JOIN users u ON u.id = c.instructor_id
-             WHERE c.is_published = 1
-             ORDER BY c.created_at DESC`
-        );
-        res.json({ success: true, courses: rows.map((row) => mapCourse(row)) });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงรายการคอร์ส' });
-    }
-});
+router.get('/', courseController.listPublished);
 
 router.get('/manage', requireInstructor, async (req, res) => {
     try {
@@ -310,26 +289,7 @@ router.get('/certificate-by-code/:code', requireLogin, async (req, res) => {
     }
 });
 
-router.post('/', requireInstructor, async (req, res) => {
-    try {
-        const title = cleanText(req.body.title);
-        const description = cleanText(req.body.description);
-        if (!title) {
-            return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อคอร์ส' });
-        }
-
-        const [result] = await db.query(
-            `INSERT INTO courses (instructor_id, title, description, pass_score, is_published)
-             VALUES (?, ?, ?, 70, 0)`,
-            [req.currentUser.id, title, description]
-        );
-        const course = await fetchCourseRow(result.insertId);
-        res.status(201).json({ success: true, message: 'สร้างคอร์สสำเร็จ', course: mapCourse(course) });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการสร้างคอร์ส' });
-    }
-});
+router.post('/', requireInstructor, courseController.create);
 
 router.get('/:id/editor', requireInstructor, async (req, res) => {
     try {
@@ -533,6 +493,37 @@ router.delete('/:id', requireInstructor, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการลบคอร์ส' });
+    }
+});
+
+router.post('/:id/stops/:stopId/answer', requireLogin, async (req, res) => {
+    try {
+        const courseId = parseId(req.params.id);
+        const stopId = parseId(req.params.stopId);
+        const selectedIndex = Number(req.body.selectedIndex ?? req.body.selected_index);
+
+        if (!courseId || !stopId || !Number.isInteger(selectedIndex)) {
+            return res.status(400).json({ success: false, message: 'ข้อมูลไม่ถูกต้อง' });
+        }
+
+        const [stops] = await db.query(
+            'SELECT id, correct_index, question FROM course_video_stops WHERE id = ? AND course_id = ?',
+            [stopId, courseId]
+        );
+
+        if (stops.length === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบคำถามจุดหยุดนี้' });
+        }
+
+        const isCorrect = Number(stops[0].correct_index) === selectedIndex;
+        res.json({
+            success: true,
+            isCorrect,
+            message: isCorrect ? 'ตอบถูกต้อง! คุณสามารถดูวิดีโอต่อได้' : 'คำตอบยังไม่ถูกต้อง ลองเลือกใหม่อีกครั้ง'
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการตรวจคำตอบจุดหยุด' });
     }
 });
 

@@ -13,7 +13,10 @@ function normalizeUser(user) {
         email: user.email,
         fullName: user.full_name,
         full_name: user.full_name,
+        age: user.age,
         phone: user.phone,
+        recoveryPhone: user.recovery_phone,
+        recovery_phone: user.recovery_phone,
         avatarUrl: user.avatar_url,
         avatar_url: user.avatar_url,
         role: user.role || 'user',
@@ -28,7 +31,7 @@ async function loadCurrentUser(req, res) {
     }
 
     const [users] = await db.query(
-        `SELECT id, username, email, full_name, phone, avatar_url, role,
+        `SELECT id, username, email, full_name, age, phone, recovery_phone, avatar_url, role,
                 is_verified, is_banned, deleted_at
          FROM users WHERE id = ?`,
         [req.session.user.id]

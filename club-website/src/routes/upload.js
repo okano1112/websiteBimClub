@@ -3,18 +3,18 @@ const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const requireLogin = require('../middleware/requireLogin');
-const requireAdmin = require('../middleware/requireAdmin');
-const requireInstructor = require('../middleware/requireInstructor');
+const requireLogin = require('../../middleware/requireLogin');
+const requireAdmin = require('../../middleware/requireAdmin');
+const requireInstructor = require('../../middleware/requireInstructor');
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
+const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
 const videosDir = path.join(uploadsDir, 'videos');
 fs.mkdirSync(videosDir, { recursive: true });
 
 // Configure multer storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '..', 'uploads'));
+        cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);

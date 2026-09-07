@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const db = require('../config/database');
-const { sendMail } = require('../config/mailer');
-const requireLogin = require('../middleware/requireLogin');
-const { normalizeUser } = require('../middleware/requireRole');
+const db = require('../../config/database');
+const { sendMail } = require('../../config/mailer');
+const requireLogin = require('../../middleware/requireLogin');
+const { normalizeUser } = require('../../middleware/requireRole');
+const accountController = require('../controllers/account.controller');
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
@@ -263,50 +264,14 @@ router.post('/logout', (req, res) => {
 // ============================================================
 // GET /me — ดึงข้อมูลผู้ใช้ปัจจุบัน
 // ============================================================
-router.get('/me', requireLogin, (req, res) => {
-    res.json({ success: true, user: req.currentUser });
-});
+router.get('/me', requireLogin, accountController.me);
 
 // ============================================================
 // PUT /profile — แก้ไขข้อมูลโปรไฟล์
 // ============================================================
-router.put('/profile', requireLogin, async (req, res) => {
-    try {
-        const { fullName, phone, avatarUrl } = req.body;
-        const trimmedFullName = String(fullName || '').trim();
-        const trimmedPhone = String(phone || '').trim();
-        const trimmedAvatarUrl = String(avatarUrl || '').trim();
-
-        if (!trimmedFullName) {
-            return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อ-นามสกุล' });
-        }
-
-        if (trimmedPhone && !/^[0-9+\-\s()]{8,30}$/.test(trimmedPhone)) {
-            return res.status(400).json({ success: false, message: 'รูปแบบเบอร์โทรไม่ถูกต้อง' });
-        }
-
-        if (trimmedAvatarUrl && !trimmedAvatarUrl.startsWith('/uploads/')) {
-            return res.status(400).json({ success: false, message: 'รูปโปรไฟล์ต้องเป็นไฟล์ที่อัปโหลดผ่านระบบเท่านั้น' });
-        }
-
-        await db.query(
-            'UPDATE users SET full_name = ?, phone = ?, avatar_url = ? WHERE id = ?',
-            [trimmedFullName, trimmedPhone || null, trimmedAvatarUrl || null, req.currentUser.id]
-        );
-
-        const [users] = await db.query('SELECT * FROM users WHERE id = ?', [req.currentUser.id]);
-        req.session.user = normalizeUser(users[0]);
-
-        res.json({
-            success: true,
-            message: 'บันทึกข้อมูลโปรไฟล์สำเร็จ',
-            user: req.session.user
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการบันทึกโปรไฟล์' });
-    }
-});
+router.put('/profile', requireLogin, accountController.updateProfile);
+router.put('/password', requireLogin, accountController.updatePassword);
+router.put('/recovery-phone', requireLogin, accountController.updateRecoveryPhone);
 
 // ============================================================
 // POST /forgot-password — ขอลิงก์รีเซ็ตรหัสผ่าน

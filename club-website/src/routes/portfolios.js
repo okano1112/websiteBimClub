@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const requireLogin = require('../middleware/requireLogin');
+const db = require('../../config/database');
+const requireLogin = require('../../middleware/requireLogin');
 
 async function fetchCertificates(userId, portfolioId) {
     const [systemCerts] = await db.query(
@@ -22,7 +22,6 @@ async function fetchCertificates(userId, portfolioId) {
             );
             manualCerts = rows;
         } catch (e) {
-            // In case table doesn't exist yet
             console.warn('portfolio_certificates table might not exist yet', e.message);
         }
     }
@@ -30,27 +29,36 @@ async function fetchCertificates(userId, portfolioId) {
     return { system: systemCerts, manual: manualCerts };
 }
 
+async function ensurePortfolio(userId) {
+    let [portfolios] = await db.query('SELECT * FROM portfolios WHERE user_id = ?', [userId]);
+    if (portfolios.length === 0) {
+        await db.query('INSERT IGNORE INTO portfolios (user_id) VALUES (?)', [userId]);
+        [portfolios] = await db.query('SELECT * FROM portfolios WHERE user_id = ?', [userId]);
+    }
+    return portfolios[0];
+}
+
 // GET /me
 router.get('/me', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
-        const [portfolios] = await db.query('SELECT * FROM portfolios WHERE user_id = ?', [userId]);
-        
-        if (portfolios.length === 0) {
-            return res.status(404).json({ success: false, message: 'ไม่พบพอร์ตโฟลิโอ' });
-        }
-        
-        const portfolio = portfolios[0];
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
+        const portfolio = await ensurePortfolio(userId);
         
         const [experiences] = await db.query(
-            'SELECT * FROM portfolio_experiences WHERE portfolio_id = ? ORDER BY display_order',
+            'SELECT * FROM portfolio_experiences WHERE portfolio_id = ? ORDER BY display_order ASC, id ASC',
             [portfolio.id]
         );
         
-        const [education] = await db.query(
-            'SELECT * FROM portfolio_education WHERE portfolio_id = ? ORDER BY display_order',
+        const [eduRows] = await db.query(
+            'SELECT * FROM portfolio_education WHERE portfolio_id = ? ORDER BY display_order ASC, id ASC',
             [portfolio.id]
         );
+        const education = eduRows.map((edu) => ({
+            ...edu,
+            graduation_year: edu.end_year,
+            graduationYear: edu.end_year,
+            fieldOfStudy: edu.field_of_study
+        }));
         
         const [projects] = await db.query(
             'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
@@ -62,7 +70,7 @@ router.get('/me', requireLogin, async (req, res) => {
         portfolio.projects = projects;
         portfolio.certificates = await fetchCertificates(userId, portfolio.id);
         
-        res.json({ success: true, portfolio });
+        res.json({ success: true, portfolio, ...portfolio });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูลพอร์ตโฟลิโอ' });
@@ -72,21 +80,27 @@ router.get('/me', requireLogin, async (req, res) => {
 // PUT /me
 router.put('/me', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
-        const { headline, summary, skills, websiteUrl, isPublic } = req.body;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
+        const { headline, summary, skills } = req.body;
+        const websiteUrl = req.body.websiteUrl ?? req.body.website_url ?? null;
+        const isPublicRaw = req.body.isPublic ?? req.body.is_public;
+        const isPublic = isPublicRaw === true || isPublicRaw === 1 || isPublicRaw === '1' || isPublicRaw === 'true';
         
         let skillsJson = '[]';
         if (skills) {
             skillsJson = typeof skills === 'string' ? skills : JSON.stringify(skills);
         }
         
+        await ensurePortfolio(userId);
+
         await db.query(
             'UPDATE portfolios SET headline=?, summary=?, skills=?, website_url=?, is_public=? WHERE user_id=?',
-            [headline, summary, skillsJson, websiteUrl, isPublic ? 1 : 0, userId]
+            [headline || null, summary || null, skillsJson, websiteUrl, isPublic ? 1 : 0, userId]
         );
         
         const [portfolios] = await db.query('SELECT * FROM portfolios WHERE user_id = ?', [userId]);
-        res.json({ success: true, portfolio: portfolios[0] });
+        const portfolio = portfolios[0];
+        res.json({ success: true, portfolio, ...portfolio });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการอัปเดตพอร์ตโฟลิโอ' });
@@ -96,15 +110,16 @@ router.put('/me', requireLogin, async (req, res) => {
 // POST /me/experiences
 router.post('/me/experiences', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
-        const { company, position, startDate, endDate, description } = req.body;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
+        const { company, position, description } = req.body;
+        const startDate = req.body.startDate || req.body.start_date || null;
+        const endDate = req.body.endDate || req.body.end_date || null;
         
-        const [portfolios] = await db.query('SELECT id FROM portfolios WHERE user_id = ?', [userId]);
-        const portfolioId = portfolios[0].id;
+        const portfolio = await ensurePortfolio(userId);
         
         const [result] = await db.query(
             'INSERT INTO portfolio_experiences (portfolio_id, company, position, start_date, end_date, description) VALUES (?, ?, ?, ?, ?, ?)',
-            [portfolioId, company, position, startDate, endDate, description]
+            [portfolio.id, company, position, startDate, endDate, description || null]
         );
         
         const [newExp] = await db.query('SELECT * FROM portfolio_experiences WHERE id = ?', [result.insertId]);
@@ -118,7 +133,7 @@ router.post('/me/experiences', requireLogin, async (req, res) => {
 // DELETE /me/experiences/:id
 router.delete('/me/experiences/:id', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
         const expId = req.params.id;
         
         const [exps] = await db.query(
@@ -143,19 +158,27 @@ router.delete('/me/experiences/:id', requireLogin, async (req, res) => {
 // POST /me/education
 router.post('/me/education', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
-        const { institution, degree, fieldOfStudy, startYear, endYear } = req.body;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
+        const { institution, degree } = req.body;
+        const fieldOfStudy = req.body.fieldOfStudy || req.body.field_of_study || null;
+        const startYear = req.body.startYear || req.body.start_year || null;
+        const endYear = req.body.endYear || req.body.end_year || req.body.graduationYear || req.body.graduation_year || null;
         
-        const [portfolios] = await db.query('SELECT id FROM portfolios WHERE user_id = ?', [userId]);
-        const portfolioId = portfolios[0].id;
+        const portfolio = await ensurePortfolio(userId);
         
         const [result] = await db.query(
             'INSERT INTO portfolio_education (portfolio_id, institution, degree, field_of_study, start_year, end_year) VALUES (?, ?, ?, ?, ?, ?)',
-            [portfolioId, institution, degree, fieldOfStudy, startYear, endYear]
+            [portfolio.id, institution, degree, fieldOfStudy, startYear ? Number(startYear) : null, endYear ? Number(endYear) : null]
         );
         
         const [newEdu] = await db.query('SELECT * FROM portfolio_education WHERE id = ?', [result.insertId]);
-        res.status(201).json({ success: true, education: newEdu[0] });
+        const edu = {
+            ...newEdu[0],
+            graduation_year: newEdu[0].end_year,
+            graduationYear: newEdu[0].end_year,
+            fieldOfStudy: newEdu[0].field_of_study
+        };
+        res.status(201).json({ success: true, education: edu });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการเพิ่มประวัติการศึกษา' });
@@ -165,7 +188,7 @@ router.post('/me/education', requireLogin, async (req, res) => {
 // DELETE /me/education/:id
 router.delete('/me/education/:id', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
         const eduId = req.params.id;
         
         const [edus] = await db.query(
@@ -190,15 +213,16 @@ router.delete('/me/education/:id', requireLogin, async (req, res) => {
 // POST /me/projects
 router.post('/me/projects', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
-        const { title, description, imageUrl, projectUrl } = req.body;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
+        const { title, description } = req.body;
+        const imageUrl = req.body.imageUrl || req.body.image_url || null;
+        const projectUrl = req.body.projectUrl || req.body.project_url || null;
         
-        const [portfolios] = await db.query('SELECT id FROM portfolios WHERE user_id = ?', [userId]);
-        const portfolioId = portfolios[0].id;
+        const portfolio = await ensurePortfolio(userId);
         
         const [result] = await db.query(
             'INSERT INTO portfolio_projects (portfolio_id, title, description, image_url, project_url) VALUES (?, ?, ?, ?, ?)',
-            [portfolioId, title, description, imageUrl, projectUrl]
+            [portfolio.id, title, description || null, imageUrl, projectUrl]
         );
         
         const [newProj] = await db.query('SELECT * FROM portfolio_projects WHERE id = ?', [result.insertId]);
@@ -212,7 +236,7 @@ router.post('/me/projects', requireLogin, async (req, res) => {
 // DELETE /me/projects/:id
 router.delete('/me/projects/:id', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
         const projId = req.params.id;
         
         const [projs] = await db.query(
@@ -238,13 +262,15 @@ router.delete('/me/projects/:id', requireLogin, async (req, res) => {
 router.get('/public/:userId', async (req, res) => {
     try {
         const targetUserId = req.params.userId;
+        const currentUserId = req.currentUser ? req.currentUser.id : (req.session?.user?.id || null);
+        const isOwner = Boolean(currentUserId && String(currentUserId) === String(targetUserId));
         
         const [portfolios] = await db.query(
             `SELECT p.*, u.full_name, u.full_name AS user_name, u.avatar_url, u.avatar_url AS user_avatar
             FROM portfolios p 
             JOIN users u ON p.user_id = u.id 
-            WHERE p.user_id = ? AND p.is_public = 1`,
-            [targetUserId]
+            WHERE p.user_id = ? AND (p.is_public = 1 OR ? = 1)`,
+            [targetUserId, isOwner ? 1 : 0]
         );
         
         if (portfolios.length === 0) {
@@ -252,16 +278,23 @@ router.get('/public/:userId', async (req, res) => {
         }
         
         const portfolio = portfolios[0];
+        portfolio.is_owner = isOwner;
         
         const [experiences] = await db.query(
-            'SELECT * FROM portfolio_experiences WHERE portfolio_id = ? ORDER BY display_order',
+            'SELECT * FROM portfolio_experiences WHERE portfolio_id = ? ORDER BY display_order ASC, id ASC',
             [portfolio.id]
         );
         
-        const [education] = await db.query(
-            'SELECT * FROM portfolio_education WHERE portfolio_id = ? ORDER BY display_order',
+        const [eduRows] = await db.query(
+            'SELECT * FROM portfolio_education WHERE portfolio_id = ? ORDER BY display_order ASC, id ASC',
             [portfolio.id]
         );
+        const education = eduRows.map((edu) => ({
+            ...edu,
+            graduation_year: edu.end_year,
+            graduationYear: edu.end_year,
+            fieldOfStudy: edu.field_of_study
+        }));
         
         const [projects] = await db.query(
             'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
@@ -273,27 +306,26 @@ router.get('/public/:userId', async (req, res) => {
         portfolio.projects = projects;
         portfolio.certificates = await fetchCertificates(targetUserId, portfolio.id);
         
-        res.json({ success: true, portfolio });
+        res.json({ success: true, portfolio, ...portfolio });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูลพอร์ตโฟลิโอ' });
     }
 });
 
-
-
 // POST /me/certificates
 router.post('/me/certificates', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
-        const { title, issuer, issueDate, credentialUrl } = req.body;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
+        const { title, issuer } = req.body;
+        const issueDate = req.body.issueDate || req.body.issue_date || null;
+        const credentialUrl = req.body.credentialUrl || req.body.credential_url || null;
         
-        const [portfolios] = await db.query('SELECT id FROM portfolios WHERE user_id = ?', [userId]);
-        const portfolioId = portfolios[0].id;
+        const portfolio = await ensurePortfolio(userId);
         
         const [result] = await db.query(
             'INSERT INTO portfolio_certificates (portfolio_id, title, issuer, issue_date, credential_url) VALUES (?, ?, ?, ?, ?)',
-            [portfolioId, title, issuer, issueDate, credentialUrl]
+            [portfolio.id, title, issuer, issueDate, credentialUrl]
         );
         
         const [newCert] = await db.query('SELECT * FROM portfolio_certificates WHERE id = ?', [result.insertId]);
@@ -307,7 +339,7 @@ router.post('/me/certificates', requireLogin, async (req, res) => {
 // DELETE /me/certificates/:id
 router.delete('/me/certificates/:id', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
         const certId = req.params.id;
         
         const [certs] = await db.query(

@@ -1,5 +1,10 @@
 class NavbarComponent extends HTMLElement {
   connectedCallback() {
+    this.style.display = 'block';
+    this.style.position = 'sticky';
+    this.style.top = '0';
+    this.style.zIndex = '1000';
+
     const pathname = window.location.pathname;
     const isSubdir = pathname.includes('/page/');
     const basePath = isSubdir ? '../' : './';
@@ -66,6 +71,27 @@ class NavbarComponent extends HTMLElement {
 
     this.loadSystemSidebar(basePath);
     this.setupInteractions();
+    this.setupScrollState();
+  }
+
+  setupScrollState() {
+    const navbar = this.querySelector('.navbar');
+    if (!navbar) return;
+
+    let ticking = false;
+    const update = () => {
+      navbar.classList.toggle('is-scrolled', window.scrollY > 12);
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
   }
 
   loadSystemSidebar(basePath) {

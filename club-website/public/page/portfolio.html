@@ -1,173 +1,261 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <link rel="stylesheet" href="../css/global.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>พอร์ตโฟลิโอของฉัน - BimClub</title>
+    <title>จัดการพอร์ตโฟลิโอ - BimClub</title>
     <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/portfolio.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="../js/navbar-component.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/navbar-component.js"></script>
 </head>
 <body>
 
-  <!-- Navbar Component -->
-  <site-navbar></site-navbar>
+    <!-- Navbar Component -->
+    <site-navbar></site-navbar>
 
     <!-- Main Content -->
-    <div class="portfolio-container">
-        <h1 class="page-title">จัดการพอร์ตโฟลิโอ</h1>
+    <main class="portfolio-container">
         
-        <!-- Section 1: ข้อมูลพื้นฐาน -->
-        <section class="port-section">
-            <h2 class="section-title">ข้อมูลพื้นฐาน</h2>
-            <form id="basicInfoForm">
-                <div class="form-group">
-                    <label>หัวข้อหลัก (Headline)</label>
-                    <input type="text" id="headline" placeholder="เช่น นักศึกษาจบใหม่สายไอที">
-                </div>
-                <div class="form-group">
-                    <label>สรุปประวัติ (Summary)</label>
-                    <textarea id="summary" placeholder="เล่าเกี่ยวกับตัวคุณสั้นๆ"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>เว็บไซต์ (Website URL)</label>
-                    <input type="url" id="websiteUrl" placeholder="https://...">
-                </div>
-                
-                <div class="toggle-group">
-                    <label class="toggle">
+        <!-- Header Toolbar with Showcase Button -->
+        <header class="editor-header-bar">
+            <div class="editor-title-group">
+                <h1>จัดการพอร์ตโฟลิโอวิชาชีพ</h1>
+                <p>สร้างและปรับแต่งโปรไฟล์วิชาชีพ ทักษะ ประวัติการทำงาน การศึกษา ผลงาน และใบรับรองมาตรฐาน</p>
+            </div>
+            <a href="/page/portfolio-public.html" id="btnTopShowcasePreview" target="_blank" class="btn-showcase-preview" title="เปิดดูหน้าพอร์ตโฟลิโอจริงในแท็บใหม่">
+                <span>ดูหน้าโชว์พอร์ตโฟลิโอ (Showcase Preview)</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+        </header>
+
+        <!-- Visibility & Share Card -->
+        <div class="share-status-card">
+            <div class="visibility-row">
+                <div class="visibility-label-wrapper">
+                    <div class="toggle">
                         <input type="checkbox" id="isPublic">
                         <span class="slider"></span>
-                    </label>
-                    <span class="toggle-label">เปิดเป็นสาธารณะ</span>
+                    </div>
+                    <div>
+                        <strong class="toggle-label">เปิดเผยแพร่พอร์ตโฟลิโอเป็นสาธารณะ (Public Profile)</strong>
+                        <div style="font-size:0.85rem;color:var(--slate-500);">เมื่อเปิดใช้งาน ผู้ว่าจ้างหรือสมาชิกคนอื่นจะสามารถเปิดดูหน้าโชว์ของคุณได้</div>
+                    </div>
                 </div>
-                
-                <div class="share-link" id="shareLinkContainer" style="display:none">
-                    ลิงก์สำหรับแชร์: <a href="#" id="shareLink" target="_blank"></a>
+                <div id="statusIndicatorBadge" class="status-indicator-badge private">
+                    <span>●</span> <span>สถานะ: ซ่อนเป็นส่วนตัว</span>
                 </div>
-                
-                <button type="submit" class="btn-save">บันทึกข้อมูล</button>
+            </div>
+
+            <!-- Public Link Box -->
+            <div id="shareLinkContainer" style="display:none;">
+                <div style="font-size:0.85rem;font-weight:600;color:var(--slate-700);margin-bottom:6px;">ลิงก์พอร์ตโฟลิโอสาธารณะของคุณ:</div>
+                <div class="share-link-input-group">
+                    <input type="text" id="shareLinkInput" readonly value="">
+                    <button type="button" class="btn-copy-link" id="btnCopyShareLink">คัดลอกลิงก์</button>
+                    <a href="#" id="shareLinkAnchor" target="_blank" class="btn-copy-link" style="text-decoration:none;">เปิดดู ↗</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: ข้อมูลพื้นฐาน -->
+        <section class="port-section">
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>ข้อมูลพื้นฐาน (Basic Info)</span>
+            </h2>
+            <form id="basicInfoForm">
+                <div class="form-group">
+                    <label for="headline">หัวข้อหลัก / ตำแหน่งวิชาชีพ (Headline)</label>
+                    <input type="text" id="headline" placeholder="เช่น BIM Specialist & Computational Designer / สถาปนิกผู้เชี่ยวชาญ BIM">
+                </div>
+                <div class="form-group">
+                    <label for="summary">สรุปประวัติและความเชี่ยวชาญ (Executive Summary)</label>
+                    <textarea id="summary" placeholder="เล่าภาพรวมประสบการณ์ ความสนใจ และความเชี่ยวชาญเฉพาะทางของคุณ"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="websiteUrl">เว็บไซต์ส่วนตัว / ลิงก์ติดต่อภายนอก (Website / LinkedIn URL)</label>
+                    <input type="url" id="websiteUrl" placeholder="https://yourportfolio.com หรือ https://linkedin.com/in/...">
+                </div>
+                <button type="submit" class="btn-save">บันทึกข้อมูลพื้นฐาน</button>
             </form>
         </section>
 
-        <!-- Section 2: ทักษะ -->
+        <!-- Section 2: ทักษะความเชี่ยวชาญ -->
         <section class="port-section">
-            <h2 class="section-title">ทักษะ (Skills)</h2>
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>ทักษะและความเชี่ยวชาญ (Skills)</span>
+            </h2>
             <div class="skills-container" id="skillsContainer"></div>
+            
+            <div class="preset-skills-row">
+                <span class="preset-label">ทักษะแนะนำ (คลิกเพื่อเพิ่มด่วน):</span>
+                <span class="preset-tag" data-skill="Autodesk Revit">+ Revit</span>
+                <span class="preset-tag" data-skill="Dynamo BIM">+ Dynamo BIM</span>
+                <span class="preset-tag" data-skill="Navisworks">+ Navisworks</span>
+                <span class="preset-tag" data-skill="BIM 360">+ BIM 360</span>
+                <span class="preset-tag" data-skill="Clash Detection">+ Clash Detection</span>
+                <span class="preset-tag" data-skill="AutoCAD">+ AutoCAD</span>
+                <span class="preset-tag" data-skill="Parametric Design">+ Parametric Design</span>
+                <span class="preset-tag" data-skill="Python">+ Python</span>
+            </div>
+
             <div class="add-inline-form">
-                <input type="text" id="newSkill" placeholder="เพิ่มทักษะใหม่ เช่น HTML, CSS">
-                <button type="button" class="btn-add" id="btnAddSkill">เพิ่ม</button>
+                <input type="text" id="newSkill" placeholder="พิมพ์ทักษะใหม่ แล้วกด Enter หรือคลิกเพิ่ม...">
+                <button type="button" class="btn-add" id="btnAddSkill">เพิ่มทักษะ</button>
             </div>
         </section>
 
-        <!-- Section 3: ประสบการณ์ -->
+        <!-- Section 3: ประสบการณ์การทำงาน -->
         <section class="port-section">
-            <h2 class="section-title">ประสบการณ์ (Experience)</h2>
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <span>ประสบการณ์การทำงาน (Work Experience)</span>
+            </h2>
             <div id="expList" class="item-list"></div>
             
             <form id="addExpForm" class="add-form">
-                <h3>เพิ่มประสบการณ์ใหม่</h3>
+                <h3>+ เพิ่มประวัติการทำงานใหม่</h3>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>บริษัท/องค์กร</label>
-                        <input type="text" id="expCompany" required>
+                        <label for="expCompany">บริษัท / องค์กร</label>
+                        <input type="text" id="expCompany" placeholder="เช่น บริษัท สถาปัตย์และวิศวกรรม จำกัด" required>
                     </div>
                     <div class="form-group">
-                        <label>ตำแหน่ง</label>
-                        <input type="text" id="expPosition" required>
+                        <label for="expPosition">ตำแหน่ง</label>
+                        <input type="text" id="expPosition" placeholder="เช่น Lead BIM Coordinator" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>วันที่เริ่ม</label>
+                        <label for="expStartDate">วันที่เริ่มงาน</label>
                         <input type="month" id="expStartDate" required>
                     </div>
                     <div class="form-group">
-                        <label>วันที่สิ้นสุด (เว้นว่างถ้าปัจจุบัน)</label>
+                        <label for="expEndDate">วันที่สิ้นสุด (เว้นว่างไว้หากยังทำถึงปัจจุบัน)</label>
                         <input type="month" id="expEndDate">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>รายละเอียดงาน</label>
-                    <textarea id="expDescription"></textarea>
+                    <label for="expDescription">รายละเอียดหน้าที่ความรับผิดชอบ และผลงานที่โดดเด่น</label>
+                    <textarea id="expDescription" placeholder="อธิบายบทบาท หน้าที่ความรับผิดชอบ และความสำเร็จในตำแหน่งนี้"></textarea>
                 </div>
-                <button type="submit" class="btn-add-full">เพิ่มประสบการณ์</button>
+                <button type="submit" class="btn-add-full">บันทึกและเพิ่มประสบการณ์</button>
             </form>
         </section>
 
-        <!-- Section 4: การศึกษา -->
+        <!-- Section 4: ประวัติการศึกษา -->
         <section class="port-section">
-            <h2 class="section-title">การศึกษา (Education)</h2>
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                <span>ประวัติการศึกษา (Academic Background)</span>
+            </h2>
             <div id="eduList" class="item-list"></div>
             
             <form id="addEduForm" class="add-form">
-                <h3>เพิ่มประวัติการศึกษาใหม่</h3>
+                <h3>+ เพิ่มประวัติการศึกษาใหม่</h3>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>สถาบันการศึกษา</label>
-                        <input type="text" id="eduInstitution" required>
+                        <label for="eduInstitution">สถาบันการศึกษา / มหาวิทยาลัย</label>
+                        <input type="text" id="eduInstitution" placeholder="เช่น มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี" required>
                     </div>
                     <div class="form-group">
-                        <label>วุฒิการศึกษา</label>
-                        <input type="text" id="eduDegree" required>
+                        <label for="eduDegree">วุฒิการศึกษา</label>
+                        <input type="text" id="eduDegree" placeholder="เช่น วิศวกรรมศาสตรบัณฑิต (วศ.บ.) / ปริญญาตรี" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>สาขาวิชา</label>
-                        <input type="text" id="eduField" required>
+                        <label for="eduField">สาขาวิชา</label>
+                        <input type="text" id="eduField" placeholder="เช่น วิศวกรรมโยธา, สถาปัตยกรรมศาสตร์" required>
                     </div>
                     <div class="form-group">
-                        <label>ปีที่จบการศึกษา</label>
+                        <label for="eduYear">ปีที่สำเร็จการศึกษา (ค.ศ.)</label>
                         <input type="number" id="eduYear" placeholder="เช่น 2024" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-add-full">เพิ่มการศึกษา</button>
+                <button type="submit" class="btn-add-full">บันทึกและเพิ่มการศึกษา</button>
             </form>
         </section>
 
-        <!-- Section 5: ผลงาน (Projects) -->
+        <!-- Section 5: ผลงานส่วนตัว (Projects) -->
         <section class="port-section">
-            <h2 class="section-title">ผลงานส่วนตัว (Projects)</h2>
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span>ผลงานและโครงการเด่น (Projects Showcase)</span>
+            </h2>
             <div id="projectList" class="item-list"></div>
             
             <form id="addProjectForm" class="add-form">
-                <h3>เพิ่มผลงานใหม่</h3>
+                <h3>+ เพิ่มผลงานใหม่</h3>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>ชื่อผลงาน</label>
-                        <input type="text" id="projTitle" required>
+                        <label for="projTitle">ชื่อโครงการ / ผลงาน</label>
+                        <input type="text" id="projTitle" placeholder="เช่น แบบจำลอง BIM อาคารสำนักงาน 12 ชั้น" required>
                     </div>
                     <div class="form-group">
-                        <label>ลิงก์ผลงาน (ถ้ามี)</label>
+                        <label for="projUrl">ลิงก์ผลงานภายนอก (ถ้ามี)</label>
                         <input type="url" id="projUrl" placeholder="https://...">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>รายละเอียด</label>
-                    <textarea id="projDescription"></textarea>
+                    <label for="projDescription">รายละเอียดโครงการ และเทคโนโลยีที่ใช้</label>
+                    <textarea id="projDescription" placeholder="อธิบายภาพรวมโครงการ ซอฟต์แวร์ที่ใช้ และจุดเด่นของแบบจำลอง"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>รูปภาพผลงาน</label>
+                    <label for="projImage">รูปภาพหน้าปกโครงการ (รองรับ PNG, JPG, WebP)</label>
                     <input type="file" id="projImage" accept="image/*">
                 </div>
-                <button type="submit" class="btn-add-full">เพิ่มผลงาน</button>
+                <button type="submit" class="btn-add-full">บันทึกและเพิ่มผลงาน</button>
             </form>
         </section>
 
-    </div>
+        <!-- Section 6: ใบรับรอง (Certificates) -->
+        <section class="port-section">
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                <span>ใบรับรองและวุฒิบัตร (Certificates & Credentials)</span>
+            </h2>
+            
+            <div id="certList" class="item-list"></div>
+            
+            <form id="addCertForm" class="add-form">
+                <h3>+ เพิ่มใบรับรองหรือวุฒิบัตรอื่น ๆ</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="certTitle">ชื่อใบรับรอง / หลักสูตร</label>
+                        <input type="text" id="certTitle" placeholder="เช่น Autodesk Certified Professional: Revit" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="certIssuer">สถาบันหรือองค์กรผู้ออกใบรับรอง</label>
+                        <input type="text" id="certIssuer" placeholder="เช่น Autodesk, สภาวิศวกร" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="certDate">วันที่ได้รับ</label>
+                        <input type="date" id="certDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="certUrl">ลิงก์ตรวจสอบใบรับรอง (ถ้ามี)</label>
+                        <input type="url" id="certUrl" placeholder="https://...">
+                    </div>
+                </div>
+                <button type="submit" class="btn-add-full">บันทึกและเพิ่มใบรับรอง</button>
+            </form>
+        </section>
 
-    <!-- Scripts -->
-    
-    <script src="../js/auth.js"></script>
-    <script src="../js/portfolio.js"></script>
+    </main>
 
     <!-- Global Footer -->
     <site-footer></site-footer>
 
-<script src="../js/footer-component.js"></script>
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/footer-component.js"></script>
+    <script src="../js/portfolio.js"></script>
 </body>
 </html>

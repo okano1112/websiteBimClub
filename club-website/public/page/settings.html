@@ -21,10 +21,10 @@
             <p id="settingsRole">กำลังโหลดข้อมูลผู้ใช้...</p>
         </section>
 
-        <section class="settings-layout">
-            <form id="profileForm" class="settings-card">
+        <section class="settings-layout" aria-label="การตั้งค่าบัญชี">
+            <form id="profileForm" class="settings-card" data-settings-section="profile">
                 <h2>ข้อมูลโปรไฟล์</h2>
-                <div id="profileMessage" class="settings-message"></div>
+                <div id="profileMessage" class="settings-message" role="status"></div>
 
                 <div class="avatar-editor">
                     <div id="avatarPreview" class="settings-avatar">U</div>
@@ -36,30 +36,56 @@
 
                 <div class="settings-field">
                     <label for="fullName">ชื่อ-นามสกุล</label>
-                    <input type="text" id="fullName" required>
+                    <input type="text" id="fullName" maxlength="100" autocomplete="name" required>
+                </div>
+
+                <div class="settings-field">
+                    <label for="age">อายุ</label>
+                    <input type="number" id="age" min="0" max="120" inputmode="numeric" placeholder="ไม่ระบุก็ได้">
                 </div>
 
                 <div class="settings-field">
                     <label for="phone">เบอร์โทร</label>
-                    <input type="tel" id="phone" inputmode="tel">
+                    <input type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="เช่น 0812345678">
                 </div>
 
                 <button type="submit" class="settings-submit">บันทึกข้อมูลโปรไฟล์</button>
             </form>
 
-                <section class="settings-section">
-                    <div class="section-header">
-                        <h2>🔒 ความปลอดภัย</h2>
-                        <p>เปลี่ยนรหัสผ่านเพื่อความปลอดภัยของบัญชี</p>
+            <div class="settings-stack">
+                <form id="passwordForm" class="settings-card" data-settings-section="password">
+                    <h2>ตั้งค่ารหัสผ่าน</h2>
+                    <p class="settings-help">ใช้รหัสผ่านปัจจุบันเพื่อยืนยันตัวตน หรือกู้คืนผ่านอีเมลหากจำไม่ได้</p>
+                    <div id="passwordMessage" class="settings-message" role="status"></div>
+                    <div class="settings-field">
+                        <label for="currentPassword">รหัสผ่านปัจจุบัน</label>
+                        <input type="password" id="currentPassword" autocomplete="current-password" required>
                     </div>
-                    
-                    <div class="security-card">
-                        <p style="color: #4b5563; font-size: 0.95rem; margin-bottom: 16px;">
-                            ระบบจะส่งลิงก์สำหรับเปลี่ยนรหัสผ่านไปยังอีเมลของคุณเพื่อยืนยันตัวตน
-                        </p>
-                        <a href="forget.html" class="button outline" style="display: inline-block; text-decoration: none; text-align: center;">เปลี่ยนรหัสผ่านผ่านอีเมล</a>
+                    <div class="settings-field">
+                        <label for="newPassword">รหัสผ่านใหม่</label>
+                        <input type="password" id="newPassword" minlength="8" autocomplete="new-password" required>
+                        <small>อย่างน้อย 8 ตัวอักษร</small>
                     </div>
-                </section>
+                    <div class="settings-field">
+                        <label for="confirmPassword">ยืนยันรหัสผ่านใหม่</label>
+                        <input type="password" id="confirmPassword" minlength="8" autocomplete="new-password" required>
+                    </div>
+                    <button type="submit" class="settings-submit">เปลี่ยนรหัสผ่าน</button>
+                    <a href="forget.html" class="settings-secondary-link">จำรหัสผ่านไม่ได้? กู้คืนผ่านอีเมล</a>
+                </form>
+
+                <form id="recoveryForm" class="settings-card" data-settings-section="recovery">
+                    <h2>เบอร์โทรศัพท์เพื่อกู้คืน</h2>
+                    <p class="settings-help">บันทึกเบอร์สำรองสำหรับการติดต่อกู้คืนบัญชีในอนาคต</p>
+                    <div id="recoveryMessage" class="settings-message" role="status"></div>
+                    <div class="settings-field">
+                        <label for="recoveryPhone">เบอร์โทรศัพท์สำรอง</label>
+                        <input type="tel" id="recoveryPhone" inputmode="tel" autocomplete="tel" placeholder="เช่น 0898765432">
+                    </div>
+                    <button type="submit" class="settings-submit">บันทึกเบอร์สำรอง</button>
+                </form>
+            </div>
+        </section>
     </main>
 
     

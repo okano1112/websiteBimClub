@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 
 <head>
     <link rel="stylesheet" href="../css/global.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us - BimClub</title>
+  <title>เกี่ยวกับเรา - BimClub</title>
   <link rel="icon" type="image/png" href="../../../assets/img/logobranding/logobim.png">
   <link rel="stylesheet" href="../css/navbar.css">
   <link rel="stylesheet" href="../css/about.css">
@@ -53,32 +53,6 @@
           <span class="highlight-number">BIM</span>
           <span class="highlight-label">เทคโนโลยีหลัก</span>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== -->
-  <!-- SECTION 2: Vision & Mission -->
-  <!-- ===================== -->
-  <section class="vision-section">
-    <div class="vision-grid">
-      <div class="vision-card">
-        <div class="vision-icon">🎯</div>
-        <h3>วิสัยทัศน์</h3>
-        <p>เป็นชมรมชั้นนำที่ส่งเสริมการเรียนรู้และพัฒนาทักษะ BIM ให้แก่นักศึกษา
-          เพื่อเตรียมพร้อมสู่การทำงานในอุตสาหกรรมก่อสร้างสมัยใหม่</p>
-      </div>
-      <div class="vision-card">
-        <div class="vision-icon">🚀</div>
-        <h3>พันธกิจ</h3>
-        <p>จัดกิจกรรม Workshop, อบรม และโปรเจกต์จริง เพื่อให้สมาชิกได้ลงมือปฏิบัติ
-          พร้อมสร้างเครือข่ายกับผู้เชี่ยวชาญในวงการ</p>
-      </div>
-      <div class="vision-card">
-        <div class="vision-icon">💡</div>
-        <h3>ค่านิยม</h3>
-        <p>เรียนรู้ร่วมกัน แบ่งปันความรู้ สร้างสรรค์นวัตกรรม
-          และก้าวไปข้างหน้าเป็นทีมอย่างมืออาชีพ</p>
       </div>
     </div>
   </section>
@@ -278,17 +252,6 @@
 
     teamCards.forEach(card => cardObserver.observe(card));
 
-    // Animate vision cards
-    const visionCards = document.querySelectorAll('.vision-card');
-    const visionObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('show');
-        }
-      });
-    }, { threshold: 0.2 });
-
-    visionCards.forEach(card => visionObserver.observe(card));
   </script>
     
   <script src="../js/auth.js"></script>

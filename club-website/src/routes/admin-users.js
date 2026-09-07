@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../../config/database');
 const bcrypt = require('bcryptjs');
-const requireAdmin = require('../middleware/requireAdmin');
+const requireAdmin = require('../../middleware/requireAdmin');
 const ALLOWED_ROLES = ['user', 'instructor', 'admin'];
 
 function parseUserId(value) {

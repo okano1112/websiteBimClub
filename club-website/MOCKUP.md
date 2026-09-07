@@ -155,7 +155,7 @@ Production action: `REMOVE BEFORE PRODUCTION`
 
 - HTML `placeholder` ใน input/textarea เป็นข้อความช่วยกรอก ไม่ใช่ mock data
 - CSS class เช่น avatar `placeholder` เป็น fallback UI
-- ตัวแปร SQL `placeholders` ใน `routes/posts.js` และ `routes/courses.js` ใช้ parameterized query
+- ตัวแปร SQL `placeholders` ใน `src/routes/posts.js` และ `src/routes/courses.js` ใช้ parameterized query
 - Mock objects ภายใน `node_modules` เป็น dependency test code และอยู่นอก source ที่ดูแล
 
 ## Pre-production Checklist

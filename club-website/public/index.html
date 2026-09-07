@@ -8,6 +8,7 @@
   <title>BimClub</title>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/navbar.css" />
+  <link rel="stylesheet" href="css/feed.css" />
   <!--Logo Tab-->
   <link rel="icon" type="image/png" href="../../assets/img/logobranding/logobim.png">
   <!--link style form swiper-->
@@ -122,6 +123,17 @@
       <h3>ชุมชน</h3>
       <p>Supportive environment for learning, sharing, and professional growth.</p>
     </div>
+  </div></div></section>
+
+  <header id="community-feed" class="feed-hero">
+    <p class="feed-eyebrow">BIMCLUB COMMUNITY</p>
+    <h1>ฟีดกิจกรรม</h1>
+    <p>อัปเดตข่าวสาร ผลงาน และกิจกรรมล่าสุดจากชุมชนของเราได้จากหน้าแรก</p>
+  </header>
+  <section class="feed-section" aria-labelledby="community-feed">
+    <div class="feed-loading" id="feedLoading" role="status">กำลังโหลด...</div>
+    <div class="feed-empty" id="feedEmpty" hidden>ยังไม่มีโพสต์</div>
+    <div class="feed-grid" id="feedGrid"></div>
   </section>
 
     
@@ -150,6 +162,7 @@
   </script>
     
   <script src="js/auth.js"></script>
+  <script src="js/feed.js"></script>
 
     <!-- Global Footer -->
     <site-footer></site-footer>

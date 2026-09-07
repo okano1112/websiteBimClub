@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build: .
@@ -19,6 +17,10 @@ services:
       - SMTP_PASS=QpDP8H5ajhHqbJrHcT
       - APP_URL=http://localhost:3000
     volumes:
+      - ./src:/usr/src/app/src
+      - ./public:/usr/src/app/public
+      - ./middleware:/usr/src/app/middleware
+      - ./config:/usr/src/app/config
       - ./uploads:/usr/src/app/uploads
       # ดึงโฟลเดอร์ assets ที่อยู่ด้านนอกโปรเจกต์เข้ามาใน Docker
       - ../assets:/usr/src/assets

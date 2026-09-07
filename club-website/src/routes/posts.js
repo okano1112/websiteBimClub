@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const requireLogin = require('../middleware/requireLogin');
+const db = require('../../config/database');
+const requireLogin = require('../../middleware/requireLogin');
 
 function cleanText(value) {
     return String(value || '').trim();

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const requireLogin = require('../middleware/requireLogin');
-const requireAdmin = require('../middleware/requireAdmin');
+const db = require('../../config/database');
+const requireLogin = require('../../middleware/requireLogin');
+const requireAdmin = require('../../middleware/requireAdmin');
 
 const STATUSES = ['pending', 'approved', 'rejected'];
 

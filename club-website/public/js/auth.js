@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const isSubdir = window.location.pathname.includes('/page/');
-  const feedUrl = isSubdir ? 'feed.html' : './page/feed.html';
+  const settingsUrl = isSubdir ? 'settings.html' : './page/settings.html';
 
   const roleLabels = {
     user: 'ผู้ใช้ทั่วไป',
@@ -40,23 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const guestLinks = menuUl.querySelectorAll('.auth-guest-link');
       guestLinks.forEach(link => link.remove());
 
-      // Add Feed link before the dropdown if possible
-      const hasFeedLink = Array.from(menuUl.querySelectorAll('a')).some(link => link.href.includes('feed'));
-      if (!hasFeedLink) {
-        const feedLi = document.createElement('li');
-        feedLi.innerHTML = `<a href="${feedUrl}">ฟีด</a>`;
-        
-        // Insert after Home (index 0)
-        const firstLi = menuUl.querySelector('li');
-        if (firstLi && firstLi.nextSibling) {
-            menuUl.insertBefore(feedLi, firstLi.nextSibling);
-        } else {
-            menuUl.appendChild(feedLi);
-        }
-      }
-
-      // Profile is now a direct entry point to the global system sidebar.
-      // Management links are intentionally not rendered in a profile dropdown.
       const profileLi = document.createElement('li');
       profileLi.className = 'nav-profile';
       
@@ -65,18 +48,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         : `<div class="nav-avatar-placeholder">${escapeHtml(userName.charAt(0).toUpperCase())}</div>`;
 
       profileLi.innerHTML = `
-        <button class="nav-profile-summary" type="button" data-open-system-sidebar
-          aria-controls="system-sidebar-panel" aria-expanded="false" aria-label="เปิดเมนูระบบของ ${escapeHtml(userName)}">
+        <button class="nav-profile-summary" type="button"
+          aria-controls="profile-dropdown" aria-haspopup="true" aria-expanded="false" aria-label="เปิดเมนูโปรไฟล์ของ ${escapeHtml(userName)}">
           ${avatarHtml}
           <div class="nav-profile-text">
             <span class="nav-profile-name">${escapeHtml(userName)}</span>
             <span class="nav-profile-role">${escapeHtml(roleLabel)}</span>
           </div>
-          <span class="nav-profile-menu-icon" aria-hidden="true">☰</span>
+          <span class="nav-profile-menu-icon" aria-hidden="true">▾</span>
         </button>
+        <div id="profile-dropdown" class="nav-dropdown profile-dropdown" role="menu">
+          <div class="nav-dropdown-header">
+            <div class="nav-dropdown-name">${escapeHtml(userName)}</div>
+            <div class="nav-dropdown-email">${escapeHtml(user.email || '')}</div>
+            <span class="nav-dropdown-role">${escapeHtml(roleLabel)}</span>
+          </div>
+          <ul class="nav-dropdown-menu">
+            <li><a class="nav-dropdown-item" role="menuitem" href="${settingsUrl}#profile">ตั้งค่าโปรไฟล์</a></li>
+            <li><a class="nav-dropdown-item" role="menuitem" href="${settingsUrl}#password">ตั้งค่ารหัสผ่าน</a></li>
+            <li><a class="nav-dropdown-item" role="menuitem" href="${settingsUrl}#recovery">เบอร์โทรศัพท์เพื่อกู้คืน / เบอร์สำรอง</a></li>
+            <li class="nav-dropdown-divider" aria-hidden="true"></li>
+            <li><button class="nav-dropdown-logout" type="button" role="menuitem">ออกจากระบบ</button></li>
+          </ul>
+        </div>
       `;
 
       menuUl.appendChild(profileLi);
+      const profileButton = profileLi.querySelector('.nav-profile-summary');
+      const profileDropdown = profileLi.querySelector('.profile-dropdown');
+      const closeProfileMenu = () => {
+        profileDropdown.classList.remove('show');
+        profileButton.setAttribute('aria-expanded', 'false');
+      };
+      profileButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const willOpen = !profileDropdown.classList.contains('show');
+        profileDropdown.classList.toggle('show', willOpen);
+        profileButton.setAttribute('aria-expanded', String(willOpen));
+      });
+      profileLi.querySelector('.nav-dropdown-logout').addEventListener('click', async () => {
+        const logoutResponse = await fetch('/api/auth/logout', { method: 'POST' });
+        if (logoutResponse.ok) location.href = isSubdir ? 'login.html' : './page/login.html';
+      });
+      document.addEventListener('click', (event) => {
+        if (!profileLi.contains(event.target)) closeProfileMenu();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeProfileMenu();
+          profileButton.focus();
+        }
+      });
       document.dispatchEvent(new CustomEvent('bimclub:auth-resolved', { detail: { user } }));
 
       document.querySelectorAll('[data-disabled-feature]').forEach(link => {

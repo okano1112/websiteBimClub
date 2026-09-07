@@ -1,186 +1,430 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <link rel="stylesheet" href="../css/global.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>พอร์ตโฟลิโอ - BimClub</title>
+    <title>พอร์ตโฟลิโอวิชาชีพ - BimClub</title>
     <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/navbar.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/portfolio-public.css">
-  <script src="../js/navbar-component.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/navbar-component.js"></script>
 </head>
 <body>
 
-  <!-- Navbar Component -->
-  <site-navbar></site-navbar>
+    <!-- Site Navbar Component -->
+    <site-navbar></site-navbar>
 
-    <!-- Content -->
-    <div id="resumeContainer">
-        <div class="resume-error" id="loadingState">กำลังโหลดข้อมูล...</div>
-    </div>
-
-    <!-- Scripts -->
-    
-    <script src="../js/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('id');
-            const container = document.getElementById('resumeContainer');
-            
-            if (!userId) {
-                container.innerHTML = '<div class="resume-error">ไม่พบพอร์ตโฟลิโอนี้ หรือยังไม่เปิดเป็นสาธารณะ</div>';
-                return;
-            }
-
-            try {
-                const res = await fetch(`/api/portfolios/public/${userId}`);
-                if (!res.ok) throw new Error('Not found');
-                
-                const data = await res.json();
-                const port = data.portfolio || data;
-                
-                const avatarHtml = port.user_avatar 
-                    ? `<img src="${port.user_avatar}" class="resume-avatar" alt="Avatar">`
-                    : `<div class="resume-avatar">${(port.user_name || 'U').charAt(0).toUpperCase()}</div>`;
-                    
-                const websiteHtml = port.website_url ? `<a href="${port.website_url}" target="_blank" class="resume-website">เว็บไซต์</a>` : '';
-                
-                let skillsHtml = '';
-                if (port.skills) {
-                    const skills = typeof port.skills === 'string' ? JSON.parse(port.skills) : port.skills;
-                    skillsHtml = skills.map(s => `<span class="resume-skill">${s}</span>`).join('');
-                }
-
-                let expHtml = '';
-                if (port.experiences && port.experiences.length > 0) {
-                    expHtml = port.experiences.map(exp => `
-                        <div class="resume-item">
-                            <div class="resume-item-title">${exp.position}</div>
-                            <div class="resume-item-subtitle">${exp.company}</div>
-                            <div class="resume-item-date">${exp.start_date} ถึง ${exp.end_date || 'ปัจจุบัน'}</div>
-                            <div class="resume-item-desc">${exp.description || ''}</div>
-                        </div>
-                    `).join('');
-                } else {
-                    expHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
-                }
-
-                let eduHtml = '';
-                if (port.education && port.education.length > 0) {
-                    eduHtml = port.education.map(edu => `
-                        <div class="resume-item">
-                            <div class="resume-item-title">${edu.degree}</div>
-                            <div class="resume-item-subtitle">${edu.institution} | ${edu.field_of_study}</div>
-                            <div class="resume-item-date">ปีที่จบ: ${edu.graduation_year}</div>
-                        </div>
-                    `).join('');
-                } else {
-                    eduHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
-                }
-
-                
-                let certHtml = '';
-                if (port.certificates && (port.certificates.system.length > 0 || port.certificates.manual.length > 0)) {
-                    if (port.certificates.system.length > 0) {
-                        certHtml += '<h4 style="margin-bottom:10px; color:#ad0f0f;">ใบรับรองจากระบบ (BimClub)</h4>';
-                        certHtml += port.certificates.system.map(cert => `
-                            <div class="resume-item">
-                                <div class="resume-item-title">${cert.course_title}</div>
-                                <div class="resume-item-date">รหัสอ้างอิง: ${cert.certificate_code} | วันที่: ${new Date(cert.issued_at).toLocaleDateString('th-TH')}</div>
-                            </div>
-                        `).join('');
-                    }
-                    if (port.certificates.manual.length > 0) {
-                        certHtml += '<h4 style="margin-top:20px; margin-bottom:10px; color:#ad0f0f;">ใบรับรองอื่นๆ</h4>';
-                        certHtml += port.certificates.manual.map(cert => `
-                            <div class="resume-item">
-                                <div class="resume-item-title">${cert.title}</div>
-                                <div class="resume-item-subtitle">${cert.issuer}</div>
-                                <div class="resume-item-date">วันที่: ${new Date(cert.issue_date).toLocaleDateString('th-TH')}</div>
-                                ${cert.credential_url ? `<a href="${cert.credential_url}" target="_blank" style="font-size:0.9rem; color:#ad0f0f; display:inline-block; margin-top:4px;">ลิงก์ใบรับรอง</a>` : ''}
-                            </div>
-                        `).join('');
-                    }
-                } else {
-                    certHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
-                }
-
-                let projHtml = '';
-                if (port.projects && port.projects.length > 0) {
-                    projHtml = port.projects.map(proj => `
-                        <div class="resume-item" style="overflow:hidden;">
-                            ${proj.image_url ? `<img src="${proj.image_url}" style="width:120px; height:80px; object-fit:cover; float:left; margin-right:16px; border-radius:8px;">` : ''}
-                            <div class="resume-item-title">${proj.title}</div>
-                            <div class="resume-item-desc">${proj.description || ''}</div>
-                            ${proj.project_url ? `<a href="${proj.project_url}" target="_blank" style="font-size:0.9rem; color:#ad0f0f; display:inline-block; margin-top:4px;">ดูลิงก์ผลงาน</a>` : ''}
-                            <div style="clear:both;"></div>
-                        </div>
-                    `).join('');
-                } else {
-                    projHtml = '<p style="color:#9ca3af;font-size:0.9rem">ไม่มีข้อมูล</p>';
-                }
-
-                container.innerHTML = `
-                    <div class="resume-container">
-                        <div class="resume-header">
-                            ${avatarHtml}
-                            <h1 class="resume-name">${port.user_name || 'ไม่ระบุชื่อ'}</h1>
-                            <div class="resume-headline">${port.headline || ''}</div>
-                            ${websiteHtml}
-                        </div>
-                        <div class="resume-body">
-                            ${port.summary ? `
-                                <div class="resume-section">
-                                    <h2 class="resume-section-title">เกี่ยวกับฉัน</h2>
-                                    <div class="resume-summary">${port.summary}</div>
-                                </div>
-                            ` : ''}
-                            
-                            ${skillsHtml ? `
-                                <div class="resume-section">
-                                    <h2 class="resume-section-title">ทักษะ</h2>
-                                    <div class="resume-skills">${skillsHtml}</div>
-                                </div>
-                            ` : ''}
-                            
-                            <div class="resume-section">
-                                <h2 class="resume-section-title">ประสบการณ์การทำงาน</h2>
-                                ${expHtml}
-                            </div>
-                            
-                            <div class="resume-section">
-                                <h2 class="resume-section-title">ประวัติการศึกษา</h2>
-                                ${eduHtml}
-                            </div>
-
-                            
-                            <div class="resume-section">
-                                <h2 class="resume-section-title">ใบรับรอง (Certificates)</h2>
-                                ${certHtml}
-                            </div>
-
-                            <div class="resume-section">
-                                <h2 class="resume-section-title">ผลงานส่วนตัว</h2>
-                                ${projHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                document.title = `${port.user_name || 'Portfolio'} - BimClub`;
-
-            } catch (err) {
-                container.innerHTML = '<div class="resume-error">ไม่พบพอร์ตโฟลิโอนี้ หรือยังไม่เปิดเป็นสาธารณะ</div>';
-            }
-        });
-    </script>
+    <!-- Main Showcase Container -->
+    <main class="portfolio-wrapper" id="portfolioApp">
+        <div class="state-container" id="loadingState">
+            <div class="state-spinner"></div>
+            <div class="state-title">กำลังโหลดข้อมูลพอร์ตโฟลิโอ...</div>
+            <div class="state-desc">กรุณารอสักครู่ ระบบกำลังดึงข้อมูลและใบรับรอง</div>
+        </div>
+    </main>
 
     <!-- Global Footer -->
     <site-footer></site-footer>
 
-<script src="../js/footer-component.js"></script>
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/footer-component.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const app = document.getElementById('portfolioApp');
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+
+            if (!userId) {
+                renderNotFound('ไม่พบรหัสผู้ใช้งาน หรือลิงก์พอร์ตโฟลิโอนี้ไม่ถูกต้อง');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/portfolios/public/${encodeURIComponent(userId)}`);
+                if (!res.ok) {
+                    throw new Error(res.status === 404 ? 'not_found' : 'server_error');
+                }
+
+                const data = await res.json();
+                const port = data.portfolio || data;
+                renderPortfolio(port);
+
+            } catch (err) {
+                console.error('Fetch portfolio error:', err);
+                renderNotFound('ไม่พบพอร์ตโฟลิโอนี้ หรือเจ้าของยังไม่ได้เปิดเผยแพร่เป็นสาธารณะ');
+            }
+
+            function renderNotFound(message) {
+                app.innerHTML = `
+                    <div class="state-container">
+                        <div class="state-empty-icon">📂</div>
+                        <h2 class="state-title">${escapeHtml(message)}</h2>
+                        <p class="state-desc">หากคุณเป็นเจ้าของพอร์ตโฟลิโอนี้ สามารถเข้าสู่ระบบเพื่อเปิดการแสดงผลเป็นสาธารณะได้</p>
+                        <a href="/page/login.html" class="btn-state-action">เข้าสู่ระบบ BimClub</a>
+                    </div>
+                `;
+            }
+
+            function renderPortfolio(p) {
+                const userName = p.user_name || p.full_name || 'สมาชิก BimClub';
+                document.title = `${userName} - Professional Portfolio | BimClub`;
+
+                // Avatar
+                const initial = (userName.charAt(0) || 'B').toUpperCase();
+                const avatarHtml = p.user_avatar
+                    ? `<img src="${escapeHtml(p.user_avatar)}" class="hero-avatar" alt="${escapeHtml(userName)}">`
+                    : `<div class="hero-avatar">${initial}</div>`;
+
+                // Check owner preview mode
+                let previewBannerHtml = '';
+                if (p.is_owner && !p.is_public) {
+                    previewBannerHtml = `
+                        <div class="preview-mode-banner">
+                            <div>
+                                <strong>⚠️ โหมดดูตัวอย่าง (เจ้าของโปรไฟล์):</strong> 
+                                พอร์ตโฟลิโอนี้ยังตั้งค่าเป็น <em>"ซ่อนเป็นส่วนตัว"</em> ผู้ใช้อื่นจะไม่สามารถเปิดดูได้
+                            </div>
+                            <a href="/page/portfolio.html" class="btn-banner-edit">ไปหน้าแก้ไขเพื่อเปิดสาธารณะ</a>
+                        </div>
+                    `;
+                }
+
+                // Skills
+                let skills = [];
+                if (p.skills) {
+                    skills = typeof p.skills === 'string' ? JSON.parse(p.skills) : p.skills;
+                }
+                const skillsHtml = skills.length > 0
+                    ? `<div class="skills-grid">${skills.map(s => `<span class="skill-pill">${escapeHtml(s)}</span>`).join('')}</div>`
+                    : '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่ได้ระบุทักษะความเชี่ยวชาญ</p>';
+
+                // Experiences
+                const exps = p.experiences || [];
+                const expHtml = exps.length > 0
+                    ? `<div class="timeline">${exps.map(exp => `
+                        <div class="timeline-item">
+                            <div class="timeline-node"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h3 class="timeline-role">${escapeHtml(exp.position || '')}</h3>
+                                    <span class="timeline-badge-date">${escapeHtml(formatDateRange(exp.start_date, exp.end_date))}</span>
+                                </div>
+                                <div class="timeline-company">${escapeHtml(exp.company || '')}</div>
+                                ${exp.description ? `<p class="timeline-desc">${escapeHtml(exp.description)}</p>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}</div>`
+                    : '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่มีข้อมูลประวัติการทำงาน</p>';
+
+                // Education
+                const edus = p.education || [];
+                const eduHtml = edus.length > 0
+                    ? `<div class="education-list">${edus.map(edu => `
+                        <div class="education-card">
+                            <div>
+                                <div class="education-degree">${escapeHtml(edu.degree || '')}</div>
+                                <div class="education-institution">${escapeHtml(edu.institution || '')}</div>
+                                ${edu.field_of_study ? `<div class="education-field">สาขาวิชา: ${escapeHtml(edu.field_of_study)}</div>` : ''}
+                            </div>
+                            ${edu.graduation_year || edu.end_year ? `<span class="education-badge-year">ปีที่สำเร็จ: ${escapeHtml(String(edu.graduation_year || edu.end_year))}</span>` : ''}
+                        </div>
+                    `).join('')}</div>`
+                    : '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่มีข้อมูลประวัติการศึกษา</p>';
+
+                // Certificates (System & Manual)
+                const certs = p.certificates || { system: [], manual: [] };
+                const systemCerts = certs.system || [];
+                const manualCerts = certs.manual || [];
+
+                let certsContentHtml = '';
+                if (systemCerts.length > 0 || manualCerts.length > 0) {
+                    if (systemCerts.length > 0) {
+                        certsContentHtml += `
+                            <div class="cert-category-title">
+                                <span>🏆</span> ใบรับรองมาตรฐานผ่านการทดสอบจากระบบ BimClub
+                            </div>
+                            <div class="cert-grid">
+                                ${systemCerts.map(sc => `
+                                    <div class="cert-card-official">
+                                        <div class="cert-official-badge">
+                                            <span>✓</span> BimClub Verified Credential
+                                        </div>
+                                        <h4 class="cert-title">${escapeHtml(sc.course_title || 'หลักสูตร BIM')}</h4>
+                                        <div class="cert-code-box">
+                                            <span class="cert-code-label">รหัสอ้างอิงใบรับรอง:</span>
+                                            <span class="cert-code-value">${escapeHtml(sc.certificate_code || '')}</span>
+                                        </div>
+                                        <div class="cert-footer-row">
+                                            <span>วันที่อนุมัติ: ${sc.issued_at ? new Date(sc.issued_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}</span>
+                                            <a href="/api/courses/certificate-by-code/${encodeURIComponent(sc.certificate_code)}" target="_blank" class="cert-link-btn">
+                                                ตรวจใบเซอร์ ↗
+                                            </a>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    if (manualCerts.length > 0) {
+                        certsContentHtml += `
+                            <div class="cert-category-title" style="${systemCerts.length > 0 ? 'margin-top:28px;' : ''}">
+                                <span>📜</span> ใบรับรองและการฝึกอบรมวิชาชีพอื่น ๆ
+                            </div>
+                            <div class="cert-grid">
+                                ${manualCerts.map(mc => `
+                                    <div class="cert-card-manual">
+                                        <h4 class="cert-title">${escapeHtml(mc.title || '')}</h4>
+                                        <div style="font-size:0.95rem;color:var(--maroon-700);font-weight:600;margin-bottom:6px;">
+                                            ${escapeHtml(mc.issuer || '')}
+                                        </div>
+                                        <div class="cert-footer-row">
+                                            <span>วันที่ได้รับ: ${mc.issue_date ? new Date(mc.issue_date).toLocaleDateString('th-TH') : '-'}</span>
+                                            ${mc.credential_url ? `<a href="${escapeHtml(mc.credential_url)}" target="_blank" class="cert-link-btn">ดูหลักฐาน ↗</a>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                } else {
+                    certsContentHtml = '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่มีข้อมูลใบรับรอง</p>';
+                }
+
+                // Projects
+                const projs = p.projects || [];
+                const projectsHtml = projs.length > 0
+                    ? `<div class="projects-grid">${projs.map(proj => `
+                        <div class="project-card">
+                            <div class="project-img-wrapper">
+                                ${proj.image_url 
+                                    ? `<img src="${escapeHtml(proj.image_url)}" class="project-img" alt="${escapeHtml(proj.title)}">` 
+                                    : `<div class="project-img-fallback">📐</div>`
+                                }
+                            </div>
+                            <div class="project-body">
+                                <h3 class="project-title">${escapeHtml(proj.title || 'โครงการไม่มีชื่อ')}</h3>
+                                <p class="project-desc">${escapeHtml(proj.description || 'ไม่มีรายละเอียดโครงการ')}</p>
+                                ${proj.project_url ? `
+                                    <a href="${escapeHtml(proj.project_url)}" target="_blank" class="project-link-btn">
+                                        <span>เปิดดูผลงาน</span>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')}</div>`
+                    : '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่มีข้อมูลผลงานที่จัดแสดง</p>';
+
+                // Render App Shell
+                app.innerHTML = `
+                    ${previewBannerHtml}
+
+                    <!-- Hero Card -->
+                    <section class="executive-hero">
+                        <div class="hero-cover">
+                            <div class="hero-cover-actions">
+                                <button type="button" class="btn-hero-action" id="btnSharePort">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                                    <span>แชร์พอร์ตโฟลิโอ</span>
+                                </button>
+                                <button type="button" class="btn-hero-action" id="btnPrintPort">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                    <span>พิมพ์ / บันทึก PDF</span>
+                                </button>
+                                ${p.is_owner ? `
+                                    <a href="/page/portfolio.html" class="btn-hero-action" style="background:var(--maroon-700);border-color:var(--maroon-600);">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                        <span>แก้ไขข้อมูล</span>
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="hero-content">
+                            <div class="hero-avatar-wrapper">
+                                ${avatarHtml}
+                                <div class="hero-badge-verified" title="ยืนยันตัวตนสมาชิก BimClub">✓</div>
+                            </div>
+
+                            <div class="hero-identity">
+                                <div class="hero-name-row">
+                                    <h1 class="hero-name">${escapeHtml(userName)}</h1>
+                                    <span class="hero-tag-pill">
+                                        <span>★</span> BimClub Member
+                                    </span>
+                                </div>
+                                <p class="hero-headline">${escapeHtml(p.headline || 'ผู้เชี่ยวชาญด้านแบบจำลองสารสนเทศอาคาร (BIM)')}</p>
+                            </div>
+
+                            <div class="hero-meta-bar">
+                                ${p.website_url ? `
+                                    <div class="hero-meta-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                        <a href="${escapeHtml(p.website_url)}" target="_blank">${escapeHtml(p.website_url.replace(/^https?:\/\//, ''))}</a>
+                                    </div>
+                                ` : ''}
+                                <div class="hero-meta-item">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    <span>รับรองข้อมูลโดย BimClub Community</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Navigation -->
+                    <div class="quick-nav-bar">
+                        ${p.summary ? '<a href="#aboutSection" class="quick-nav-pill">เกี่ยวกับฉัน</a>' : ''}
+                        <a href="#skillsSection" class="quick-nav-pill">ทักษะความชำนาญ</a>
+                        <a href="#expSection" class="quick-nav-pill">ประสบการณ์ทำงาน</a>
+                        <a href="#eduSection" class="quick-nav-pill">ประวัติการศึกษา</a>
+                        <a href="#certSection" class="quick-nav-pill">ใบรับรอง & วุฒิบัตร</a>
+                        <a href="#projectSection" class="quick-nav-pill">ผลงานเด่น</a>
+                    </div>
+
+                    <!-- Showcase Sections Grid -->
+                    <div class="showcase-grid">
+                        ${p.summary ? `
+                            <div class="showcase-card" id="aboutSection">
+                                <div class="card-header-bar">
+                                    <h2 class="card-header-title">
+                                        <span class="card-header-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        </span>
+                                        เกี่ยวกับฉัน (Executive Summary)
+                                    </h2>
+                                </div>
+                                <div class="executive-summary-text">${escapeHtml(p.summary).replace(/\n/g, '<br>')}</div>
+                            </div>
+                        ` : ''}
+
+                        <div class="showcase-card" id="skillsSection">
+                            <div class="card-header-bar">
+                                <h2 class="card-header-title">
+                                    <span class="card-header-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    </span>
+                                    ทักษะและความเชี่ยวชาญ (Core Competencies)
+                                </h2>
+                            </div>
+                            ${skillsHtml}
+                        </div>
+
+                        <div class="showcase-card" id="expSection">
+                            <div class="card-header-bar">
+                                <h2 class="card-header-title">
+                                    <span class="card-header-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                    </span>
+                                    ประสบการณ์การทำงาน (Work Experience)
+                                </h2>
+                            </div>
+                            ${expHtml}
+                        </div>
+
+                        <div class="showcase-card" id="eduSection">
+                            <div class="card-header-bar">
+                                <h2 class="card-header-title">
+                                    <span class="card-header-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                    </span>
+                                    ประวัติการศึกษา (Academic Credentials)
+                                </h2>
+                            </div>
+                            ${eduHtml}
+                        </div>
+
+                        <div class="showcase-card" id="certSection">
+                            <div class="card-header-bar">
+                                <h2 class="card-header-title">
+                                    <span class="card-header-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                                    </span>
+                                    ใบรับรองและวุฒิบัตร (Certifications)
+                                </h2>
+                            </div>
+                            ${certsContentHtml}
+                        </div>
+
+                        <div class="showcase-card" id="projectSection">
+                            <div class="card-header-bar">
+                                <h2 class="card-header-title">
+                                    <span class="card-header-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                    </span>
+                                    ผลงานเด่นที่จัดแสดง (Featured Projects)
+                                </h2>
+                            </div>
+                            ${projectsHtml}
+                        </div>
+                    </div>
+
+                    <!-- Verified Footer -->
+                    <footer class="portfolio-showcase-footer">
+                        <div class="badge-footer-verified">
+                            <span>🛡️</span> BimClub Official Verified Profile
+                        </div>
+                        <div>สร้างและรับรองข้อมูลอย่างเป็นทางการผ่านแพลตฟอร์มการเรียนรู้ BimClub</div>
+                    </footer>
+                `;
+
+                // Attach event listeners
+                document.getElementById('btnPrintPort')?.addEventListener('click', () => {
+                    window.print();
+                });
+
+                document.getElementById('btnSharePort')?.addEventListener('click', async () => {
+                    const shareUrl = window.location.href;
+                    if (navigator.clipboard) {
+                        try {
+                            await navigator.clipboard.writeText(shareUrl);
+                            showToast('คัดลอกลิงก์พอร์ตโฟลิโอเรียบร้อยแล้ว!');
+                            return;
+                        } catch (e) {}
+                    }
+                    prompt('คัดลอกลิงก์ด้านล่างนี้ได้เลย:', shareUrl);
+                });
+            }
+
+            function formatDateRange(startDate, endDate) {
+                if (!startDate) return '';
+                const formatPart = (str) => {
+                    const parts = str.split('-');
+                    if (parts.length >= 2) {
+                        const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                        const mIdx = parseInt(parts[1], 10) - 1;
+                        const yearThai = parseInt(parts[0], 10) + 543;
+                        return `${months[mIdx] || parts[1]} ${yearThai}`;
+                    }
+                    return str;
+                };
+                const s = formatPart(startDate);
+                const e = endDate ? formatPart(endDate) : 'ปัจจุบัน';
+                return `${s} - ${e}`;
+            }
+
+            function escapeHtml(str) {
+                if (typeof str !== 'string') return '';
+                return str
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function showToast(msg) {
+                const toast = document.createElement('div');
+                toast.className = 'toast-msg';
+                toast.innerHTML = `<span>✓</span> <span>${escapeHtml(msg)}</span>`;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+        });
+    </script>
 </body>
 </html>

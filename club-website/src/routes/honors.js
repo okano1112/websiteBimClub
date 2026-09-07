@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const requireLogin = require('../middleware/requireLogin');
-const requireAdmin = require('../middleware/requireAdmin');
+const db = require('../../config/database');
+const requireLogin = require('../../middleware/requireLogin');
+const requireAdmin = require('../../middleware/requireAdmin');
 
 // GET /api/honors - ดึงข้อมูลเกียรติยศทั้งหมด (เฉพาะที่เผยแพร่) สำหรับหน้า Public
 router.get('/', async (req, res) => {

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const requireAdmin = require('../middleware/requireAdmin');
+const db = require('../../config/database');
+const requireAdmin = require('../../middleware/requireAdmin');
 
 const SECTIONS = {
     activities: {

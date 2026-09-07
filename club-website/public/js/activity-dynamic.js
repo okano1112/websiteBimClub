@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const swiperWrapper = document.querySelector('.featuredSwiper .swiper-wrapper');
     const timelineContainer = document.querySelector('.timeline');
     const heroSection = document.querySelector('.activity-hero');
+    const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
+    const safeImageUrl = (value) => {
+        const url = String(value || '').trim();
+        return url.startsWith('/uploads/') || url.startsWith('../../../assets/')
+            ? url
+            : '../../../assets/img/swiperimg/bimActivity.jpg';
+    };
     
     // Check if user is admin
     let isAdmin = false;
@@ -29,8 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newsActivities = data.activities.filter(act => act.description && act.description.trim() !== '');
 
                 newsActivities.forEach((act, index) => {
-                    let deleteBtn = isAdmin ? `<button onclick="deleteActivity(${act.id})" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; z-index:100;">ลบโพสต์</button>` : '';
-                    let img = act.image_url || '../../../assets/img/swiperimg/bimActivity.jpg';
+                    const activityId = Number(act.id);
+                    const deleteBtn = isAdmin && Number.isInteger(activityId) ? `<button onclick="deleteActivity(${activityId})" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; z-index:100;">ลบโพสต์</button>` : '';
+                    const img = safeImageUrl(act.image_url);
                     
                     // Add to Swiper Carousel
                     swiperWrapper.innerHTML += `
@@ -38,18 +46,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="activity-card" style="position:relative;">
                             ${deleteBtn}
                             <div class="card-image">
-                                <img src="${img}" alt="${act.title}" />
+                                <img src="${escapeHtml(img)}" alt="${escapeHtml(act.title)}" />
                                 <div class="card-badge">News</div>
                             </div>
                             <div class="card-body">
                                 <div class="card-date">
                                     <span class="date-icon">📅</span>
-                                    <span>${act.event_date}</span>
+                                    <span>${escapeHtml(act.event_date || 'ไม่ระบุวันที่')}</span>
                                 </div>
-                                <h3>${act.title}</h3>
-                                <p>${act.description}</p>
+                                <h3>${escapeHtml(act.title)}</h3>
+                                <p>${escapeHtml(act.description)}</p>
                                 <div class="card-footer">
-                                    <span class="participants"><span class="icon">👥</span> ${act.participants} คน</span>
+                                    <span class="participants"><span class="icon">👥</span> ${Number(act.participants) || 0} คน</span>
                                 </div>
                             </div>
                         </div>
@@ -60,9 +68,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     timelineContainer.innerHTML += `
                     <div class="timeline-item ${alignment}">
                         <div class="timeline-content">
-                            <span class="timeline-date">${act.event_date}</span>
-                            <h3>${act.title}</h3>
-                            <p>${act.description}</p>
+                            <span class="timeline-date">${escapeHtml(act.event_date || 'ไม่ระบุวันที่')}</span>
+                            <h3>${escapeHtml(act.title)}</h3>
+                            <p>${escapeHtml(act.description)}</p>
                         </div>
                     </div>`;
                 });

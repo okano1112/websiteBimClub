@@ -28,7 +28,9 @@ CREATE TABLE users (
   email VARCHAR(100) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   full_name VARCHAR(100),
+  age TINYINT UNSIGNED DEFAULT NULL,
   phone VARCHAR(30) DEFAULT NULL,
+  recovery_phone VARCHAR(30) DEFAULT NULL,
   avatar_url VARCHAR(255) DEFAULT NULL,
   role ENUM('user','instructor','admin') DEFAULT 'user',
   is_verified TINYINT(1) DEFAULT 0,
@@ -113,6 +115,7 @@ CREATE TABLE course_video_stops (
   options JSON NOT NULL,
   correct_index INT NOT NULL,
   display_order INT DEFAULT 0,
+  is_active TINYINT(1) DEFAULT 1,
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );
 

@@ -45,6 +45,22 @@ body {
   box-shadow: 0 10px 24px rgba(17, 24, 39, 0.06);
 }
 
+.settings-stack {
+  display: grid;
+  gap: 20px;
+}
+
+[data-settings-section] {
+  scroll-margin-top: 96px;
+}
+
+.settings-help {
+  margin: -8px 0 18px;
+  color: #6b7280;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
 .settings-card h2 {
   margin: 0 0 18px;
   color: #ad0f0f;
@@ -157,6 +173,12 @@ body {
   outline: none;
 }
 
+.settings-field small {
+  display: block;
+  margin-top: 5px;
+  color: #6b7280;
+}
+
 .settings-submit {
   width: 100%;
   min-height: 44px;
@@ -176,6 +198,20 @@ body {
 .settings-submit:disabled {
   background: #9ca3af;
   cursor: not-allowed;
+}
+
+.settings-secondary-link {
+  display: block;
+  margin-top: 12px;
+  color: #7f1d1d;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.settings-secondary-link:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 820px) {
