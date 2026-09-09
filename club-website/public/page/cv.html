@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สร้างเรซูเม่และซีวี (CV / Resume) - BimClub</title>
+    <link rel="icon" href="/assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/portfolio.css">
+    <link rel="stylesheet" href="../css/cv.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/navbar-component.js"></script>
+    <script src="../js/portfolio-templates.js"></script>
+</head>
+<body>
+
+    <!-- Site Navbar -->
+    <site-navbar></site-navbar>
+
+    <!-- Document Mode Switcher Bar -->
+    <header class="doc-mode-bar">
+        <div class="doc-switcher-tabs">
+            <a href="portfolio.html" class="doc-tab-btn" id="tabPortfolio">
+                <span>📁</span> แฟ้มผลงาน (Portfolio)
+            </a>
+            <button type="button" class="doc-tab-btn active" id="tabCv">
+                <span>📄</span> ประวัติย่อ (CV / Resume)
+            </button>
+        </div>
+
+        <div class="doc-top-actions">
+            <!-- Template Quick Selector -->
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label for="selectCvTemplate" style="font-size:0.85rem; font-weight:600; color:var(--cv-navy);">แม่แบบ CV:</label>
+                <select id="selectCvTemplate" style="padding:6px 12px; border-radius:8px; border:1px solid var(--cv-border); font-size:0.88rem; background:#FFF; font-weight:600;">
+                    <option value="cv-a4-standard" selected>A4 Standard (สากล มาตรฐาน)</option>
+                    <option value="cv-a4-ats">A4 ATS-Safe (สำหรับระบบคัดกรองออนไลน์)</option>
+                    <option value="cv-letter-standard">Letter Standard (มาตรฐานสหรัฐฯ)</option>
+                    <option value="cv-a4-landscape-creative">A4 Landscape Creative (สายครีเอทีฟ)</option>
+                    <option value="cv-a3-presentation">A3 Presentation (สำหรับนำเสนอบนจอ/โปสเตอร์)</option>
+                </select>
+                <span id="atsBadgeIndicator" class="ats-badge-pill">✓ ATS Friendly</span>
+            </div>
+
+            <button type="button" class="btn-action secondary" id="btnOpenCvSettings" title="ปรับแต่งขนาดกระดาษและธีมสี">
+                <span>⚙️</span> <span>ตั้งค่ากระดาษ &amp; ธีม</span>
+            </button>
+
+            <button type="button" class="btn-action maroon" id="btnDownloadCvPdf">
+                <span>📥</span> <span>ดาวน์โหลด CV (PDF)</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 3-Column Layout -->
+    <main class="cv-layout">
+
+        <!-- Left Panel: Section Visibility Checklist -->
+        <aside class="cv-sidebar">
+            <div>
+                <h3 class="cv-sidebar-title">
+                    <span>☑</span> เลือกหมวดหมู่ที่แสดงใน CV
+                </h3>
+                <p style="font-size:0.8rem; color:var(--cv-muted); margin:0 0 12px 0;">
+                    เลือกเฉพาะข้อมูลที่ต้องการให้ปรากฏในเอกสาร CV ของคุณ (ข้อมูลจะดึงจากโปรไฟล์ที่บันทึกไว้)
+                </p>
+
+                <div class="cv-checklist-box" id="cvSectionChecklist">
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvObjective" checked>
+                        <span>เป้าหมายวิชาชีพ (Career Objective)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvAbout" checked>
+                        <span>สรุปประวัติ (Professional Summary)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvEdu" checked>
+                        <span>ประวัติการศึกษา (Education)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvExp" checked>
+                        <span>ประสบการณ์ทำงาน (Work Experience)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvIntern" checked>
+                        <span>การฝึกงาน (Internships)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvProjects" checked>
+                        <span>โครงการเด่น (Featured Projects)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvSkills" checked>
+                        <span>ทักษะและความเชี่ยวชาญ (Skills)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvCerts" checked>
+                        <span>ใบรับรองและวุฒิบัตร (Certifications)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvAwards" checked>
+                        <span>รางวัลและความสำเร็จ (Awards)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvActivities" checked>
+                        <span>กิจกรรมและผู้นำ (Activities)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvLanguages" checked>
+                        <span>ทักษะด้านภาษา (Languages)</span>
+                    </label>
+                    <label class="cv-check-item">
+                        <input type="checkbox" id="chkCvReferences" checked>
+                        <span>บุคคลอ้างอิง (References)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="background:#F1F5F9; border-radius:8px; padding:12px; font-size:0.8rem; color:var(--cv-muted); line-height:1.5;">
+                <strong style="color:var(--cv-navy);">💡 คำแนะนำการสร้าง CV:</strong><br>
+                สำหรับการสมัครงานทั่วไป แนะนำความยาว 1-2 หน้ากระดาษ A4 และใช้แม่แบบ <strong>A4 ATS-Safe</strong> หากสมัครผ่านระบบรับสมัครงานออนไลน์อัตโนมัติ
+            </div>
+        </aside>
+
+        <!-- Center Panel: CV Tuning -->
+        <section class="cv-content-panel">
+            <div class="cv-section-card">
+                <h3>
+                    <span>หัวข้อเอกสารและตำแหน่งงาน</span>
+                    <button type="button" class="btn-action primary" id="btnSaveCvData" style="padding:4px 12px; font-size:0.82rem;">บันทึก</button>
+                </h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>เป้าหมายตำแหน่งงานสำหรับ CV (Target Job Title)</label>
+                        <input type="text" id="cvTargetRole" placeholder="เช่น Senior BIM Coordinator">
+                    </div>
+                    <div class="form-group">
+                        <label>ภาษาเอกสาร</label>
+                        <select id="cvLanguageSelect">
+                            <option value="th" selected>ภาษาไทย (Thai)</option>
+                            <option value="en">English (อังกฤษ - แนะนำสำหรับ CV สากล)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ข้อความสรุปประวัติ / เป้าหมายใน CV</label>
+                    <textarea id="cvObjectiveText" rows="4" placeholder="เขียนสรุปเป้าหมายและความเชี่ยวชาญสั้น ๆ ตรงตามตำแหน่งงานที่ต้องการสมัคร..."></textarea>
+                </div>
+            </div>
+
+            <div class="cv-section-card">
+                <h3>
+                    <span>ข้อมูลประวัติที่เชื่อมต่อจากโปรไฟล์</span>
+                    <a href="portfolio.html" style="font-size:0.82rem; font-weight:600; color:var(--cv-maroon); text-decoration:none;">แก้ไขข้อมูลใน Portfolio ↗</a>
+                </h3>
+                <div id="cvSyncedDataSummary" style="font-size:0.88rem; color:var(--cv-muted); line-height:1.6;">
+                    กำลังโหลดข้อมูล...
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Live CV Preview -->
+        <aside class="cv-preview-panel">
+            <div class="preview-toolbar" style="background:#0F172A; padding:10px 16px; display:flex; justify-content:space-between; align-items:center; color:#E2E8F0; border-bottom:1px solid #334155;">
+                <div style="font-size:0.85rem; font-weight:600;">
+                    <span>👁️</span> ตัวอย่าง CV (Live Preview)
+                </div>
+                <div>
+                    <button type="button" class="preview-zoom-btn" id="btnRefreshCvPreview">⟳ รีเฟรช</button>
+                </div>
+            </div>
+            <div style="flex:1; overflow:auto; padding:16px; display:flex; justify-content:center; background:#0F172A;">
+                <iframe id="cvPreviewIframe" class="cv-preview-frame" title="ตัวอย่างเอกสาร CV"></iframe>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- CV Settings Drawer Modal -->
+    <div class="settings-modal-backdrop" id="cvSettingsModal">
+        <div class="settings-drawer">
+            <div class="drawer-header">
+                <h3>ตั้งค่าเอกสาร CV</h3>
+                <button type="button" class="btn-drawer-close" id="btnCloseCvSettings">&times;</button>
+            </div>
+            <div class="drawer-body">
+                <h4 class="settings-section-title">ขนาดกระดาษและการวางแนว</h4>
+                <div class="form-group">
+                    <label for="selectCvPageSize">ขนาดกระดาษ</label>
+                    <select id="selectCvPageSize">
+                        <option value="a4" selected>A4 (210 × 297 มม.) - แนะนำสูงสุดสำหรับ CV</option>
+                        <option value="letter">Letter (8.5 × 11 นิ้ว) - แนะนำสำหรับผู้สมัครงานในสหรัฐฯ</option>
+                        <option value="a3">A3 (297 × 420 มม.) - เหมาะสำหรับโปสเตอร์/พรีเซนต์ (ไม่แนะนำสำหรับส่งสมัครงานทั่วไป)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="selectCvOrientation">การวางแนว</label>
+                    <select id="selectCvOrientation">
+                        <option value="portrait" selected>แนวตั้ง (Portrait - แนะนำสำหรับ CV)</option>
+                        <option value="landscape">แนวนอน (Landscape - สำหรับสไตล์ครีเอทีฟ)</option>
+                    </select>
+                </div>
+
+                <h4 class="settings-section-title" style="margin-top:20px;">สีเอกสาร</h4>
+                <div class="color-swatch-row">
+                    <div class="color-input-wrapper">
+                        <label for="cvColorPrimary" style="font-size:0.85rem; font-weight:600;">สีหลัก:</label>
+                        <input type="color" id="cvColorPrimary" value="#012240">
+                    </div>
+                    <div class="color-input-wrapper">
+                        <label for="cvColorSecondary" style="font-size:0.85rem; font-weight:600;">สีรอง:</label>
+                        <input type="color" id="cvColorSecondary" value="#AD0F0F">
+                    </div>
+                </div>
+
+                <button type="button" class="btn-action primary" id="btnApplyCvSettings" style="width:100%; justify-content:center; margin-top:20px;">
+                    นำการตั้งค่าไปใช้
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/cv.js"></script>
+</body>
+</html>

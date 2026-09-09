@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>พอร์ตโฟลิโอวิชาชีพ - BimClub</title>
-    <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
+    <link rel="icon" href="/assets/img/logobranding/logobim.png">
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/portfolio-public.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/navbar-component.js"></script>
+    <script src="../js/portfolio-templates.js"></script>
 </head>
 <body>
 
@@ -72,13 +73,156 @@
                 const userName = p.user_name || p.full_name || 'สมาชิก BimClub';
                 document.title = `${userName} - Professional Portfolio | BimClub`;
 
+                const settings = p.portfolio_settings || {};
+                const theme = settings.theme || {};
+                const hidden = settings.hiddenSections || [];
+                const extra = p.extra_sections || {};
+
+                // The public website must use the same template renderer as the editor preview and PDF export.
+                // This keeps the selected template, paper geometry, theme, hidden sections, and branding in sync.
+                const portfolioSettings = {
+                    docType: 'portfolio',
+                    template: settings.template || 'maroon-editorial',
+                    pageSize: settings.pageSize || 'a4',
+                    orientation: settings.orientation || 'portrait',
+                    theme: {
+                        primary: theme.primary || '#012240',
+                        secondary: theme.secondary || '#AD0F0F',
+                        bg: theme.bg || 'white',
+                        textColor: theme.textColor,
+                        accentColor: theme.accentColor
+                    },
+                    branding: settings.branding || {
+                        showSoeLogo: true,
+                        showBimClubLogo: true,
+                        footerStyle: 'footer-bar',
+                        scope: 'all',
+                        logoSize: 'medium'
+                    },
+                    hiddenSections: hidden,
+                    language: settings.language || 'th'
+                };
+
+                const templateSkills = Array.isArray(p.skills)
+                    ? p.skills
+                    : (typeof p.skills === 'string' ? JSON.parse(p.skills || '[]') : []);
+                const publicPayload = {
+                    profile: {
+                        fullName: p.user_name || p.full_name || 'สมาชิก BimClub',
+                        headline: p.headline || '',
+                        targetRole: p.target_role || p.headline || '',
+                        summary: p.summary || '',
+                        careerObjective: p.career_objective || '',
+                        avatarUrl: p.user_avatar || p.avatar_url || '',
+                        email: p.email || '',
+                        phone: p.phone || '',
+                        websiteUrl: p.website_url || '',
+                        customLinks: extra.custom_contacts || []
+                    },
+                    skills: templateSkills,
+                    experiences: p.experiences || [],
+                    education: p.education || [],
+                    projects: p.projects || [],
+                    certificates: p.certificates || { system: [], manual: [] },
+                    extraSections: extra,
+                    settings: portfolioSettings
+                };
+
+                const renderedDocument = PortfolioTemplates.renderDocument(publicPayload);
+                const templatePreviewBannerHtml = p.is_owner && !p.is_public ? `
+                    <div class="preview-mode-banner">
+                        <div><strong>⚠️ โหมดดูตัวอย่าง:</strong> พอร์ตโฟลิโอนี้ยังตั้งค่าเป็นส่วนตัว</div>
+                        <a href="/page/portfolio.html" class="btn-banner-edit">ไปหน้าแก้ไขเพื่อเปิดสาธารณะ</a>
+                    </div>
+                ` : '';
+
+                app.innerHTML = `
+                    ${templatePreviewBannerHtml}
+                    <section class="public-template-showcase">
+                        <div class="public-template-toolbar">
+                            <div>
+                                <span class="public-template-kicker">${escapeHtml(portfolioSettings.template)}</span>
+                                <h1>${escapeHtml(userName)}</h1>
+                                <p>หน้าโชว์ผลงานตาม Template ที่เลือกไว้ • ${escapeHtml(portfolioSettings.pageSize.toUpperCase())} ${portfolioSettings.orientation === 'landscape' ? 'Landscape' : 'Portrait'}</p>
+                            </div>
+                            <div class="public-template-actions">
+                                <button type="button" class="btn-hero-action" id="btnSharePort">แชร์ลิงก์</button>
+                                <button type="button" class="btn-hero-action" id="btnDownloadPdfReal">ดาวน์โหลด Portfolio (PDF)</button>
+                                <button type="button" class="btn-hero-action" id="btnDownloadCvPdfReal">ดาวน์โหลด CV (PDF)</button>
+                                ${p.is_owner ? '<a href="/page/portfolio.html" class="btn-hero-action">แก้ไขข้อมูล</a>' : ''}
+                            </div>
+                        </div>
+                        <div class="public-template-frame-wrap">
+                            <iframe id="publicTemplateFrame" class="public-template-frame" title="หน้าโชว์ผลงานตาม Template ที่เลือก"></iframe>
+                        </div>
+                    </section>
+                `;
+
+                const publicTemplateFrame = document.getElementById('publicTemplateFrame');
+                publicTemplateFrame.srcdoc = renderedDocument;
+
+                const downloadTemplatePdf = async (type) => {
+                    const btn = type === 'cv'
+                        ? document.getElementById('btnDownloadCvPdfReal')
+                        : document.getElementById('btnDownloadPdfReal');
+                    const original = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '⏳ กำลังสร้าง PDF...';
+                    try {
+                        const dlRes = await fetch(`/api/portfolios/public/${encodeURIComponent(userId)}/export/pdf?type=${type}`);
+                        if (!dlRes.ok) throw new Error('PDF failed');
+                        const blob = await dlRes.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${userName}_${type === 'cv' ? 'CV' : 'Portfolio'}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        showToast('ดาวน์โหลดเอกสาร PDF สำเร็จ!');
+                    } catch (err) {
+                        console.error('Public PDF download error:', err);
+                        alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = original;
+                    }
+                };
+
+                document.getElementById('btnDownloadPdfReal').addEventListener('click', () => downloadTemplatePdf('portfolio'));
+                document.getElementById('btnDownloadCvPdfReal').addEventListener('click', () => downloadTemplatePdf('cv'));
+                document.getElementById('btnSharePort').addEventListener('click', async () => {
+                    const shareUrl = window.location.href;
+                    if (navigator.clipboard) {
+                        try {
+                            await navigator.clipboard.writeText(shareUrl);
+                            showToast('คัดลอกลิงก์เรียบร้อยแล้ว!');
+                            return;
+                        } catch (err) { /* fall through to prompt */ }
+                    }
+                    prompt('คัดลอกลิงก์:', shareUrl);
+                });
+
+                return;
+
+                // Apply custom theme colors if present
+                if (theme.primary) {
+                    document.documentElement.style.setProperty('--maroon-900', theme.primary);
+                    document.documentElement.style.setProperty('--maroon-950', theme.primary);
+                }
+                if (theme.secondary) {
+                    document.documentElement.style.setProperty('--maroon-700', theme.secondary);
+                    document.documentElement.style.setProperty('--maroon-600', theme.secondary);
+                }
+
                 // Avatar
                 const initial = (userName.charAt(0) || 'B').toUpperCase();
-                const avatarHtml = p.user_avatar
-                    ? `<img src="${escapeHtml(p.user_avatar)}" class="hero-avatar" alt="${escapeHtml(userName)}">`
+                const avatarHtml = p.user_avatar || p.avatar_url
+                    ? `<img src="${escapeHtml(p.user_avatar || p.avatar_url)}" class="hero-avatar" alt="${escapeHtml(userName)}">`
                     : `<div class="hero-avatar">${initial}</div>`;
 
-                // Check owner preview mode
+                // Owner preview notice
                 let previewBannerHtml = '';
                 if (p.is_owner && !p.is_public) {
                     previewBannerHtml = `
@@ -97,13 +241,13 @@
                 if (p.skills) {
                     skills = typeof p.skills === 'string' ? JSON.parse(p.skills) : p.skills;
                 }
-                const skillsHtml = skills.length > 0
+                const skillsHtml = (!hidden.includes('skills') && skills.length > 0)
                     ? `<div class="skills-grid">${skills.map(s => `<span class="skill-pill">${escapeHtml(s)}</span>`).join('')}</div>`
                     : '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่ได้ระบุทักษะความเชี่ยวชาญ</p>';
 
                 // Experiences
                 const exps = p.experiences || [];
-                const expHtml = exps.length > 0
+                const expHtml = (!hidden.includes('experiences') && exps.length > 0)
                     ? `<div class="timeline">${exps.map(exp => `
                         <div class="timeline-item">
                             <div class="timeline-node"></div>
@@ -121,7 +265,7 @@
 
                 // Education
                 const edus = p.education || [];
-                const eduHtml = edus.length > 0
+                const eduHtml = (!hidden.includes('education') && edus.length > 0)
                     ? `<div class="education-list">${edus.map(edu => `
                         <div class="education-card">
                             <div>
@@ -134,13 +278,13 @@
                     `).join('')}</div>`
                     : '<p style="color:#94a3b8;font-size:0.95rem;margin:0;">ยังไม่มีข้อมูลประวัติการศึกษา</p>';
 
-                // Certificates (System & Manual)
+                // Certificates
                 const certs = p.certificates || { system: [], manual: [] };
                 const systemCerts = certs.system || [];
                 const manualCerts = certs.manual || [];
 
                 let certsContentHtml = '';
-                if (systemCerts.length > 0 || manualCerts.length > 0) {
+                if (!hidden.includes('certificates') && (systemCerts.length > 0 || manualCerts.length > 0)) {
                     if (systemCerts.length > 0) {
                         certsContentHtml += `
                             <div class="cert-category-title">
@@ -196,7 +340,7 @@
 
                 // Projects
                 const projs = p.projects || [];
-                const projectsHtml = projs.length > 0
+                const projectsHtml = (!hidden.includes('projects') && projs.length > 0)
                     ? `<div class="projects-grid">${projs.map(proj => `
                         <div class="project-card">
                             <div class="project-img-wrapper">
@@ -211,7 +355,7 @@
                                 ${proj.project_url ? `
                                     <a href="${escapeHtml(proj.project_url)}" target="_blank" class="project-link-btn">
                                         <span>เปิดดูผลงาน</span>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                     </a>
                                 ` : ''}
                             </div>
@@ -229,11 +373,15 @@
                             <div class="hero-cover-actions">
                                 <button type="button" class="btn-hero-action" id="btnSharePort">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                                    <span>แชร์พอร์ตโฟลิโอ</span>
+                                    <span>แชร์ลิงก์</span>
                                 </button>
-                                <button type="button" class="btn-hero-action" id="btnPrintPort">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                                    <span>พิมพ์ / บันทึก PDF</span>
+                                <button type="button" class="btn-hero-action" id="btnDownloadPdfReal" title="ดาวน์โหลดไฟล์ PDF คุณภาพสูง">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span>ดาวน์โหลด Portfolio (PDF)</span>
+                                </button>
+                                <button type="button" class="btn-hero-action" id="btnDownloadCvPdfReal" title="ดาวน์โหลดไฟล์ CV">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    <span>ดาวน์โหลด CV (PDF)</span>
                                 </button>
                                 ${p.is_owner ? `
                                     <a href="/page/portfolio.html" class="btn-hero-action" style="background:var(--maroon-700);border-color:var(--maroon-600);">
@@ -256,7 +404,7 @@
                                         <span>★</span> BimClub Member
                                     </span>
                                 </div>
-                                <p class="hero-headline">${escapeHtml(p.headline || 'ผู้เชี่ยวชาญด้านแบบจำลองสารสนเทศอาคาร (BIM)')}</p>
+                                <p class="hero-headline">${escapeHtml(p.target_role || p.headline || 'ผู้เชี่ยวชาญด้านแบบจำลองสารสนเทศอาคาร (BIM)')}</p>
                             </div>
 
                             <div class="hero-meta-bar">
@@ -276,27 +424,28 @@
 
                     <!-- Quick Navigation -->
                     <div class="quick-nav-bar">
-                        ${p.summary ? '<a href="#aboutSection" class="quick-nav-pill">เกี่ยวกับฉัน</a>' : ''}
+                        ${(p.summary || p.career_objective) ? '<a href="#aboutSection" class="quick-nav-pill">เกี่ยวกับฉัน</a>' : ''}
                         <a href="#skillsSection" class="quick-nav-pill">ทักษะความชำนาญ</a>
                         <a href="#expSection" class="quick-nav-pill">ประสบการณ์ทำงาน</a>
                         <a href="#eduSection" class="quick-nav-pill">ประวัติการศึกษา</a>
-                        <a href="#certSection" class="quick-nav-pill">ใบรับรอง & วุฒิบัตร</a>
+                        <a href="#certSection" class="quick-nav-pill">ใบรับรอง &amp; วุฒิบัตร</a>
                         <a href="#projectSection" class="quick-nav-pill">ผลงานเด่น</a>
                     </div>
 
                     <!-- Showcase Sections Grid -->
                     <div class="showcase-grid">
-                        ${p.summary ? `
+                        ${(!hidden.includes('about') && (p.summary || p.career_objective)) ? `
                             <div class="showcase-card" id="aboutSection">
                                 <div class="card-header-bar">
                                     <h2 class="card-header-title">
                                         <span class="card-header-icon">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                         </span>
-                                        เกี่ยวกับฉัน (Executive Summary)
+                                        เกี่ยวกับฉัน &amp; เป้าหมายวิชาชีพ (Summary &amp; Objective)
                                     </h2>
                                 </div>
-                                <div class="executive-summary-text">${escapeHtml(p.summary).replace(/\n/g, '<br>')}</div>
+                                ${p.summary ? `<div class="executive-summary-text">${escapeHtml(p.summary).replace(/\n/g, '<br>')}</div>` : ''}
+                                ${p.career_objective ? `<div class="executive-summary-text" style="margin-top:14px; border-top:1px dashed #e2e8f0; padding-top:12px;"><strong>เป้าหมายทางอาชีพ:</strong><br>${escapeHtml(p.career_objective).replace(/\n/g, '<br>')}</div>` : ''}
                             </div>
                         ` : ''}
 
@@ -361,20 +510,48 @@
                         </div>
                     </div>
 
-                    <!-- Verified Footer -->
+                    <!-- Verified Institutional Footer -->
                     <footer class="portfolio-showcase-footer">
                         <div class="badge-footer-verified">
                             <span>🛡️</span> BimClub Official Verified Profile
                         </div>
-                        <div>สร้างและรับรองข้อมูลอย่างเป็นทางการผ่านแพลตฟอร์มการเรียนรู้ BimClub</div>
+                        <div>สร้างและรับรองข้อมูลอย่างเป็นทางการผ่านแพลตฟอร์มการเรียนรู้ BimClub • Faculty of Engineering</div>
                     </footer>
                 `;
 
-                // Attach event listeners
-                document.getElementById('btnPrintPort')?.addEventListener('click', () => {
-                    window.print();
-                });
+                // Real PDF Download Buttons
+                const downloadPdf = async (type) => {
+                    const btn = type === 'cv' ? document.getElementById('btnDownloadCvPdfReal') : document.getElementById('btnDownloadPdfReal');
+                    const origText = btn.innerHTML;
+                    btn.innerHTML = '<span>⏳ กำลังสร้าง PDF...</span>';
+                    btn.disabled = true;
 
+                    try {
+                        const dlRes = await fetch(`/api/portfolios/public/${encodeURIComponent(userId)}/export/pdf?type=${type}`);
+                        if (!dlRes.ok) throw new Error('PDF failed');
+                        const blob = await dlRes.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `${userName}_${type === 'cv' ? 'CV' : 'Portfolio'}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                        showToast('ดาวน์โหลดเอกสาร PDF สำเร็จ!');
+                    } catch (e) {
+                        alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
+                    } finally {
+                        btn.innerHTML = origText;
+                        btn.disabled = false;
+                    }
+                };
+
+                document.getElementById('btnDownloadPdfReal')?.addEventListener('click', () => downloadPdf('portfolio'));
+                document.getElementById('btnDownloadCvPdfReal')?.addEventListener('click', () => downloadPdf('cv'));
+
+                // Share link
                 document.getElementById('btnSharePort')?.addEventListener('click', async () => {
                     const shareUrl = window.location.href;
                     if (navigator.clipboard) {

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประวัติย่อวิชาชีพ (Curriculum Vitae) - BimClub</title>
+    <link rel="icon" href="/assets/img/logobranding/logobim.png">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/portfolio-public.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/navbar-component.js"></script>
+    <script src="../js/portfolio-templates.js"></script>
+</head>
+<body style="background-color: #0F172A; min-height: 100vh;">
+
+    <!-- Site Navbar -->
+    <site-navbar></site-navbar>
+
+    <!-- Top Action Toolbar -->
+    <div style="background: #1E293B; border-bottom: 1px solid #334155; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 60px; z-index: 100;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="#" id="linkToPortfolio" style="color: #94A3B8; text-decoration: none; font-size: 0.88rem; font-weight: 600;">← ดูแฟ้มผลงาน (Portfolio)</a>
+            <span style="color: #475569;">|</span>
+            <span style="color: #F8FAFC; font-size: 0.9rem; font-weight: 700;">📄 ประวัติย่อวิชาชีพ (Curriculum Vitae)</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" id="btnShareCv" class="btn-action secondary" style="padding: 6px 14px; font-size: 0.85rem;">
+                <span>🔗</span> <span>แชร์ลิงก์</span>
+            </button>
+            <button type="button" id="btnDownloadCvPdf" class="btn-action maroon" style="padding: 6px 16px; font-size: 0.85rem;">
+                <span>📥</span> <span>ดาวน์โหลด CV (PDF)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main style="max-width: 960px; margin: 30px auto; padding: 0 16px;">
+        <div id="cvContainer" style="background: #FFFFFF; border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); overflow: hidden; min-height: 800px;">
+            <div style="padding: 60px 20px; text-align: center; color: #64748B;">
+                กำลังโหลดเอกสาร CV...
+            </div>
+        </div>
+    </main>
+
+    <!-- Global Footer -->
+    <site-footer></site-footer>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/footer-component.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+            const cvContainer = document.getElementById('cvContainer');
+            const linkToPortfolio = document.getElementById('linkToPortfolio');
+
+            if (!userId) {
+                cvContainer.innerHTML = '<div style="padding:40px; text-align:center;">ไม่พบรหัสผู้ใช้</div>';
+                return;
+            }
+
+            linkToPortfolio.href = `/page/portfolio-public.html?id=${encodeURIComponent(userId)}`;
+
+            try {
+                const res = await fetch(`/api/portfolios/public/${encodeURIComponent(userId)}`);
+                if (!res.ok) throw new Error('Not found');
+                const data = await res.json();
+                const p = data.portfolio || data;
+
+                const cvSettings = p.cv_settings || {
+                    docType: 'cv',
+                    template: 'cv-a4-standard',
+                    pageSize: 'a4',
+                    orientation: 'portrait',
+                    theme: { primary: '#012240', secondary: '#AD0F0F', bg: 'white' },
+                    language: 'th'
+                };
+                cvSettings.docType = 'cv';
+
+                const payload = {
+                    profile: {
+                        fullName: p.user_name || p.full_name || 'สมาชิก BimClub',
+                        headline: p.headline || '',
+                        targetRole: p.target_role || p.headline || '',
+                        summary: p.summary || '',
+                        careerObjective: p.career_objective || '',
+                        avatarUrl: p.user_avatar || p.avatar_url || '',
+                        email: p.email || '',
+                        phone: p.phone || '',
+                        websiteUrl: p.website_url || '',
+                        customLinks: p.extra_sections?.custom_contacts || []
+                    },
+                    skills: p.skills || [],
+                    experiences: p.experiences || [],
+                    education: p.education || [],
+                    projects: p.projects || [],
+                    certificates: p.certificates || { system: [], manual: [] },
+                    extraSections: p.extra_sections || {},
+                    settings: cvSettings
+                };
+
+                const html = PortfolioTemplates.renderDocument(payload);
+                
+                // Render inside iframe for style isolation
+                cvContainer.innerHTML = `
+                    <iframe srcdoc="${escapeAttr(html)}" style="width:100%; height:1100px; border:none; display:block;"></iframe>
+                `;
+
+                // Actions
+                document.getElementById('btnDownloadCvPdf').addEventListener('click', async () => {
+                    const btn = document.getElementById('btnDownloadCvPdf');
+                    btn.textContent = '⏳ กำลังสร้าง PDF...';
+                    btn.disabled = true;
+                    try {
+                        const dlRes = await fetch(`/api/portfolios/public/${encodeURIComponent(userId)}/export/pdf?type=cv`);
+                        if (!dlRes.ok) throw new Error('Download failed');
+                        const blob = await dlRes.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `${(p.user_name || 'CV').replace(/[^a-zA-Z0-9_\u0E00-\u0E7F]/g, '_')}_CV.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                    } catch (e) {
+                        alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
+                    } finally {
+                        btn.textContent = '📥 ดาวน์โหลด CV (PDF)';
+                        btn.disabled = false;
+                    }
+                });
+
+                document.getElementById('btnShareCv').addEventListener('click', async () => {
+                    if (navigator.clipboard) {
+                        await navigator.clipboard.writeText(window.location.href);
+                        alert('คัดลอกลิงก์ CV สำเร็จ!');
+                    } else {
+                        prompt('คัดลอกลิงก์:', window.location.href);
+                    }
+                });
+
+            } catch (err) {
+                cvContainer.innerHTML = '<div style="padding:40px; text-align:center; color:#EF4444;">ไม่พบประวัติย่อนี้ หรือเจ้าของยังไม่ได้เปิดเผยแพร่เป็นสาธารณะ</div>';
+            }
+
+            function escapeAttr(str) {
+                return String(str).replace(/"/g, '&quot;');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+/* ==========================================================================
+   BimClub CV Editor Styles
+   Distinct CV-focused UI with ATS indicators & layout selectors
+   ========================================================================== */
+
+:root {
+  --cv-navy: #012240;
+  --cv-navy-hover: #0a2d52;
+  --cv-maroon: #AD0F0F;
+  --cv-bg: #F8FAFC;
+  --cv-border: #E2E8F0;
+  --cv-text: #0F172A;
+  --cv-muted: #64748B;
+}
+
+body {
+  background-color: var(--cv-bg);
+  font-family: 'Noto Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--cv-text);
+  margin: 0;
+}
+
+.cv-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 480px;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+@media (max-width: 1350px) {
+  .cv-layout {
+    grid-template-columns: 280px 1fr 420px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .cv-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* Left Panel: Sections & Inclusion Checklist */
+.cv-sidebar {
+  background: #FFFFFF;
+  border-right: 1px solid var(--cv-border);
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cv-sidebar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cv-navy);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cv-checklist-box {
+  background: #F8FAFC;
+  border: 1px solid var(--cv-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.cv-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.cv-check-item:hover {
+  background: #F1F5F9;
+}
+
+.cv-check-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* ATS Safety Badge */
+.ats-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #DCFCE7;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+}
+
+.ats-badge-pill.warning {
+  background: #FEF3C7;
+  color: #92400E;
+  border-color: #FDE68A;
+}
+
+/* Center Panel: Content Tuning */
+.cv-content-panel {
+  background: var(--cv-bg);
+  padding: 24px 32px;
+  overflow-y: auto;
+}
+
+.cv-section-card {
+  background: #FFFFFF;
+  border: 1px solid var(--cv-border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.cv-section-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cv-navy);
+  margin: 0 0 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Right Panel: CV Live Preview */
+.cv-preview-panel {
+  background: #0F172A;
+  border-left: 1px solid var(--cv-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-preview-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #FFFFFF;
+  border-radius: 4px;
+}
+
+/* Modern-minimal CV workspace */
+:root {
+  --cv-canvas: #f7f7f5;
+  --cv-surface: #ffffff;
+  --cv-line: #e6e5e1;
+  --cv-ink: #171717;
+  --cv-muted-clean: #686868;
+}
+
+body { background: var(--cv-canvas); color: var(--cv-ink); }
+.cv-layout { background: var(--cv-canvas); gap: 1px; }
+.cv-sidebar, .cv-content-panel, .cv-preview-panel { border-color: var(--cv-line); }
+.cv-sidebar { background: var(--cv-surface); padding: 24px; }
+.cv-sidebar-title { color: var(--cv-navy); letter-spacing: -0.01em; }
+.cv-checklist-box { background: #fbfbfa; border-color: var(--cv-line); border-radius: 10px; }
+.cv-check-item { min-height: 44px; border-radius: 8px; color: #454545; }
+.cv-check-item:hover { background: #f1f1ee; }
+.cv-content-panel { padding: 30px 34px; }
+.cv-section-card { border-color: var(--cv-line); border-radius: 12px; box-shadow: 0 1px 2px rgba(23,23,23,0.03); padding: 24px; }
+.cv-section-card h3 { color: var(--cv-navy); }
+.cv-preview-panel { background: #122033; }
+.cv-preview-frame { box-shadow: 0 12px 30px rgba(0,0,0,0.24); }
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(173,15,15,0.35); outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+@media (max-width: 768px) {
+  .cv-content-panel { padding: 20px 16px; }
+  .cv-section-card { padding: 20px; }
+}

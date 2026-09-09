@@ -107,3 +107,15 @@ Deleted: none during this task.
 ## 16. Recommendation
 
 Keep the three installed skills as the minimum trusted set. Verify discovery in fresh Codex and Antigravity sessions, then add a narrowly scoped architecture/testing skill only if a concrete workflow requires it. Do not install the large Cloudflare bundle unless Cloudflare deployment work becomes an active task.
+
+## 17. UI/UX skill addition — 2026-09-09
+
+- Added `bimclub-ui-ux` as a project-scoped, instruction-only skill at `.agents/skills/bimclub-ui-ux/`.
+- The skill was adapted from MIT-licensed `arham777/ui-ux-kit`, pinned and audited at commit `af67a2cba570f64d93cba01d798fc41be6110f8f`.
+- Audit found nine tracked text files and no executable files, scripts, binaries, package manifests, hooks, or symlinks.
+- Upstream installation commands and optional external/API workflows were not copied into the installed skill. BimClub-specific rules prohibit secrets access, unapproved installers/dependencies, backend drift, and unapproved data transmission.
+- `AGENTS.md` now routes UI/UX work to the canonical `.agents/skills/bimclub-ui-ux/SKILL.md`, enabling Google Antigravity and other Agent Skills-compatible consumers to use the same source of truth.
+- Codex compatibility uses `/Users/mac368/.codex/skills/bimclub-ui-ux` as a symlink to the canonical project skill. A fresh session may be required before automatic discovery updates.
+- Claude Code and Cursor compatibility links are `.claude/skills/bimclub-ui-ux` and `.cursor/skills/bimclub-ui-ux`; both resolve to the same `.agents/skills/bimclub-ui-ux` source instead of duplicating it.
+- Antigravity uses the canonical `.agents/skills/bimclub-ui-ux/SKILL.md` directly and is also routed through `AGENTS.md`. Its CLI is not available on this machine, so interactive discovery remains unverified.
+- The bundled validator could not start because its optional `PyYAML` dependency is not installed. No package was installed to work around this. Frontmatter was instead parsed with Ruby's standard YAML library, references and symlinks were resolved, hashes were recorded, and the repository diff was checked.
