@@ -1,0 +1,49 @@
+services:
+  app:
+    build: .
+    container_name: bimclub_app_production_like
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      DB_NAME: ${DB_NAME:-club_database}
+      PORT: 3000
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET must be set in .env}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+    volumes:
+      - production_uploads:/usr/src/app/uploads
+      - ../assets:/usr/src/assets:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/healthz', response => process.exit(response.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  db:
+    image: mariadb:10.11
+    container_name: bimclub_db_production_like
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      MARIADB_DATABASE: ${DB_NAME:-club_database}
+    volumes:
+      - production_db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+volumes:
+  production_db_data:
+  production_uploads:
