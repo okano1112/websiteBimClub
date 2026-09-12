@@ -42,4 +42,10 @@ Audit findings:
 - Upstream references mention external design sites, image generation, package libraries, and optional API-key workflows. Those are informational only and are overridden by the restrictions above.
 - The BimClub adaptation contains no executable code and requires no runtime dependency or network access.
 
-Upstream: https://github.com/arham777/ui-ux-kit
+## Additional audited sources
+
+- Official Anthropic `frontend-design`, commit `41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f`. Instruction-only source; no runtime required. Adapted concepts: subject-grounded visual choices, plan/review/build/critique, restrained motion, intentional typography and copy. Source: https://github.com/anthropics/skills/tree/main/skills/frontend-design
+- `pbakaus/impeccable`, commit `67d018fe052853c104a96d441ce175dd5ec4c39d`. **Not vendored raw.** Its launcher can execute a binary and download a pinned engine through curl/wget, and its provider integrations can install edit hooks. Only its command vocabulary and critique principles are adapted. Source: https://github.com/pbakaus/impeccable
+- `nextlevelbuilder/ui-ux-pro-max-skill`, commit `4aad0584d92131626b16d4ff4d77f0455385013c`. **Not vendored raw.** It includes Python/CLI scripts, generated data catalogs, and installer workflows; some upstream versions have public advisories around installer/CLI behavior. Only its priority order and UX evidence model are adapted. Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+
+The three adapters are deliberately plain Markdown with no scripts, binaries, hooks, package manifests, network calls, or API-key workflows. `ui-ux-kit` remains the source of BimClub's shared anti-slop and design-system direction: https://github.com/arham777/ui-ux-kit
