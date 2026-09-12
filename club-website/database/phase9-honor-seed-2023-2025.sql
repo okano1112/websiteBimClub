@@ -1,0 +1,3 @@
+-- Deprecated: the former 2023–2025 Hall of Fame seed contained fictional
+-- people and must not be executed. Use phase11-honor-generation1-2024.sql
+-- for the verified Generation 1 roster supplied by the club.
