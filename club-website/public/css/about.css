@@ -1,5 +1,26 @@
 /* ========== About Page Styles ========== */
 
+/* Phase 9 Editorial pilot: scoped page rhythm; existing personnel/team cards remain protected. */
+.about-page { --about-ink: #1f2937; --about-muted: #64748b; --about-space: clamp(44px, 7vw, 88px); }
+.about-page .personnel-section,
+.about-page .timeline-section,
+.about-page .cta-section { padding-top: var(--about-space); padding-bottom: var(--about-space); }
+.about-page .section-heading,
+.about-page .section-header { max-width: 720px; margin-left: auto; margin-right: auto; }
+.about-page .section-heading h2,
+.about-page .section-header h2 { color: var(--about-ink); letter-spacing: -0.02em; }
+.about-page .section-heading p,
+.about-page .section-header p { color: var(--about-muted); line-height: 1.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .about-page *, .about-page *::before, .about-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 
 
 
@@ -107,6 +128,16 @@
   width: min(1100px, 92vw);
   margin: 48px auto 60px;
 }
+.personnel-section { padding:72px 0; background:#f8fafc; }
+.personnel-section .section-heading { max-width:720px; margin:0 auto 28px; text-align:center; }
+.personnel-section .section-kicker { color:#ad0f0f; font-size:.75rem; font-weight:800; letter-spacing:.14em; }
+.personnel-section .section-heading p { color:#475569; }
+.personnel-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+.personnel-card { padding:20px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; }
+.personnel-card h3 { margin-bottom:4px; font-size:1.05rem; }
+.personnel-card p { margin:0; color:#64748b; font-size:.9rem; }
+.personnel-state { grid-column:1/-1; padding:32px; text-align:center; color:#64748b; }
+@media(max-width:900px){.personnel-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:560px){.personnel-grid{grid-template-columns:1fr;}.personnel-section{padding:52px 0;}}
 
 .section-header {
   text-align: center;
