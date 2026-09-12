@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS instructor_requests;
 DROP TABLE IF EXISTS achievement_images;
 DROP TABLE IF EXISTS achievements;
 DROP TABLE IF EXISTS activities;
+DROP TABLE IF EXISTS team_members;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS sessions;
 
@@ -36,6 +37,8 @@ CREATE TABLE users (
   is_verified TINYINT(1) DEFAULT 0,
   verify_token VARCHAR(255) DEFAULT NULL,
   verify_token_expires DATETIME DEFAULT NULL,
+  verify_attempts INT NOT NULL DEFAULT 0,
+  verify_sent_at DATETIME DEFAULT NULL,
   reset_token VARCHAR(255) DEFAULT NULL,
   reset_token_expires DATETIME DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -244,6 +247,41 @@ CREATE TABLE achievement_images (
   FOREIGN KEY (achievement_id) REFERENCES achievements(id) ON DELETE CASCADE
 );
 
+-- Current team is intentionally separate from honors/alumni and supports yearly rotation.
+CREATE TABLE team_members (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(150) NOT NULL,
+  nickname VARCHAR(50) DEFAULT NULL,
+  role VARCHAR(150) DEFAULT NULL,
+  team_year VARCHAR(20) NOT NULL,
+  bio TEXT DEFAULT NULL,
+  profile_image VARCHAR(255) DEFAULT NULL,
+  display_order INT DEFAULT 0,
+  is_published TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_team_year_public (team_year, is_published, display_order)
+);
+
+-- Generation 1 / starting year 2024. Names are supplied by the club; no role or personal data is inferred.
+INSERT INTO team_members (full_name, role, team_year, display_order)
+SELECT names.full_name, NULL, '2024', names.display_order
+FROM (
+  SELECT 'นายศุภกิตติ์ เจริญสุข' AS full_name, 1 AS display_order UNION ALL
+  SELECT 'นายสมชาย ตอล', 2 UNION ALL
+  SELECT 'นายไกรศร วิเชียรสาร', 3 UNION ALL
+  SELECT 'นายพชรพล ศรีคงแก้ว', 4 UNION ALL
+  SELECT 'นายกฤษกร เทพชัย', 5 UNION ALL
+  SELECT 'นายพีระพงศ์ ชัยเพ็ชร', 6 UNION ALL
+  SELECT 'นางสาวนิชกาณต์ เลื่อนลอย', 7 UNION ALL
+  SELECT 'นางสาวพิชญา ชัยวิเศษ', 8 UNION ALL
+  SELECT 'นายกริชติพัฒน์ ถนัดค้า', 9 UNION ALL
+  SELECT 'นางสาวศศิวิมล เรืองนิล', 10 UNION ALL
+  SELECT 'ศุภวิชญ์ แถลงกัณฑ์', 11 UNION ALL
+  SELECT 'กฤตัชญ์ ศรีวรรณะ', 12
+) names
+WHERE NOT EXISTS (SELECT 1 FROM team_members WHERE team_year = '2024');
+
 
 -- ============================
 -- Seed Data
@@ -291,12 +329,25 @@ CREATE TABLE IF NOT EXISTS portfolio_projects (
 ALTER TABLE users 
 ADD COLUMN is_banned TINYINT(1) DEFAULT 0,
 ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL;
+CREATE TABLE IF NOT EXISTS positions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  position_name_th VARCHAR(150) NOT NULL,
+  position_name_en VARCHAR(150) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  is_leader TINYINT(1) NOT NULL DEFAULT 0,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_positions_name_th (position_name_th)
+);
 CREATE TABLE IF NOT EXISTS honors (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
   nickname VARCHAR(50),
   generation VARCHAR(50),
   position VARCHAR(150),
+  position_id INT NULL,
+  user_id INT NULL,
   profile_image VARCHAR(255),
   achievement TEXT,
   description TEXT,
@@ -305,7 +356,32 @@ CREATE TABLE IF NOT EXISTS honors (
   display_order INT DEFAULT 0,
   is_published TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (position_id) REFERENCES positions(id) ON DELETE SET NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Generation 1 / 2024 Hall of Fame roster supplied by the club.
+INSERT INTO honors
+  (name, nickname, generation, position, profile_image, achievement, description, current_position, joined_year, display_order, is_published)
+SELECT names.full_name, NULL, 'รุ่น 1', NULL, NULL, NULL, NULL, 'ศิษย์เก่ารุ่นที่ 1', '2024', names.display_order, 1
+FROM (
+  SELECT 'นายศุภกิตติ์ เจริญสุข' AS full_name, 1 AS display_order UNION ALL
+  SELECT 'นายสมชาย ตอล', 2 UNION ALL
+  SELECT 'นายไกรศร วิเชียรสาร', 3 UNION ALL
+  SELECT 'นายพชรพล ศรีคงแก้ว', 4 UNION ALL
+  SELECT 'นายกฤษกร เทพชัย', 5 UNION ALL
+  SELECT 'นายพีระพงศ์ ชัยเพ็ชร', 6 UNION ALL
+  SELECT 'นางสาวนิชกาณต์ เลื่อนลอย', 7 UNION ALL
+  SELECT 'นางสาวพิชญา ชัยวิเศษ', 8 UNION ALL
+  SELECT 'นายกริชติพัฒน์ ถนัดค้า', 9 UNION ALL
+  SELECT 'นางสาวศศิวิมล เรืองนิล', 10 UNION ALL
+  SELECT 'ศุภวิชญ์ แถลงกัณฑ์', 11 UNION ALL
+  SELECT 'กฤตัชญ์ ศรีวรรณะ', 12
+) names
+WHERE NOT EXISTS (
+  SELECT 1 FROM honors existing
+  WHERE existing.name = names.full_name AND existing.joined_year = '2024'
 );
 
 -- admin2 user (password: admin123)
