@@ -4,3 +4,13 @@ npm-debug.log
 .env
 uploads
 db_data
+
+# AI agent instructions and project-only skills are development artifacts.
+# Keep them in the repository for Codex/Claude/Cursor/Antigravity, but never
+# copy them into a production image.
+.agents
+.agent
+.claude
+.cursor
+AGENTS.md
+AGENT-SKILLS-INSTALLATION-REPORT.md
