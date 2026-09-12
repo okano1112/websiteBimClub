@@ -11,11 +11,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/navbar-component.js"></script>
     <script src="../js/portfolio-templates.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
+  <script src="../js/document-viewer-fit.js" defer></script>
 </head>
-<body>
+<body class="apple-ui apple-document">
 
     <!-- Site Navbar Component -->
     <site-navbar></site-navbar>
+<nav class="apple-viewer-bar" aria-label="เอกสารสาธารณะ"><strong>Portfolio</strong><a href="achievement.html">ผลงานของชุมชน ↗</a></nav>
 
     <!-- Main Showcase Container -->
     <main class="portfolio-wrapper" id="portfolioApp">
@@ -61,7 +64,7 @@
             function renderNotFound(message) {
                 app.innerHTML = `
                     <div class="state-container">
-                        <div class="state-empty-icon">📂</div>
+                        <div class="state-empty-icon" aria-hidden="true">—</div>
                         <h2 class="state-title">${escapeHtml(message)}</h2>
                         <p class="state-desc">หากคุณเป็นเจ้าของพอร์ตโฟลิโอนี้ สามารถเข้าสู่ระบบเพื่อเปิดการแสดงผลเป็นสาธารณะได้</p>
                         <a href="/page/login.html" class="btn-state-action">เข้าสู่ระบบ BimClub</a>
@@ -122,7 +125,7 @@
                     skills: templateSkills,
                     experiences: p.experiences || [],
                     education: p.education || [],
-                    projects: p.projects || [],
+                    projects: [...(p.projects || []), ...(p.involved_projects || [])],
                     certificates: p.certificates || { system: [], manual: [] },
                     extraSections: extra,
                     settings: portfolioSettings
@@ -288,7 +291,7 @@
                     if (systemCerts.length > 0) {
                         certsContentHtml += `
                             <div class="cert-category-title">
-                                <span>🏆</span> ใบรับรองมาตรฐานผ่านการทดสอบจากระบบ BimClub
+                                ใบรับรองมาตรฐานผ่านการทดสอบจากระบบ BimClub
                             </div>
                             <div class="cert-grid">
                                 ${systemCerts.map(sc => `
@@ -316,7 +319,7 @@
                     if (manualCerts.length > 0) {
                         certsContentHtml += `
                             <div class="cert-category-title" style="${systemCerts.length > 0 ? 'margin-top:28px;' : ''}">
-                                <span>📜</span> ใบรับรองและการฝึกอบรมวิชาชีพอื่น ๆ
+                                ใบรับรองและการฝึกอบรมวิชาชีพอื่น ๆ
                             </div>
                             <div class="cert-grid">
                                 ${manualCerts.map(mc => `
@@ -346,7 +349,7 @@
                             <div class="project-img-wrapper">
                                 ${proj.image_url 
                                     ? `<img src="${escapeHtml(proj.image_url)}" class="project-img" alt="${escapeHtml(proj.title)}">` 
-                                    : `<div class="project-img-fallback">📐</div>`
+                                    : `<div class="project-img-fallback" aria-hidden="true">ไม่มีภาพ</div>`
                                 }
                             </div>
                             <div class="project-body">
@@ -513,7 +516,7 @@
                     <!-- Verified Institutional Footer -->
                     <footer class="portfolio-showcase-footer">
                         <div class="badge-footer-verified">
-                            <span>🛡️</span> BimClub Official Verified Profile
+                            BimClub Official Verified Profile
                         </div>
                         <div>สร้างและรับรองข้อมูลอย่างเป็นทางการผ่านแพลตฟอร์มการเรียนรู้ BimClub • Faculty of Engineering</div>
                     </footer>

@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="../css/admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="apple-ui apple-workspace">
 
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
@@ -70,12 +71,22 @@
                     <label>ตำแหน่งหรือบทบาทในชมรม</label>
                     <input type="text" id="position">
                 </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="positionId">ตำแหน่งจากบัญชีตำแหน่ง</label>
+                        <select id="positionId"><option value="">ไม่ระบุ (ใช้ข้อมูลเดิม)</option></select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="userId">บัญชีสมาชิกที่ยืนยันแล้ว</label>
+                        <select id="userId"><option value="">ยังไม่จับคู่บัญชี</option></select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label>อัปโหลดรูปโปรไฟล์</label>
-                    <input type="file" id="profileImageFile" accept="image/*" class="w-100 mb-2">
+                    <input type="file" id="profileImageFile" accept="image/jpeg,image/png,image/webp" class="w-100 mb-2">
                     <input type="hidden" id="profileImage">
-                    <div id="previewContainer" class="mt-3 d-none">
-                        <img id="imagePreview" class="rounded-sm" style="height:100px; object-fit:cover;">
+                    <div id="previewContainer" class="profile-preview-container" hidden>
+                        <img id="imagePreview" class="profile-preview-image" alt="ตัวอย่างรูปโปรไฟล์">
                     </div>
                 </div>
                 <div class="form-group">

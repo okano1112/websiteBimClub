@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const exps = portfolioData.experiences || [];
         const edus = portfolioData.education || [];
         const certs = portfolioData.certificates || { system: [], manual: [] };
-        const projs = portfolioData.projects || [];
+        const projs = [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])];
 
         cvSyncedDataSummary.innerHTML = `
             <div><strong>• ประวัติการทำงาน:</strong> ${exps.length} รายการ</div>
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             atsBadgeIndicator.innerHTML = '<span>⚠️</span> <span>A3 Presentation (ไม่แนะนำสำหรับส่งงาน)</span>';
         } else if (tpl === 'cv-a4-landscape-creative') {
             atsBadgeIndicator.className = 'ats-badge-pill warning';
-            atsBadgeIndicator.innerHTML = '<span>🎨</span> <span>Creative Horizontal</span>';
+            atsBadgeIndicator.innerHTML = '<span>Creative Horizontal</span>';
         } else {
             atsBadgeIndicator.className = 'ats-badge-pill';
             atsBadgeIndicator.innerHTML = '<span>✓</span> <span>Professional Standard</span>';
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             skills: portfolioData.skills || [],
             experiences: portfolioData.experiences || [],
             education: portfolioData.education || [],
-            projects: portfolioData.projects || [],
+            projects: [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])],
             certificates: portfolioData.certificates || { system: [], manual: [] },
             extraSections: portfolioData.extra_sections || {},
             settings: cvSettings
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
         } finally {
             btnDownloadCvPdf.disabled = false;
-            btnDownloadCvPdf.innerHTML = '<span>📥</span> <span>ดาวน์โหลด CV (PDF)</span>';
+            btnDownloadCvPdf.innerHTML = '<span>ดาวน์โหลด CV (PDF)</span>';
         }
     }
 

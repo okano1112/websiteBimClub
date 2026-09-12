@@ -458,6 +458,24 @@
                 position: relative;
                 overflow: hidden;
             }
+            .maroon-cover-copy {
+                position: relative;
+                z-index: 1;
+                max-width: 72%;
+            }
+            .maroon-cover-avatar {
+                position: absolute;
+                right: 42px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 150px;
+                height: 150px;
+                border-radius: 24px;
+                object-fit: cover;
+                border: 3px solid rgba(255,255,255,0.8);
+                box-shadow: 0 18px 36px rgba(0,0,0,0.25);
+                z-index: 1;
+            }
             .maroon-cover-hero::after {
                 content: "";
                 position: absolute;
@@ -513,6 +531,17 @@
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 16px;
+            }
+            @media (max-width: 640px) {
+                .maroon-cover-copy { max-width: 100%; }
+                .maroon-cover-avatar {
+                    position: static;
+                    transform: none;
+                    width: 96px;
+                    height: 96px;
+                    margin: 18px 0 0 auto;
+                }
+                .maroon-cover-hero { padding: 30px; }
             }
         </style>
         `;
@@ -829,15 +858,17 @@
         <div class="doc-page">
             <div class="doc-page-content" style="display:flex; flex-direction:column; justify-content:center;">
                 <div class="maroon-cover-hero">
-                    <span class="maroon-cover-tag">PROFESSIONAL PORTFOLIO</span>
-                    <h1 class="maroon-cover-name">${esc(profile.fullName || 'ชื่อ นามสกุล')}</h1>
-                    <div class="maroon-cover-role">${esc(profile.targetRole || profile.headline || 'BIM Engineer & Computational Designer')}</div>
-                    
-                    <div class="maroon-cover-contacts">
-                        ${profile.email ? `<span>✉ ${esc(profile.email)}</span>` : ''}
-                        ${profile.phone ? `<span>✆ ${esc(profile.phone)}</span>` : ''}
-                        ${profile.websiteUrl ? `<span>🌐 ${esc(profile.websiteUrl)}</span>` : ''}
+                    <div class="maroon-cover-copy">
+                        <span class="maroon-cover-tag">PROFESSIONAL PORTFOLIO</span>
+                        <h1 class="maroon-cover-name">${esc(profile.fullName || 'ชื่อ นามสกุล')}</h1>
+                        <div class="maroon-cover-role">${esc(profile.targetRole || profile.headline || 'BIM Engineer & Computational Designer')}</div>
+                        <div class="maroon-cover-contacts">
+                            ${profile.email ? `<span>✉ ${esc(profile.email)}</span>` : ''}
+                            ${profile.phone ? `<span>✆ ${esc(profile.phone)}</span>` : ''}
+                            ${profile.websiteUrl ? `<span>${esc(profile.websiteUrl)}</span>` : ''}
+                        </div>
                     </div>
+                    ${profile.avatarUrl ? `<img class="maroon-cover-avatar" src="${esc(profile.avatarUrl)}" alt="รูปโปรไฟล์ ${esc(profile.fullName || '')}">` : ''}
                 </div>
 
                 <div style="margin-top: 32px;">
@@ -884,7 +915,7 @@
                         <div style="display: flex; gap: 14px; font-size: 11.5px; margin-top: 8px; color: var(--theme-text);">
                             ${profile.email ? `<span>✉ ${esc(profile.email)}</span>` : ''}
                             ${profile.phone ? `<span>✆ ${esc(profile.phone)}</span>` : ''}
-                            ${profile.websiteUrl ? `<span>🌐 ${esc(profile.websiteUrl)}</span>` : ''}
+                            ${profile.websiteUrl ? `<span>${esc(profile.websiteUrl)}</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -965,6 +996,7 @@
         <div class="doc-page" style="padding-top: 20px;">
             <div class="doc-page-content" style="padding: 24px 50px;">
                 <div style="text-align: center; margin-bottom: 28px; border-bottom: 1px solid var(--theme-border); padding-bottom: 20px;">
+                    ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="รูปโปรไฟล์ ${esc(profile.fullName || '')}" style="width: 74px; height: 74px; border-radius: 50%; object-fit: cover; border: 2px solid var(--theme-secondary); margin-bottom: 10px;">` : ''}
                     <h1 style="font-size: 26px; font-weight: 700; color: var(--theme-primary); margin: 0 0 6px 0; letter-spacing: 0.5px;">${esc(profile.fullName)}</h1>
                     <div style="font-size: 13.5px; font-weight: 500; color: var(--theme-muted); text-transform: uppercase; letter-spacing: 1px;">${esc(profile.targetRole || profile.headline)}</div>
                     <div style="display:flex; justify-content:center; gap:16px; font-size:11.5px; color:var(--theme-muted); margin-top:8px;">
@@ -1009,7 +1041,7 @@
                         <div style="font-size:12px; color:var(--theme-muted); margin-bottom:20px; line-height:1.7;">
                             ${profile.email ? `<div>✉ ${esc(profile.email)}</div>` : ''}
                             ${profile.phone ? `<div>✆ ${esc(profile.phone)}</div>` : ''}
-                            ${profile.websiteUrl ? `<div>🌐 ${esc(profile.websiteUrl)}</div>` : ''}
+                            ${profile.websiteUrl ? `<div>${esc(profile.websiteUrl)}</div>` : ''}
                         </div>
 
                         ${renderAboutMe(payload, lang)}
@@ -1080,6 +1112,20 @@
         `;
     }
 
+    // CV work history uses the existing text-entry styles; public portfolio cards stay unchanged.
+    function renderCvProjects(payload, lang) {
+        if (!isSectionVisible(payload, 'projects') || !payload.projects?.length) return '';
+        return `<div class="doc-section doc-section-projects">
+            ${renderSectionTitle('ผลงานและโครงการ', 'Projects', null, lang)}
+            ${payload.projects.map(project => `<div class="entry-item">
+                <h3 class="entry-title">${esc(project.title)}</h3>
+                ${project.role_in_project ? `<p class="entry-meta">${esc(project.role_in_project)}</p>` : ''}
+                ${project.description ? `<p class="entry-desc">${esc(project.description).replace(/\n/g, '<br>')}</p>` : ''}
+                ${project.project_url ? `<p class="entry-meta">${esc(project.project_url)}</p>` : ''}
+            </div>`).join('')}
+        </div>`;
+    }
+
     /**
      * CV TEMPLATE 1: cv-a4-standard (A4 Portrait Default)
      */
@@ -1097,6 +1143,7 @@
                         <h1 style="font-size: 26px; font-weight: 800; color: var(--theme-primary); margin: 0 0 4px 0;">${esc(profile.fullName)}</h1>
                         <div style="font-size: 14px; font-weight: 600; color: var(--theme-secondary);">${esc(profile.targetRole || profile.headline || 'Curriculum Vitae')}</div>
                     </div>
+                    ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="รูปโปรไฟล์ ${esc(profile.fullName || '')}" style="width: 68px; height: 68px; border-radius: 12px; object-fit: cover; border: 2px solid var(--theme-primary); margin-left: 18px;">` : ''}
                     <div style="text-align: right; font-size: 11px; color: var(--theme-muted); line-height: 1.5;">
                         ${profile.email ? `<div>${esc(profile.email)}</div>` : ''}
                         ${profile.phone ? `<div>${esc(profile.phone)}</div>` : ''}
@@ -1108,6 +1155,7 @@
                 ${renderEducation(payload, lang)}
                 ${renderExperiences(payload, lang)}
                 ${renderSkills(payload, lang)}
+                ${renderCvProjects(payload, lang)}
                 ${renderCertificates(payload, lang)}
                 ${renderExtraSections(payload, lang)}
             </div>
@@ -1140,7 +1188,8 @@
             ${renderExperiences(payload, lang)}
             ${renderEducation(payload, lang)}
             ${renderSkills(payload, lang)}
-            ${renderCertificates(payload, lang)}
+            ${renderCvProjects(payload, lang)}
+                ${renderCertificates(payload, lang)}
             ${renderExtraSections(payload, lang)}
         </div>
         `;
@@ -1173,7 +1222,7 @@
                         <div style="font-size: 11px; color: var(--theme-muted); margin-bottom: 20px; line-height: 1.6;">
                             ${profile.email ? `<div>✉ ${esc(profile.email)}</div>` : ''}
                             ${profile.phone ? `<div>✆ ${esc(profile.phone)}</div>` : ''}
-                            ${profile.websiteUrl ? `<div>🌐 ${esc(profile.websiteUrl)}</div>` : ''}
+                            ${profile.websiteUrl ? `<div>${esc(profile.websiteUrl)}</div>` : ''}
                         </div>
                         ${renderSkills(payload, lang)}
                         ${renderCertificates(payload, lang)}

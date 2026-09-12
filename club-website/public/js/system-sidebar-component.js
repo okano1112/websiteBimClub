@@ -60,6 +60,8 @@ class SystemSidebarComponent extends HTMLElement {
           ['manage-courses.html', 'Courses', 'หลักสูตรและการเผยแพร่'],
           ['admin-cms.html', 'Content', 'กิจกรรมและผลงาน'],
           ['admin-members.html', 'Members', 'สมาชิกชุมชน'],
+          ['admin-projects.html', 'Projects', 'ผลงานและผู้ร่วมงาน'],
+          ['admin-positions.html', 'Positions', 'ตำแหน่งและลำดับ'],
           ['admin-reports.html', 'Reports', 'รายงานและแนวโน้ม'],
           ['admin-system-settings.html', 'Settings', 'ตั้งค่าระบบ']
         ]

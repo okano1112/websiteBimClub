@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const article = document.createElement('article');
       article.className = 'course-card';
       article.innerHTML = `
-        <div class="course-cover">${course.thumbnailUrl ? `<img src="${esc(course.thumbnailUrl)}" alt="">` : '<span aria-hidden="true">📚</span>'}</div>
+        <div class="course-cover">${course.thumbnailUrl ? `<img src="${esc(course.thumbnailUrl)}" alt="">` : '<span aria-hidden="true">ไม่มีภาพปก</span>'}</div>
         <div class="course-card-body">
           <p class="course-meta">${course.isPublished ? 'เผยแพร่แล้ว' : 'ฉบับร่าง'}${course.instructorName ? ` · ${esc(course.instructorName)}` : ''}</p>
           <h2>${esc(course.title)}</h2><p>${esc(course.description || 'ยังไม่มีรายละเอียดคอร์ส')}</p>

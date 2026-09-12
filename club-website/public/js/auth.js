@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="nav-dropdown-role">${escapeHtml(roleLabel)}</span>
           </div>
           <ul class="nav-dropdown-menu">
+            <li><a class="nav-dropdown-item nav-dropdown-portfolio" role="menuitem" href="${settingsUrl.replace('settings.html', 'portfolio.html')}">Portfolio ของฉัน</a></li>
+            <li class="nav-dropdown-divider" aria-hidden="true"></li>
             <li><a class="nav-dropdown-item" role="menuitem" href="${settingsUrl}#profile">ตั้งค่าโปรไฟล์</a></li>
             <li><a class="nav-dropdown-item" role="menuitem" href="${settingsUrl}#password">ตั้งค่ารหัสผ่าน</a></li>
             <li><a class="nav-dropdown-item" role="menuitem" href="${settingsUrl}#recovery">เบอร์โทรศัพท์เพื่อกู้คืน / เบอร์สำรอง</a></li>
@@ -161,6 +163,8 @@ function injectGlobalUI() {
                 box-shadow: 0 4px 12px rgba(173, 15, 15, 0.4);
                 z-index: 9999;
                 transition: transform 0.2s, box-shadow 0.2s;
+                border: 0;
+                padding: 0;
             }
             #ai-chatbot-btn:hover {
                 transform: scale(1.1);
@@ -182,14 +186,20 @@ function injectGlobalUI() {
             #ai-chatbot-btn:hover .ai-chatbot-tooltip {
                 opacity: 1;
             }
+            @media (max-width: 600px) {
+                #ai-chatbot-btn { right: 16px; bottom: 16px; width: 52px; height: 52px; }
+                #ai-chatbot-btn img { width: 32px; height: 32px; }
+            }
         `;
         document.head.appendChild(style);
 
-        const chatbotBtn = document.createElement('div');
+        const chatbotBtn = document.createElement('button');
         chatbotBtn.id = 'ai-chatbot-btn';
+        chatbotBtn.type = 'button';
+        chatbotBtn.setAttribute('aria-label', 'เปิดผู้ช่วย BIM');
         chatbotBtn.innerHTML = `
-            <span style="font-size: 28px;">🤖</span>
-            <div class="ai-chatbot-tooltip">AI Chatbot (Coming Soon)</div>
+            <img src="/assets/img/logobranding/logobim.png" width="38" height="38" alt="">
+            <span class="ai-chatbot-tooltip">ผู้ช่วย BIM</span>
         `;
         document.body.appendChild(chatbotBtn);
 
@@ -198,7 +208,7 @@ function injectGlobalUI() {
         modal.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;';
         modal.innerHTML = `
             <div style="background: #fff; padding: 30px; border-radius: 16px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: chatbotFadeIn 0.3s;">
-                <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+                <img src="/assets/img/logobranding/logobim.png" width="64" height="64" alt="โลโก้ BimClub" style="object-fit:contain; margin:0 auto 16px;">
                 <h3 style="color: #ad0f0f; margin-bottom: 12px; font-size: 1.4rem;">AI Chatbot</h3>
                 <p style="color: #4b5563; margin-bottom: 24px;">ระบบ AI กำลังอยู่ระหว่างการพัฒนาฟีเจอร์ใหม่ โปรดรอติดตามเร็วๆ นี้ครับ</p>
                 <button id="ai-chatbot-close" style="background: #ad0f0f; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 600;">ปิดหน้าต่าง</button>
@@ -215,10 +225,17 @@ function injectGlobalUI() {
 
         document.getElementById('ai-chatbot-close').addEventListener('click', () => {
             modal.style.display = 'none';
+            chatbotBtn.focus();
         });
         
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.style.display = 'none';
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+                chatbotBtn.focus();
+            }
         });
     }
     // MOCKUP-END: AI CHATBOT

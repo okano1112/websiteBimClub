@@ -6,6 +6,11 @@
     padding: 0 20px;
 }
 
+.honor-page { --honor-space: clamp(40px, 6vw, 80px); }
+.honor-page .honor-year-section { scroll-margin-top: 96px; }
+.honor-page .honor-year-heading { margin-top: var(--honor-space); }
+@media (prefers-reduced-motion: reduce) { .honor-page *, .honor-page *::before, .honor-page *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+
 /* Hero Section */
 .honor-hero {
     position: relative;
@@ -317,4 +322,95 @@
         margin: 0 auto;
     }
     .modal-right { padding: 30px 20px; }
+}
+
+/* Editorial alumni grouping and featured-leader treatment */
+.honor-members { background: #f8fafc; }
+.honor-grid { display: block; }
+.honor-year-group { margin: 0 auto 72px; max-width: 1120px; }
+.honor-year-heading { display: flex; align-items: end; gap: 14px; margin-bottom: 22px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+.honor-year-heading h2 { margin: 0; color: #012240; font-size: clamp(1.35rem, 2vw, 1.85rem); letter-spacing: -.02em; }
+.honor-year-kicker, .honor-card-eyebrow { color: #ad0f0f; font-size: .72rem; font-weight: 800; letter-spacing: .14em; }
+.honor-year-count { margin-left: auto; color: #64748b; font-size: .9rem; }
+.honor-featured-card { display: grid; grid-template-columns: minmax(280px, .9fr) 1.1fr; min-height: 300px; margin-bottom: 24px; overflow: hidden; border: 1px solid #dbe3ec; border-radius: 18px; background: #fff; box-shadow: 0 18px 45px rgba(1,34,64,.1); }
+.honor-featured-image { position: relative; min-height: 300px; background: #012240; }
+.honor-featured-photo { width: 100%; height: 100%; object-fit: cover; }
+.honor-featured-badge { position: absolute; left: 18px; bottom: 18px; padding: 7px 12px; border-radius: 999px; background: #ad0f0f; color: #fff; font-size: .78rem; font-weight: 700; }
+.honor-featured-content { display: flex; flex-direction: column; justify-content: center; padding: 38px 42px; }
+.honor-featured-content h3 { margin: 8px 0 5px; color: #012240; font-size: clamp(1.65rem, 3vw, 2.45rem); line-height: 1.2; }
+.honor-card-subtitle { margin: 0 0 16px; color: #ad0f0f; font-weight: 700; }
+.honor-card-achievement { margin: 0 0 12px; color: #334155; font-weight: 600; }
+.honor-card-desc { color: #475569; line-height: 1.7; }
+.honor-featured-content .btn-read-more { width: fit-content; padding-inline: 22px; background: #012240; color: #fff; border-color: #012240; }
+.honor-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.honor-card { border-radius: 16px; box-shadow: 0 10px 28px rgba(15,23,42,.06); }
+.honor-card-photo { display: block; width: 100%; height: 220px; object-fit: cover; background: #e2e8f0; }
+.honor-card .card-content { padding: 22px; }
+.honor-card .card-name { font-size: 1.2rem; margin-top: 7px; }
+.honor-card .card-subtitle { margin-bottom: 10px; }
+.honor-card .card-desc { margin-bottom: 20px; }
+.honor-empty { grid-column: 1 / -1; padding: 64px 20px; color: #64748b; text-align: center; }
+.honor-empty-error { color: #991b1b; }
+.honor-carousel-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin: 10px 0 14px; color:#475569; font-size:.9rem; }
+.honor-carousel-actions { display:flex; align-items:center; gap:8px; }
+.honor-carousel-btn, .honor-view-all { min-width:44px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#012240; font:inherit; font-weight:700; cursor:pointer; }
+.honor-carousel-btn:hover, .honor-carousel-btn:focus-visible, .honor-view-all:hover, .honor-view-all:focus-visible { border-color:#ad0f0f; color:#ad0f0f; outline:3px solid rgba(173,15,15,.16); outline-offset:2px; }
+.honor-view-all { padding:0 14px; text-decoration:none; font-size:.82rem; }
+.honor-carousel-viewport { overflow:hidden; }
+.honor-carousel-track { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 44px)/3); gap:22px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:2px 2px 12px; }
+.honor-carousel-track::-webkit-scrollbar { display:none; }
+.honor-carousel-track .honor-card { scroll-snap-align:start; min-width:0; }
+.honor-view-all-panel { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:14px; }
+.honor-compact-card { display:grid; gap:2px; padding:12px 14px; text-align:left; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#0f172a; cursor:pointer; }
+.honor-compact-card small { color:#64748b; }
+.close-modal { border: 0; background: transparent; line-height: 1; }
+
+/* Hall of Fame navigation lives outside the existing card components. */
+.hof-header { max-width: 760px; margin: 0 auto 28px; text-align: center; }
+.hof-eyebrow { display: block; margin-bottom: 10px; color: #ad0f0f; font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
+.hof-header h2 { margin: 0; color: #012240; font-size: clamp(1.7rem, 3vw, 2.5rem); line-height: 1.2; }
+.hof-header p { margin: 10px 0 0; color: #64748b; font-size: 1rem; }
+.hof-controls { display: flex; align-items: center; justify-content: space-between; gap: 18px; max-width: 1120px; margin: 0 auto 46px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+.hof-year-navigation { display: flex; gap: 8px; min-width: 0; overflow-x: auto; padding: 3px 2px 8px; scrollbar-width: thin; }
+.hof-year-button { flex: 0 0 auto; min-height: 44px; padding: 0 16px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #012240; font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.hof-year-button:hover, .hof-year-button:focus-visible { border-color: #ad0f0f; color: #ad0f0f; outline: 3px solid rgba(173,15,15,.16); outline-offset: 2px; }
+.hof-year-button-active { border-color: #012240; background: #012240; color: #fff; }
+.hof-year-button-active:hover, .hof-year-button-active:focus-visible { border-color: #012240; background: #012240; color: #fff; }
+.hof-year-select-label { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 8px; color: #475569; font-size: .9rem; font-weight: 700; white-space: nowrap; }
+.hof-year-select { min-height: 44px; padding: 0 34px 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #012240; font: inherit; cursor: pointer; }
+.hof-year-select:focus-visible { border-color: #ad0f0f; outline: 3px solid rgba(173,15,15,.16); outline-offset: 2px; }
+.hof-year-section-visible { animation: hof-section-in .22s ease both; }
+@keyframes hof-section-in { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 768px) {
+  .hof-controls { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+  .hof-year-navigation { width: 100%; }
+  .hof-year-select-label { justify-content: space-between; }
+  .hof-year-select { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hof-year-section-visible { animation: none; }
+}
+
+@media (max-width: 900px) {
+  .honor-card-grid { grid-template-columns: repeat(2, 1fr); }
+  .honor-carousel-track { grid-auto-columns:calc((100% - 22px)/2); }
+}
+@media (max-width: 640px) {
+  .honor-members { padding: 52px 0; }
+  .honor-year-group { margin-bottom: 52px; }
+  .honor-year-heading { align-items: center; flex-wrap: wrap; gap: 8px; }
+  .honor-year-count { width: 100%; margin-left: 0; }
+  .honor-featured-card { display: block; }
+  .honor-featured-image { min-height: 250px; max-height: 330px; }
+  .honor-featured-content { padding: 26px 22px; }
+  .honor-card-grid { grid-template-columns: 1fr; }
+  .honor-carousel-toolbar { align-items:flex-start; flex-direction:column; }
+  .honor-carousel-track { grid-auto-columns:100%; }
+  .honor-view-all-panel { grid-template-columns:1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .honor-card, .honor-card img { transition: none; }
 }

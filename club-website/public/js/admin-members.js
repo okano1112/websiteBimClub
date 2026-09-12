@@ -11,19 +11,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pageSize = 8;
   let members = [];
   let page = 1;
+  let pagination = { pages: 1, total: 0 };
+  let loadSequence = 0;
 
   const memberStatus = (member) => member.deleted_at ? 'deleted' : member.is_banned ? 'banned' : member.is_verified ? 'active' : 'unverified';
   const statusLabel = { active: 'ใช้งานได้', unverified: 'ยังไม่ยืนยัน', banned: 'ถูกระงับ', deleted: 'ถูกลบ' };
-
-  function filteredMembers() {
-    const query = search.value.trim().toLocaleLowerCase('th');
-    return members.filter((member) => {
-      const text = [member.username, member.email, member.full_name].join(' ').toLocaleLowerCase('th');
-      return (!query || text.includes(query))
-        && (role.value === 'all' || member.role === role.value)
-        && (status.value === 'all' || memberStatus(member) === status.value);
-    });
-  }
 
   function addCell(row, value) {
     const cell = document.createElement('td');
@@ -32,10 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function render() {
-    const filtered = filteredMembers();
-    const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-    page = Math.min(page, pageCount);
-    const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+    const pageCount = pagination.pages;
+    const visible = members;
     rows.innerHTML = '';
 
     if (!visible.length) {
@@ -66,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       rows.appendChild(row);
     });
 
-    pageInfo.textContent = `หน้า ${page} จาก ${pageCount} · ${filtered.length} รายการ`;
+    pageInfo.textContent = `หน้า ${page} จาก ${pageCount} · ${pagination.total} รายการ`;
     previous.disabled = page <= 1;
     next.disabled = page >= pageCount;
   }
@@ -86,24 +76,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('closeMemberModal').focus();
   }
 
-  [search, role, status].forEach((control) => control.addEventListener('input', () => { page = 1; render(); }));
-  previous.addEventListener('click', () => { page -= 1; render(); });
-  next.addEventListener('click', () => { page += 1; render(); });
+  [search, role, status].forEach((control) => control.addEventListener('input', () => { page = 1; loadMembers(); }));
+  previous.addEventListener('click', () => { page -= 1; loadMembers(); });
+  next.addEventListener('click', () => { page += 1; loadMembers(); });
   document.getElementById('closeMemberModal').addEventListener('click', () => { modal.style.display = 'none'; });
   modal.addEventListener('click', (event) => { if (event.target === modal) modal.style.display = 'none'; });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') modal.style.display = 'none'; });
 
+  async function loadMembers() {
+  const sequence = ++loadSequence;
   try {
-    const response = await fetch('/api/admin/users');
+    const query = new URLSearchParams({ page, limit: pageSize, q: search.value.trim(), role: role.value, status: status.value, scope: 'members' });
+    const response = await fetch(`/api/admin/users?${query}`);
     if (response.status === 401) return window.location.href = 'login.html';
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'ไม่มีสิทธิ์เข้าถึง');
-    members = data.users.filter((member) => member.role !== 'admin');
+    if (sequence !== loadSequence) return;
+    members = data.users; pagination = data.pagination; page = pagination.page;
     render();
   } catch (error) {
+    if (sequence !== loadSequence) return;
     rows.innerHTML = '';
     const row = document.createElement('tr');
     const cell = document.createElement('td'); cell.colSpan = 6; cell.className = 'admin-error'; cell.textContent = error.message;
     row.appendChild(cell); rows.appendChild(row);
   }
+  }
+  await loadMembers();
 });

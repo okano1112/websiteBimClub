@@ -152,10 +152,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updatePublicBadge(isPublic) {
         if (isPublic) {
             publicStatusBadge.className = 'status-badge public';
-            publicStatusBadge.textContent = '🌐 เผยแพร่สาธารณะ';
+            publicStatusBadge.textContent = 'เผยแพร่สาธารณะ';
         } else {
             publicStatusBadge.className = 'status-badge private';
-            publicStatusBadge.textContent = '🔒 ซ่อนเป็นส่วนตัว';
+            publicStatusBadge.textContent = 'ซ่อนเป็นส่วนตัว';
         }
     }
 
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             case 'internships':
                 return (extra.internships && extra.internships.length > 0) ? 'complete' : 'not_started';
             case 'projects':
-                const projs = portfolioData.projects || [];
+                const projs = [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])];
                 return projs.length > 0 ? 'complete' : 'not_started';
             case 'education':
                 const edus = portfolioData.education || [];
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             li.className = `nav-section-item ${idx === activeSectionIndex ? 'active' : ''} ${status === 'hidden' ? 'is-hidden' : ''}`;
             
             const isHidden = status === 'hidden';
-            const eyeIcon = isHidden ? '🙈' : '👁️';
+            const eyeIcon = isHidden ? 'แสดง' : 'ซ่อน';
 
             li.innerHTML = `
                 <div class="nav-item-left">
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 formHtml = `
                     <div style="display:flex; gap:20px; align-items:center;">
                         <div id="avatarPreviewBox" style="width:100px; height:100px; border-radius:12px; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid var(--editor-navy);">
-                            ${user.avatar_url ? `<img src="${escapeHtml(user.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:2rem;">👤</span>'}
+                            ${user.avatar_url ? `<img src="${escapeHtml(user.avatar_url)}" style="width:100%; height:100%; object-fit:cover;">` : '<span class="avatar-placeholder-label">ไม่มีรูป</span>'}
                         </div>
                         <div style="flex:1;">
                             <label style="font-weight:600; font-size:0.9rem; display:block; margin-bottom:6px;">อัปโหลดรูปโปรไฟล์ใหม่</label>
@@ -488,14 +488,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 break;
 
             case 'projects':
-                const projs = portfolioData.projects || [];
+                const projs = [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])];
                 formHtml = `
                     <div class="items-list-container">
                         ${projs.map(proj => `
                             <div class="item-entry-card" style="display:flex; gap:16px; align-items:flex-start;">
                                 ${proj.image_url ? `<img src="${escapeHtml(proj.image_url)}" style="width:100px; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--editor-border);">` : ''}
                                 <div style="flex:1;">
-                                    <button type="button" class="btn-item-delete" data-type="project" data-id="${proj.id}">ลบ</button>
+                                    ${Number(proj.can_edit) === 1 ? `<button type="button" class="btn-project-visibility" data-id="${proj.canonical_project_id || proj.id}" data-public="${Number(proj.is_public)}">${proj.is_public ? 'เปลี่ยนเป็นส่วนตัว' : 'เผยแพร่ผลงาน'}</button><button type="button" class="btn-item-delete" data-type="project" data-id="${proj.canonical_project_id || proj.id}">ลบ</button>` : '<span>ผลงานที่ร่วมทำ</span>'}
                                     <div class="item-entry-title">${escapeHtml(proj.title)}</div>
                                     ${proj.description ? `<p class="item-entry-desc">${escapeHtml(proj.description)}</p>` : ''}
                                     ${proj.project_url ? `<a href="${escapeHtml(proj.project_url)}" target="_blank" style="font-size:0.8rem; color:var(--editor-maroon); font-weight:600;">เปิดลิงก์โครงการ ↗</a>` : ''}
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>ชื่อโครงการ / ผลงาน</label>
-                                <input type="text" id="inpProjTitle" placeholder="เช่น โมเดล BIM โรงพยาบาล 15 ชั้น">
+                                <label><input type="checkbox" id="inpProjPublic"> เผยแพร่ผลงานนี้ในโปรไฟล์สาธารณะ</label><input type="text" id="inpProjTitle" placeholder="เช่น โมเดล BIM โรงพยาบาล 15 ชั้น">
                             </div>
                             <div class="form-group">
                                 <label>ลิงก์โครงการภายนอก (ถ้ามี)</label>
@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const manCerts = certs.manual || [];
                 formHtml = `
                     ${sysCerts.length > 0 ? `
-                        <label style="font-weight:700; color:var(--editor-navy); font-size:0.9rem; margin-bottom:8px; display:block;">🏆 ใบรับรองจากระบบ BimClub (Verified Credential)</label>
+                        <label style="font-weight:700; color:var(--editor-navy); font-size:0.9rem; margin-bottom:8px; display:block;">ใบรับรองจากระบบ BimClub (Verified Credential)</label>
                         <div class="items-list-container">
                             ${sysCerts.map(sc => `
                                 <div class="item-entry-card" style="border-left:4px solid var(--editor-navy);">
@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     ` : ''}
 
-                    <label style="font-weight:700; color:var(--editor-navy); font-size:0.9rem; margin:16px 0 8px 0; display:block;">📜 ใบรับรองอื่น ๆ (${manCerts.length})</label>
+                    <label style="font-weight:700; color:var(--editor-navy); font-size:0.9rem; margin:16px 0 8px 0; display:block;">ใบรับรองอื่น ๆ (${manCerts.length})</label>
                     <div class="items-list-container">
                         ${manCerts.map(mc => `
                             <div class="item-entry-card">
@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${awards.map((a, i) => `
                             <div class="item-entry-card">
                                 <button type="button" class="btn-item-delete" data-type="award" data-idx="${i}">ลบ</button>
-                                <div class="item-entry-title">🥇 ${escapeHtml(a.title)}</div>
+                                    <div class="item-entry-title">${escapeHtml(a.title)}</div>
                                 <div class="item-entry-subtitle">ผู้ออกรางวัล: ${escapeHtml(a.issuer || '')} (${escapeHtml(a.year || '')})</div>
                                 ${a.description ? `<p class="item-entry-desc">${escapeHtml(a.description)}</p>` : ''}
                             </div>
@@ -1007,22 +1007,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const upData = await upRes.json();
                         if (upData.success && upData.urls && upData.urls.length > 0) {
                             imageUrl = upData.urls[0];
-                        }
-                    } catch (e) {}
+                        } else { throw new Error(upData.message || 'อัปโหลดรูปไม่สำเร็จ'); }
+                    } catch (error) { showToast(error.message); return; }
                 }
 
                 const res = await fetch('/api/portfolios/me/projects', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, projectUrl, description, imageUrl })
+                    body: JSON.stringify({ title, projectUrl, description, imageUrl, is_public: document.getElementById('inpProjPublic').checked })
                 });
 
                 if (res.ok) {
                     showToast('เพิ่มผลงานโครงการเรียบร้อย');
                     await loadPortfolioData();
-                }
+                } else { const data = await res.json(); showToast(data.message || 'บันทึกผลงานไม่สำเร็จ'); }
             });
         }
+
+        document.querySelectorAll('.btn-project-visibility').forEach(button => button.addEventListener('click', async () => {
+            button.disabled = true;
+            try {
+                const response = await fetch(`/api/projects/${button.dataset.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_public: Number(button.dataset.public) !== 1 }) });
+                const data = await response.json(); if (!response.ok) throw new Error(data.message);
+                await loadPortfolioData(); showToast('บันทึกการเผยแพร่แล้ว');
+            } catch (error) { showToast(error.message); } finally { button.disabled = false; }
+        }));
 
         // Add Education Submit
         const btnAddEdu = document.getElementById('btnAddEduSubmit');
@@ -1176,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await fetch(`/api/portfolios/me/education/${id}`, { method: 'DELETE' });
                     await loadPortfolioData();
                 } else if (type === 'project') {
-                    await fetch(`/api/portfolios/me/projects/${id}`, { method: 'DELETE' });
+                    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
                     await loadPortfolioData();
                 } else if (type === 'cert') {
                     await fetch(`/api/portfolios/me/certificates/${id}`, { method: 'DELETE' });
@@ -1294,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             skills: portfolioData.skills || [],
             experiences: portfolioData.experiences || [],
             education: portfolioData.education || [],
-            projects: portfolioData.projects || [],
+            projects: [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])],
             certificates: portfolioData.certificates || { system: [], manual: [] },
             extraSections: portfolioData.extra_sections || {},
             settings: currentSettings
@@ -1362,7 +1371,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF กรุณาลองใหม่อีกครั้ง');
         } finally {
             btnDownloadPdf.disabled = false;
-            btnDownloadPdf.innerHTML = '<span>📥</span> <span>ดาวน์โหลด PDF</span>';
+            btnDownloadPdf.innerHTML = '<span>ดาวน์โหลด PDF</span>';
         }
     }
 

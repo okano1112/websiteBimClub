@@ -9,16 +9,35 @@
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/feed.css" />
+  <link rel="stylesheet" href="css/home-editorial.css" />
   <!--Logo Tab-->
   <link rel="icon" type="image/png" href="../../assets/img/logobranding/logobim.png">
   <!--link style form swiper-->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <script src="js/navbar-component.js"></script>
+  <link rel="stylesheet" href="css/apple-ui.css">
 </head>
 
-<body>
+<body class="home-page apple-ui apple-public">
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
+
+  <main id="main-content">
+  <section class="home-intro" aria-labelledby="home-title">
+    <p class="home-kicker">BIMCLUB · LEARN. BUILD. TOGETHER.</p>
+    <h1 id="home-title">ไอเดียของคุณ<br><span>สร้างได้ไกลกว่าเดิม</span></h1>
+    <p class="home-intro-copy">เรียนรู้ BIM ผ่านการลงมือทำ แลกเปลี่ยนกับเพื่อน<br class="home-desktop-break">และต่อยอดทุกไอเดียให้กลายเป็นผลงานร่วมกัน</p>
+    <div class="home-actions">
+      <a class="home-primary" href="page/courses.html">เริ่มเรียนรู้ BIM</a>
+      <a class="home-secondary" href="page/about.html">รู้จัก BimClub <span aria-hidden="true">↗</span></a>
+    </div>
+    <a class="home-explore" href="#home-activities">ชีวิตในชมรม <span aria-hidden="true">↓</span></a>
+  </section>
+
+  <header id="home-activities" class="home-section-heading">
+    <div><p class="home-kicker">01 / LEARNING IN ACTION</p><h2>เรียนรู้จริง ลงมือทำด้วยกัน</h2></div>
+    <a href="page/activity.html">สำรวจกิจกรรม <span aria-hidden="true">↗</span></a>
+  </header>
 
   <div class="carousel-section">
     <div class="swiper mySwiper">
@@ -34,7 +53,7 @@
               เรียนรู้เทคนิคการสร้างสรรค์งาน BIM ผ่านกิจกรรมอบรมและสถานที่จริง
               เพื่อพัฒนาทักษะของสมาชิกให้ก้าวไปสู่ระดับใหม่.
             </p>
-            <a href="#">Read More</a>
+            <a href="page/activity.html">ดูรายละเอียดกิจกรรม</a>
           </div>
         </div>
 
@@ -49,7 +68,7 @@
               ร่วมกันออกแบบและพัฒนางานระดับทีม พร้อมแลกเปลี่ยนไอเดียและแนวทาง
               เพื่อส่งเสริมความคิดสร้างสรรค์และการทำงานร่วมกัน.
             </p>
-            <a href="#">Read More</a>
+            <a href="page/activity.html">ดูรายละเอียดกิจกรรม</a>
           </div>
         </div>
 
@@ -64,7 +83,7 @@
               กิจกรรมที่ผสมผสานความรู้และประสบการณ์จริง ทำให้สมาชิกได้ฝึกปฏิบัติ
               เสริมความมั่นใจและการคิดเชิงวิเคราะห์ในงาน BIM.
             </p>
-            <a href="#">Read More</a>
+            <a href="page/activity.html">ดูรายละเอียดกิจกรรม</a>
           </div>
         </div>
 
@@ -79,7 +98,7 @@
               ทุกกิจกรรมถูกออกแบบเพื่อสร้างประสบการณ์ที่มีคุณค่า พร้อมโอกาสในการ
               เรียนรู้และเติบโตไปพร้อมกับสมาชิกทุกคนในชุมชน.
             </p>
-            <a href="#">Read More</a>
+            <a href="page/activity.html">ดูรายละเอียดกิจกรรม</a>
           </div>
         </div>
 
@@ -94,7 +113,7 @@
               เราเชื่อว่าความรู้และการเรียนรู้ที่ต่อเนื่องจะช่วยพัฒนาความสามารถและ
               เปิดโอกาสใหม่ ๆ ให้กับสมาชิกทุกคนในอนาคต.
             </p>
-            <a href="#">Read More</a>
+            <a href="page/activity.html">ดูรายละเอียดกิจกรรม</a>
           </div>
         </div>
       </div>
@@ -107,9 +126,10 @@
 
   <div class="Our-achievement">
     <div class="card-achievement"></div>
-    <a href="../public/page/achievement.html">ความสำเร็จของBimClub</a>
+    <a href="page/achievement.html">ความสำเร็จของBimClub</a>
   </div>
 
+  <header class="home-section-heading"><div><p class="home-kicker">02 / A PLACE TO GROW</p><h2>พื้นที่ของคนที่อยากสร้าง</h2></div><a href="page/register.html">เข้าร่วมชุมชน <span aria-hidden="true">↗</span></a></header>
   <section class="info-section"><div class="container"><div class="info-blocks">
     <div class="block-card">
       <h3>กิจกรรม</h3>
@@ -127,7 +147,7 @@
 
   <header id="community-feed" class="feed-hero">
     <p class="feed-eyebrow">BIMCLUB COMMUNITY</p>
-    <h1>ฟีดกิจกรรม</h1>
+    <h2>เรื่องราวจากคนในชุมชน</h2>
     <p>อัปเดตข่าวสาร ผลงาน และกิจกรรมล่าสุดจากชุมชนของเราได้จากหน้าแรก</p>
   </header>
   <section class="feed-section" aria-labelledby="community-feed">
@@ -135,6 +155,14 @@
     <div class="feed-empty" id="feedEmpty" hidden>ยังไม่มีโพสต์</div>
     <div class="feed-grid" id="feedGrid"></div>
   </section>
+
+  <section class="home-closing" aria-labelledby="home-closing-title">
+    <p class="home-kicker">YOUR NEXT CHAPTER</p>
+    <h2 id="home-closing-title">ก้าวต่อไป เริ่มที่การลงมือทำ</h2>
+    <p>มาเรียนรู้ แบ่งปัน และสร้างผลงานไปกับ BimClub</p>
+    <a class="home-primary" href="page/register.html">สมัครสมาชิก</a>
+  </section>
+  </main>
 
     
   <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>

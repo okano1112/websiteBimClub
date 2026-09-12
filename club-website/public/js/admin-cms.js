@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!item) return;
 
         itemIdInput.value = item.id;
+        imageInput.value = '';
         titleInput.value = item.title || '';
         descriptionInput.value = item.description || '';
         imageUrlInput.value = item.image_url || '';
@@ -250,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({
                     title: titleInput.value,
                     description: descriptionInput.value,
-                    imageUrl
+                    ...(!itemId || imageInput.files.length ? { imageUrl } : {})
                 })
             });
             const data = await res.json();

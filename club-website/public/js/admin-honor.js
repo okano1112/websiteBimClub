@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    /**
+     * BIM CLUB — ADMIN HONOR PROFILE IMAGE
+     * MODIFY HERE: preview state only; server validation remains in /api/upload.
+     * DO NOT MODIFY: protected Honor card renderer or image crop behavior.
+     */
     // Basic Auth Check
     try {
         const res = await fetch('/api/auth/me');
@@ -22,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const imgPreview = document.getElementById('imagePreview');
     const previewContainer = document.getElementById('previewContainer');
     const hiddenImg = document.getElementById('profileImage');
+    const positionId = document.getElementById('positionId');
+    const userId = document.getElementById('userId');
     
     let currentId = null;
     const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
@@ -41,6 +48,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    async function loadAssignmentOptions() {
+        try {
+            const [positionsRes, usersRes] = await Promise.all([fetch('/api/positions/admin'), fetch('/api/admin/users')]);
+            const positionsData = await positionsRes.json();
+            const usersData = await usersRes.json();
+            (positionsData.positions || []).forEach(item => { const option = new Option(`${item.position_name_th}${item.is_leader ? ' (ผู้นำ)' : ''}${!item.active ? ' (ปิดใช้งาน)' : ''}`, item.id); option.disabled = !item.active; positionId.add(option); });
+            (usersData.users || []).filter(item => !item.deleted_at).forEach(item => { userId.add(new Option(`${item.full_name || item.username} (${item.username})`, item.id)); });
+        } catch (error) { console.error('โหลดรายการตำแหน่ง/บัญชีไม่สำเร็จ', error); }
+    }
+
     function renderTable(list) {
         if (list.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">ไม่มีข้อมูล</td></tr>';
@@ -49,14 +66,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         tbody.innerHTML = list.map(item => `
             <tr>
                 <td>
-                    <img src="${escapeHtml(item.profile_image || '../../../assets/img/default-avatar.png')}" class="profile-img-preview" alt="Profile">
+                    <img src="${escapeHtml(item.profile_image || '')}" class="profile-img-preview" alt="${escapeHtml(item.name)}"${item.profile_image ? '' : ' hidden'}>
                 </td>
                 <td>
                     <strong>${escapeHtml(item.name)}</strong>
                     ${item.nickname ? `<br><small class="text-gray-500">(${escapeHtml(item.nickname)})</small>` : ''}
                 </td>
                 <td>${escapeHtml(item.generation || '-')}</td>
-                <td>${escapeHtml(item.position || '-')}</td>
+                <td>${escapeHtml(item.position_name_th || item.position || '-')}</td>
                 <td>${Number(item.display_order) || 0}</td>
                 <td>
                     <span class="badge ${item.is_published ? 'published' : 'hidden'}">
@@ -83,10 +100,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.success && data.urls.length > 0) {
                 hiddenImg.value = data.urls[0];
                 imgPreview.src = data.urls[0];
-                previewContainer.style.display = 'block';
+                previewContainer.hidden = false;
             }
         } catch (error) {
-            alert('อัปโหลดรูปล้มเหลว');
+            alert(error.message || 'อัปโหลดรูปล้มเหลว');
         }
         btnSave.disabled = false;
         btnSave.textContent = 'บันทึก';
@@ -97,7 +114,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         form.reset();
         document.getElementById('modalTitle').textContent = 'เพิ่มบุคคลเกียรติยศ';
         hiddenImg.value = '';
-        previewContainer.style.display = 'none';
+        previewContainer.hidden = true;
+        positionId.value = '';
+        userId.value = '';
         modal.style.display = 'block';
     });
 
@@ -115,6 +134,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             nickname: document.getElementById('nickname').value,
             generation: document.getElementById('generation').value,
             position: document.getElementById('position').value,
+            position_id: positionId.value || null,
+            user_id: userId.value || null,
             profile_image: hiddenImg.value,
             achievement: document.getElementById('achievement').value,
             description: document.getElementById('description').value,
@@ -160,12 +181,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('nickname').value = item.nickname || '';
                 document.getElementById('generation').value = item.generation || '';
                 document.getElementById('position').value = item.position || '';
+                positionId.value = item.position_id || '';
+                userId.value = item.user_id || '';
                 hiddenImg.value = item.profile_image || '';
                 if (item.profile_image) {
                     imgPreview.src = item.profile_image;
-                    previewContainer.style.display = 'block';
+                    previewContainer.hidden = false;
                 } else {
-                    previewContainer.style.display = 'none';
+                    previewContainer.hidden = true;
                 }
                 document.getElementById('achievement').value = item.achievement || '';
                 document.getElementById('description').value = item.description || '';
@@ -197,5 +220,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    loadHonors();
+    Promise.all([loadHonors(), loadAssignmentOptions()]);
 });

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตำแหน่ง - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css">
+  <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
+</head>
+<body class="apple-ui apple-workspace">
+  <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Positions</span></nav>
+    <header class="admin-page-header"><div><p class="admin-eyebrow">People &amp; roles</p><h1 class="page-title">ตำแหน่งในชมรม</h1><p>จัดลำดับตำแหน่งและกำหนดกลุ่มผู้นำได้หลายคน การปิดใช้งานจะเก็บประวัติเดิมไว้</p></div></header>
+    <p id="positionFeedback" role="status"></p>
+    <form id="positionForm" class="apple-management-form">
+      <h2 id="positionHeading">เพิ่มตำแหน่ง</h2>
+      <label for="positionNameTh">ชื่อภาษาไทย</label><input id="positionNameTh" maxlength="150" required>
+      <label for="positionNameEn">ชื่อภาษาอังกฤษ</label><input id="positionNameEn" maxlength="150">
+      <label for="positionOrder">ลำดับ (น้อยไปมาก)</label><input id="positionOrder" type="number" min="0" max="100000" step="1" value="0" required>
+      <label><input id="positionLeader" type="checkbox"> เป็นกลุ่มผู้นำ</label>
+      <label><input id="positionActive" type="checkbox" checked> เปิดให้เลือกใช้งาน</label>
+      <div><button type="submit">บันทึกตำแหน่ง</button> <button id="positionCancel" type="button">ล้างแบบฟอร์ม</button></div>
+    </form>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ตำแหน่ง</th><th>ลำดับ</th><th>กลุ่ม</th><th>สถานะ</th><th>แก้ไข</th></tr></thead><tbody id="positionRows"></tbody></table></div>
+  </main>
+  <script src="../js/auth.js"></script><script src="../js/admin-positions.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
+</body>
+</html>

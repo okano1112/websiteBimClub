@@ -19,9 +19,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
 
-<body>
+<body class="activity-page apple-ui apple-public">
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
 
@@ -53,14 +54,14 @@
             </div>
             <div class="card-body">
               <div class="card-date">
-                <span class="date-icon">📅</span>
+                <span class="date-icon" aria-hidden="true">วันที่</span>
                 <span>มกราคม 2026</span>
               </div>
               <h3>Workshop & Training</h3>
               <p>เรียนรู้เทคนิคการสร้างสรรค์งาน BIM ผ่านกิจกรรมอบรมและสถานที่จริง เพื่อพัฒนาทักษะของสมาชิก</p>
               <div class="card-footer">
-                <span class="participants"><span class="icon">👥</span> 45 คน</span>
-                <a href="#" class="card-btn">ดูรายละเอียด →</a>
+                <span class="participants">ผู้เข้าร่วม 45 คน</span>
+                <a href="#activity-calendar" class="card-btn">ดูรายละเอียด →</a>
               </div>
             </div>
           </div>
@@ -75,14 +76,14 @@
             </div>
             <div class="card-body">
               <div class="card-date">
-                <span class="date-icon">📅</span>
+                <span class="date-icon" aria-hidden="true">วันที่</span>
                 <span>กุมภาพันธ์ 2026</span>
               </div>
               <h3>Creative Collaboration</h3>
               <p>ร่วมกันออกแบบและพัฒนางานระดับทีม พร้อมแลกเปลี่ยนไอเดียและแนวทางเพื่อส่งเสริมความคิดสร้างสรรค์</p>
               <div class="card-footer">
-                <span class="participants"><span class="icon">👥</span> 32 คน</span>
-                <a href="#" class="card-btn">ดูรายละเอียด →</a>
+                <span class="participants">ผู้เข้าร่วม 32 คน</span>
+                <a href="#activity-calendar" class="card-btn">ดูรายละเอียด →</a>
               </div>
             </div>
           </div>
@@ -97,14 +98,14 @@
             </div>
             <div class="card-body">
               <div class="card-date">
-                <span class="date-icon">📅</span>
+                <span class="date-icon" aria-hidden="true">วันที่</span>
                 <span>มีนาคม 2026</span>
               </div>
               <h3>Learning by Doing</h3>
               <p>กิจกรรมที่ผสมผสานความรู้และประสบการณ์จริง ทำให้สมาชิกได้ฝึกปฏิบัติเสริมความมั่นใจในงาน BIM</p>
               <div class="card-footer">
-                <span class="participants"><span class="icon">👥</span> 28 คน</span>
-                <a href="#" class="card-btn">ดูรายละเอียด →</a>
+                <span class="participants">ผู้เข้าร่วม 28 คน</span>
+                <a href="#activity-calendar" class="card-btn">ดูรายละเอียด →</a>
               </div>
             </div>
           </div>
@@ -119,14 +120,14 @@
             </div>
             <div class="card-body">
               <div class="card-date">
-                <span class="date-icon">📅</span>
+                <span class="date-icon" aria-hidden="true">วันที่</span>
                 <span>เมษายน 2026</span>
               </div>
               <h3>Growing Together</h3>
               <p>ทุกกิจกรรมถูกออกแบบเพื่อสร้างประสบการณ์ที่มีคุณค่า พร้อมโอกาสในการเรียนรู้และเติบโตไปพร้อมกัน</p>
               <div class="card-footer">
-                <span class="participants"><span class="icon">👥</span> 50 คน</span>
-                <a href="#" class="card-btn">ดูรายละเอียด →</a>
+                <span class="participants">ผู้เข้าร่วม 50 คน</span>
+                <a href="#activity-calendar" class="card-btn">ดูรายละเอียด →</a>
               </div>
             </div>
           </div>
@@ -141,14 +142,14 @@
             </div>
             <div class="card-body">
               <div class="card-date">
-                <span class="date-icon">📅</span>
+                <span class="date-icon" aria-hidden="true">วันที่</span>
                 <span>พฤษภาคม 2026</span>
               </div>
               <h3>Building the Next Generation</h3>
               <p>เราเชื่อว่าความรู้และการเรียนรู้ที่ต่อเนื่องจะช่วยพัฒนาความสามารถและเปิดโอกาสใหม่ ๆ ให้สมาชิกทุกคน</p>
               <div class="card-footer">
-                <span class="participants"><span class="icon">👥</span> 38 คน</span>
-                <a href="#" class="card-btn">ดูรายละเอียด →</a>
+                <span class="participants">ผู้เข้าร่วม 38 คน</span>
+                <a href="#activity-calendar" class="card-btn">ดูรายละเอียด →</a>
               </div>
             </div>
           </div>
@@ -160,28 +161,6 @@
       <div class="swiper-button-next"></div>
     </div>
     <div class="swiper-pagination featured-pagination"></div>
-  </section>
-
-  <!-- Activity Stats -->
-  <section class="stats-section">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-number">20+</span>
-        <span class="stat-label">กิจกรรมที่จัดขึ้น</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">150+</span>
-        <span class="stat-label">สมาชิกที่เข้าร่วม</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">10+</span>
-        <span class="stat-label">พาร์ทเนอร์</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">5+</span>
-        <span class="stat-label">รางวัลที่ได้รับ</span>
-      </div>
-    </div>
   </section>
 
   <!-- Activity Timeline -->
@@ -224,12 +203,12 @@
   </section>
 
   <!-- Interactive Calendar -->
-  <section class="calendar-section" class="container section">
+  <section id="activity-calendar" class="calendar-section container section">
     <div class="section-header text-center mb-3">
       <h2>ปฏิทินกิจกรรม</h2>
       <p>ติดตามวันที่และกิจกรรมที่กำลังจะมาถึง</p>
     </div>
-    <div id="calendar" class="card p-3 rounded-md shadow-md"></div>
+    <div class="calendar-layout"><div id="calendar" class="card p-3 rounded-md shadow-md"></div><aside class="upcoming-panel" aria-labelledby="upcomingTitle"><h3 id="upcomingTitle">กิจกรรมถัดไป</h3><div id="upcomingActivities" class="upcoming-list"><p>กำลังโหลดกิจกรรม</p></div></aside></div>
   </section>
 
   <!-- CTA Section -->
@@ -252,18 +231,6 @@
   <script>
     // Featured Activity Carousel
     // Swiper initialization moved to activity-dynamic.js
-
-    // Animate stats on scroll
-    const statNumbers = document.querySelectorAll('.stat-number');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate');
-        }
-      });
-    }, { threshold: 0.5 });
-
-    statNumbers.forEach(num => observer.observe(num));
 
     // Animate timeline on scroll
     const timelineItems = document.querySelectorAll('.timeline-item');

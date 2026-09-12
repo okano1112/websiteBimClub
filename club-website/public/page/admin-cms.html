@@ -11,8 +11,9 @@
     <link rel="stylesheet" href="../css/admin-cms.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="apple-ui apple-workspace">
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
 
@@ -45,7 +46,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="file-label" for="cmsImage">เลือกรูปภาพ</label>
+                    <label class="file-label" for="cmsImage">เลือกรูปปก</label>
+                    <p>ไม่เลือกไฟล์ใหม่เพื่อเก็บรูปเดิมไว้ สำหรับผลงาน การเปลี่ยนรูปปกจะเก็บรูปอื่นในแกลเลอรีไว้</p>
                     <input type="file" id="cmsImage" accept="image/*" class="file-input">
                     <div id="cmsImagePreview" class="cms-image-preview"></div>
                 </div>

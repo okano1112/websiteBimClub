@@ -15,9 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
 
-<body>
+<body class="achievement-page apple-ui apple-public">
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
 
@@ -34,14 +35,20 @@
   <!-- Achievement Cards Grid -->
   <section class="achievements-section">
     <div class="section-header">
-      <h2>โปรเจกต์ที่โดดเด่น</h2>
-      <p>คลิกที่การ์ดเพื่อดูรายละเอียดผลงาน</p>
+      <span class="section-kicker">CLUB HIGHLIGHTS</span>
+      <h2>ผลงานเด่นของชมรม</h2>
+      <p>ผลงานทางการ รางวัล และโครงการสำคัญที่สร้างชื่อเสียงให้ BimClub</p>
     </div>
 
     <div class="cards-grid">
 
       <!-- Cards will be injected by achievement-dynamic.js -->
     </div>
+  </section>
+
+  <section class="member-works-section" aria-labelledby="memberWorksTitle">
+    <div class="section-header"><span class="section-kicker">COMMUNITY MEMBER WORKS</span><h2 id="memberWorksTitle">ผลงานจากสมาชิก</h2><p>พื้นที่แบ่งปันโปรเจกต์และทักษะของสมาชิกในชุมชน</p></div>
+    <div id="memberWorksGrid" class="member-works-grid" aria-live="polite"><p class="member-works-state">กำลังโหลดผลงานจากสมาชิก</p></div>
   </section>
 
   <!-- ==================== -->

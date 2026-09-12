@@ -6,53 +6,53 @@ const PortfolioTemplates = require('../../public/js/portfolio-templates');
 const projectRoot = path.resolve(__dirname, '../../../');
 const websiteRoot = path.resolve(__dirname, '../../');
 
-/**
- * Resolve local relative URLs (/assets/..., /uploads/...) to file:// or data URI
- */
+function resolveWithinRoot(root, relativePath) {
+    const candidate = path.resolve(root, relativePath);
+    const relative = path.relative(path.resolve(root), candidate);
+    return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? candidate : null;
+}
+
+// Resolve only real image files contained in an approved directory, including symlinks.
+function localImageData(root, relativePath) {
+    try {
+        const candidate = resolveWithinRoot(root, decodeURIComponent(relativePath));
+        if (!candidate) return '';
+        const realRoot = fs.realpathSync(root);
+        const realFile = fs.realpathSync(candidate);
+        if (!resolveWithinRoot(realRoot, path.relative(realRoot, realFile))) return '';
+        const mime = { '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp' }[path.extname(realFile).toLowerCase()];
+        const stat = fs.statSync(realFile);
+        if (!mime || !stat.isFile() || stat.size > 5 * 1024 * 1024) return '';
+        return `data:${mime};base64,${fs.readFileSync(realFile).toString('base64')}`;
+    } catch { return ''; }
+}
+
 function resolveLocalUrls(html) {
     if (!html) return '';
-
-    // Replace /assets/
-    html = html.replace(/src="\/assets\/([^"]+)"/g, (match, relPath) => {
-        const fullPath = fs.existsSync('/usr/src/assets')
-            ? path.join('/usr/src/assets', relPath)
-            : path.join(projectRoot, 'assets', relPath);
-        if (fs.existsSync(fullPath)) {
-            try {
-                const ext = path.extname(fullPath).toLowerCase().replace('.', '');
-                const mime = ext === 'svg' ? 'image/svg+xml' : (ext === 'png' ? 'image/png' : 'image/jpeg');
-                const base64 = fs.readFileSync(fullPath).toString('base64');
-                return `src="data:${mime};base64,${base64}"`;
-            } catch (e) {
-                return `src="file://${fullPath}"`;
-            }
-        }
-        return match;
+    return html.replace(/src="\/(assets|uploads)\/([^"]+)"/g, (match, kind, relativePath) => {
+        const root = kind === 'uploads' ? path.join(websiteRoot, 'uploads')
+            : fs.existsSync('/usr/src/assets') ? '/usr/src/assets' : path.join(projectRoot, 'assets');
+        return `src="${localImageData(root, relativePath)}"`;
     });
+}
 
-    // Replace /uploads/
-    html = html.replace(/src="\/uploads\/([^"]+)"/g, (match, relPath) => {
-        const fullPath = path.join(websiteRoot, 'uploads', relPath);
-        if (fs.existsSync(fullPath)) {
-            try {
-                const ext = path.extname(fullPath).toLowerCase().replace('.', '');
-                const mime = ext === 'svg' ? 'image/svg+xml' : (ext === 'png' ? 'image/png' : 'image/jpeg');
-                const base64 = fs.readFileSync(fullPath).toString('base64');
-                return `src="data:${mime};base64,${base64}"`;
-            } catch (e) {
-                return `src="file://${fullPath}"`;
-            }
-        }
-        return match;
-    });
-
-    return html;
+function allowedPdfRequest(value) {
+    if (/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(value)) return true;
+    try {
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password && (!url.port || url.port === '443')
+            && ['fonts.googleapis.com', 'fonts.gstatic.com'].includes(url.hostname);
+    } catch { return false; }
 }
 
 /**
  * Generate PDF buffer from document payload
  */
 async function generatePdf(payload) {
+    const theme = payload.settings?.theme || {};
+    for (const key of ['primary', 'secondary', 'textColor', 'accentColor']) {
+        if (theme[key] && !/^#[0-9a-f]{6}$/i.test(theme[key])) throw new Error('Invalid PDF theme color');
+    }
     let rawHtml = PortfolioTemplates.renderDocument(payload);
     let renderedHtml = resolveLocalUrls(rawHtml);
 
@@ -76,6 +76,12 @@ async function generatePdf(payload) {
 
     try {
         const page = await browser.newPage();
+        await page.setJavaScriptEnabled(false);
+        await page.setRequestInterception(true);
+        page.on('request', request => {
+            const action = allowedPdfRequest(request.url()) ? request.continue() : request.abort();
+            action.catch(() => {});
+        });
         
         // Emulate screen/print media
         await page.emulateMediaType('print');
@@ -116,5 +122,8 @@ async function generatePdf(payload) {
 
 module.exports = {
     generatePdf,
-    resolveLocalUrls
+    resolveLocalUrls,
+    resolveWithinRoot,
+    localImageData,
+    allowedPdfRequest
 };

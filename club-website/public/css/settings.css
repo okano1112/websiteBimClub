@@ -235,3 +235,6 @@ body {
     flex-direction: column;
   }
 }
+.settings-page-shell { --settings-page-space: clamp(28px, 5vw, 64px); }
+.settings-page-shell .settings-page { padding-top: var(--settings-page-space); padding-bottom: var(--settings-page-space); }
+@media (prefers-reduced-motion: reduce) { .settings-page-shell *, .settings-page-shell *::before, .settings-page-shell *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }

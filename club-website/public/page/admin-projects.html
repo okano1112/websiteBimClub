@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ผลงาน - BimClub</title>
+  <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css">
+  <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
+</head>
+<body class="apple-ui apple-workspace">
+  <site-navbar></site-navbar>
+  <main class="admin-container">
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Projects</span></nav>
+    <header class="admin-page-header"><div><p class="admin-eyebrow">Projects &amp; people</p><h1 class="page-title">ผลงานและผู้ร่วมงาน</h1><p>ตรวจสอบผลงาน แก้ไขการเผยแพร่ และระบุสมาชิกที่ร่วมทำงาน</p></div></header>
+    <p id="projectFeedback" role="status"></p>
+    <div class="admin-toolbar"><input id="projectSearch" class="admin-input" type="search" placeholder="ค้นหาชื่อผลงาน" aria-label="ค้นหาผลงาน"></div>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ผลงาน</th><th>เจ้าของ</th><th>การเผยแพร่</th><th>จัดการ</th></tr></thead><tbody id="projectRows"></tbody></table></div>
+    <div class="admin-pagination"><span id="projectPageInfo"></span><div><button id="projectPrev" type="button">ก่อนหน้า</button><button id="projectNext" type="button">ถัดไป</button></div></div>
+    <form id="projectForm" class="apple-management-form" hidden>
+      <h2>แก้ไขผลงาน</h2><p id="projectOwner"></p>
+      <label for="projectTitle">ชื่อผลงาน</label><input id="projectTitle" maxlength="255" required>
+      <label for="projectDescription">รายละเอียด</label><textarea id="projectDescription" maxlength="5000" rows="4"></textarea>
+      <label for="projectUrl">ลิงก์ผลงาน</label><input id="projectUrl" type="url" maxlength="500">
+      <label><input id="projectPublic" type="checkbox"> เผยแพร่สู่สาธารณะ</label>
+      <button type="submit">บันทึกข้อมูลผลงาน</button>
+      <h2>ผู้ร่วมงาน</h2><p>เจ้าของผลงานอยู่ในรายการโดยอัตโนมัติ เลือกสมาชิกคนอื่นได้สูงสุด 50 คน</p>
+      <label for="collaboratorSearch">ค้นหาชื่อหรือ Username</label><input id="collaboratorSearch" type="search" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="collaboratorResults" aria-expanded="false">
+      <div id="collaboratorResults" role="listbox" aria-label="ผลการค้นหาสมาชิก" aria-live="polite"></div><div id="collaboratorSelected"></div>
+      <button id="saveCollaborators" type="button">บันทึกผู้ร่วมงาน</button>
+      <button id="projectClose" type="button">ปิดแบบฟอร์ม</button>
+    </form>
+  </main>
+  <script src="../js/auth.js"></script><script src="../js/admin-projects.js"></script>
+  <site-footer></site-footer><script src="../js/footer-component.js"></script>
+</body>
+</html>

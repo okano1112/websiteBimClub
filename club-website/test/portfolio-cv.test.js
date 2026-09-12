@@ -12,6 +12,7 @@ const samplePayload = {
         email: 'kittisak@example.com',
         phone: '089-111-2222',
         websiteUrl: 'https://kittisak-bim.com',
+        avatarUrl: '/uploads/avatar-test.jpg',
         customLinks: [{ label: 'LinkedIn', url: 'https://linkedin.com/in/test' }]
     },
     skills: ['Revit', 'Dynamo', 'Navisworks', 'Python', 'BIM 360'],
@@ -140,4 +141,29 @@ test('Letter CV layout uses Letter paper geometry', () => {
     payload.settings.orientation = 'portrait';
     const html = PortfolioTemplates.renderDocument(payload);
     assert.ok(html.includes('8.5in 11in'), 'Letter portrait geometry should be explicit');
+});
+
+test('visual templates include the profile image while ATS stays text-first', () => {
+    const portfolio = PortfolioTemplates.renderDocument(samplePayload);
+    assert.ok(portfolio.includes('/uploads/avatar-test.jpg'), 'Portfolio cover should include the profile image');
+
+    const cv = JSON.parse(JSON.stringify(samplePayload));
+    cv.settings.docType = 'cv';
+    cv.settings.template = 'cv-a4-standard';
+    assert.ok(PortfolioTemplates.renderDocument(cv).includes('/uploads/avatar-test.jpg'), 'Standard CV should include the profile image');
+
+    cv.settings.template = 'cv-a4-ats';
+    assert.ok(!PortfolioTemplates.renderDocument(cv).includes('/uploads/avatar-test.jpg'), 'ATS CV should remain text-first');
+});
+
+
+test('All CV templates render selected projects and respect hidden projects', () => {
+    for (const template of ['cv-a4-standard', 'cv-a4-ats', 'cv-letter-standard', 'cv-a4-landscape-creative', 'cv-a3-presentation']) {
+        const data = { profile: { fullName: 'QA' }, projects: [{ title: 'Collaborative BIM fixture', role_in_project: '<script>unsafe</script>' }], settings: { docType: 'cv', template } };
+        const html = PortfolioTemplates.renderDocument(data);
+        assert.ok(html.includes('Collaborative BIM fixture'), template);
+        assert.ok(!html.includes('<script>unsafe</script>'), template);
+        data.settings.hiddenSections = ['projects'];
+        assert.ok(!PortfolioTemplates.renderDocument(data).includes('Collaborative BIM fixture'), template);
+    }
 });

@@ -2,33 +2,20 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../config/database');
 const requireLogin = require('../../middleware/requireLogin');
+const { loadCurrentUser } = require('../../middleware/requireRole');
 const { generatePdf } = require('../services/pdfRenderer');
+const { documentProjects, projectFields } = require('../services/projectData');
 
-let columnsChecked = false;
+/**
+ * BIM CLUB — PORTFOLIO SCHEMA READINESS
+ * PURPOSE: Keep request handlers free of hidden DDL side effects.
+ * DATA SOURCE: portfolios columns provisioned by controlled migrations.
+ * DO NOT MODIFY: portfolio response compatibility or PDF templates.
+ * DEPENDENCIES: controlled-p04-project-collaborators.sql; portfolio/CV tests.
+ */
 async function ensurePhase8Columns() {
-    if (columnsChecked) return;
-    try {
-        const [cols] = await db.query('SHOW COLUMNS FROM portfolios');
-        const colNames = cols.map(c => c.Field);
-        if (!colNames.includes('target_role')) {
-            await db.query('ALTER TABLE portfolios ADD COLUMN target_role VARCHAR(150) DEFAULT NULL AFTER headline');
-        }
-        if (!colNames.includes('career_objective')) {
-            await db.query('ALTER TABLE portfolios ADD COLUMN career_objective TEXT DEFAULT NULL AFTER summary');
-        }
-        if (!colNames.includes('extra_sections')) {
-            await db.query('ALTER TABLE portfolios ADD COLUMN extra_sections JSON DEFAULT NULL AFTER skills');
-        }
-        if (!colNames.includes('portfolio_settings')) {
-            await db.query('ALTER TABLE portfolios ADD COLUMN portfolio_settings JSON DEFAULT NULL');
-        }
-        if (!colNames.includes('cv_settings')) {
-            await db.query('ALTER TABLE portfolios ADD COLUMN cv_settings JSON DEFAULT NULL');
-        }
-        columnsChecked = true;
-    } catch (e) {
-        console.warn('Auto-migration check for phase 8 columns:', e.message);
-    }
+    // Compatibility hook for existing call sites. Schema changes belong in migrations.
+    return undefined;
 }
 
 async function fetchCertificates(userId, portfolioId) {
@@ -142,7 +129,7 @@ function buildDocumentPayload(portfolio, user, overrides = {}) {
         skills: parseJsonSafe(portfolio.skills, []),
         experiences: portfolio.experiences || [],
         education: portfolio.education || [],
-        projects: portfolio.projects || [],
+        projects: [...(portfolio.projects || []), ...(portfolio.involved_projects || [])],
         certificates: portfolio.certificates || { system: [], manual: [] },
         extraSections: extraSections,
         settings: settings
@@ -174,17 +161,15 @@ router.get('/me', requireLogin, async (req, res) => {
             fieldOfStudy: edu.field_of_study
         }));
         
-        const [projects] = await db.query(
-            'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
-            [portfolio.id]
-        );
+        const projects = await documentProjects(userId, true);
         
         portfolio.user_profile = user;
         portfolio.full_name = user.full_name;
         portfolio.user_avatar = user.avatar_url;
         portfolio.experiences = experiences;
         portfolio.education = education;
-        portfolio.projects = projects;
+        portfolio.projects = projects.filter(project => Number(project.owner_user_id) === Number(portfolio.user_id));
+        portfolio.involved_projects = projects.filter(project => Number(project.owner_user_id) !== Number(portfolio.user_id));
         portfolio.certificates = await fetchCertificates(userId, portfolio.id);
         
         // Parse JSON fields
@@ -289,14 +274,12 @@ const handlePdfExportMe = async (req, res) => {
             'SELECT * FROM portfolio_education WHERE portfolio_id = ? ORDER BY display_order ASC, id ASC',
             [portfolio.id]
         );
-        const [projects] = await db.query(
-            'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
-            [portfolio.id]
-        );
+        const projects = await documentProjects(userId, true);
         
         portfolio.experiences = experiences;
         portfolio.education = education;
-        portfolio.projects = projects;
+        portfolio.projects = projects.filter(project => Number(project.owner_user_id) === Number(portfolio.user_id));
+        portfolio.involved_projects = projects.filter(project => Number(project.owner_user_id) !== Number(portfolio.user_id));
         portfolio.certificates = await fetchCertificates(userId, portfolio.id);
 
         const overrides = req.method === 'POST' ? req.body : req.query;
@@ -324,6 +307,7 @@ router.get('/me/export/pdf', requireLogin, handlePdfExportMe);
 // GET /public/:userId/export/pdf (Download PDF from public profile)
 router.get('/public/:userId/export/pdf', async (req, res) => {
     try {
+        if (req.session?.user?.id && !await loadCurrentUser(req, res)) return;
         const targetUserId = req.params.userId;
         const currentUserId = req.currentUser ? req.currentUser.id : (req.session?.user?.id || null);
         const isOwner = Boolean(currentUserId && String(currentUserId) === String(targetUserId));
@@ -357,14 +341,12 @@ router.get('/public/:userId/export/pdf', async (req, res) => {
             'SELECT * FROM portfolio_education WHERE portfolio_id = ? ORDER BY display_order ASC, id ASC',
             [portfolio.id]
         );
-        const [projects] = await db.query(
-            'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
-            [portfolio.id]
-        );
+        const projects = await documentProjects(targetUserId, isOwner);
 
         portfolio.experiences = experiences;
         portfolio.education = education;
-        portfolio.projects = projects;
+        portfolio.projects = projects.filter(project => Number(project.owner_user_id) === Number(portfolio.user_id));
+        portfolio.involved_projects = projects.filter(project => Number(project.owner_user_id) !== Number(portfolio.user_id));
         portfolio.certificates = await fetchCertificates(targetUserId, portfolio.id);
 
         const overrides = req.query || {};
@@ -390,6 +372,7 @@ router.get('/public/:userId/export/pdf', async (req, res) => {
 router.get('/public/:userId', async (req, res) => {
     try {
         await ensurePhase8Columns();
+        if (req.session?.user?.id && !await loadCurrentUser(req, res)) return;
         const targetUserId = req.params.userId;
         const currentUserId = req.currentUser ? req.currentUser.id : (req.session?.user?.id || null);
         const isOwner = Boolean(currentUserId && String(currentUserId) === String(targetUserId));
@@ -425,14 +408,12 @@ router.get('/public/:userId', async (req, res) => {
             fieldOfStudy: edu.field_of_study
         }));
         
-        const [projects] = await db.query(
-            'SELECT * FROM portfolio_projects WHERE portfolio_id = ? ORDER BY created_at DESC',
-            [portfolio.id]
-        );
+        const projects = await documentProjects(targetUserId, isOwner);
         
         portfolio.experiences = experiences;
         portfolio.education = education;
-        portfolio.projects = projects;
+        portfolio.projects = projects.filter(project => Number(project.owner_user_id) === Number(portfolio.user_id));
+        portfolio.involved_projects = projects.filter(project => Number(project.owner_user_id) !== Number(portfolio.user_id));
         portfolio.certificates = await fetchCertificates(targetUserId, portfolio.id);
         
         portfolio.skills = parseJsonSafe(portfolio.skills, []);
@@ -551,51 +532,30 @@ router.delete('/me/education/:id', requireLogin, async (req, res) => {
 });
 
 // POST /me/projects
+// Stable legacy IDs remain mapped to canonical projects; the legacy table is an archive.
 router.post('/me/projects', requireLogin, async (req, res) => {
+    let conn;
     try {
-        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
-        const { title, description } = req.body;
-        const imageUrl = req.body.imageUrl || req.body.image_url || null;
-        const projectUrl = req.body.projectUrl || req.body.project_url || null;
-        
+        const userId = req.currentUser.id;
         const portfolio = await ensurePortfolio(userId);
-        
-        const [result] = await db.query(
-            'INSERT INTO portfolio_projects (portfolio_id, title, description, image_url, project_url) VALUES (?, ?, ?, ?, ?)',
-            [portfolio.id, title, description || null, imageUrl, projectUrl]
-        );
-        
-        const [newProj] = await db.query('SELECT * FROM portfolio_projects WHERE id = ?', [result.insertId]);
-        res.status(201).json({ success: true, project: newProj[0] });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการเพิ่มผลงานส่วนตัว' });
-    }
+        let fields; try { fields = projectFields({ ...req.body, is_public: req.body.is_public ?? !!portfolio.is_public }); } catch (error) { return res.status(400).json({ success: false, message: error.message }); }
+        conn = await db.getConnection(); await conn.beginTransaction();
+        const [result] = await conn.query('INSERT INTO projects (owner_user_id, title, description, image_url, project_url, is_public) VALUES (?, ?, ?, ?, ?, ?)', [userId, fields.title, fields.description, fields.image_url, fields.project_url, fields.is_public]);
+        const [link] = await conn.query('INSERT INTO project_legacy_links (project_id) VALUES (?)', [result.insertId]);
+        await conn.commit();
+        res.status(201).json({ success: true, project: { id: link.insertId, canonical_project_id: result.insertId, ...fields } });
+    } catch (error) { if (conn) await conn.rollback(); console.error(error); res.status(500).json({ success: false, message: 'เพิ่มผลงานไม่สำเร็จ' }); }
+    finally { if (conn) conn.release(); }
 });
 
-// DELETE /me/projects/:id
+// Old bookmarked clients retain legacy-ID delete semantics through the mapping table.
 router.delete('/me/projects/:id', requireLogin, async (req, res) => {
     try {
-        const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
-        const projId = req.params.id;
-        
-        const [projs] = await db.query(
-            `SELECT pp.id FROM portfolio_projects pp 
-            JOIN portfolios p ON pp.portfolio_id = p.id 
-            WHERE pp.id = ? AND p.user_id = ?`,
-            [projId, userId]
-        );
-        
-        if (projs.length === 0) {
-            return res.status(404).json({ success: false, message: 'ไม่พบผลงานนี้' });
-        }
-        
-        await db.query('DELETE FROM portfolio_projects WHERE id = ?', [projId]);
-        res.json({ success: true, message: 'ลบผลงานสำเร็จ' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการลบผลงานส่วนตัว' });
-    }
+        const [result] = await db.query(`UPDATE projects p JOIN project_legacy_links l ON l.project_id = p.id
+          SET p.deleted_at = CURRENT_TIMESTAMP WHERE l.legacy_portfolio_project_id = ? AND p.owner_user_id = ? AND p.deleted_at IS NULL`, [req.params.id, req.currentUser.id]);
+        if (!result.affectedRows) return res.status(404).json({ success: false, message: 'ไม่พบผลงานนี้' });
+        res.json({ success: true, message: 'ซ่อนผลงานแล้ว' });
+    } catch (error) { console.error(error); res.status(500).json({ success: false, message: 'ซ่อนผลงานไม่สำเร็จ' }); }
 });
 
 // POST /me/certificates

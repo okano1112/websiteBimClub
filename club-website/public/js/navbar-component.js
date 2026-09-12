@@ -22,8 +22,9 @@ class NavbarComponent extends HTMLElement {
     this.innerHTML = `
       <div class="navbar">
         <div class="logo">
-          <a href="${basePath}index.html">
-            <img src="${logoPath}" width="80" height="50" alt="BimClub Logo" style="object-fit: contain;" />
+          <a href="${basePath}index.html" aria-label="BimClub หน้าหลัก">
+            <img src="${logoPath}" width="80" height="50" alt="" aria-hidden="true" style="object-fit: contain;" />
+            <span class="logo-brand-text">BimClub</span>
           </a>
         </div>
 

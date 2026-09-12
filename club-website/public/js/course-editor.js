@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <input class="question-time" type="number" min="0" value="${item.timeSeconds ?? ''}" placeholder="เช่น 15" required style="width:110px; margin-top:4px;">
           </label>
           <span class="time-preview-badge" style="font-size:0.85rem; padding:5px 10px; border-radius:6px; background:#f1f5f9; color:#475467; font-weight:700; margin-top:16px;">⏱️ ${formatSeconds(initSec)}</span>
-          <button type="button" class="button-text btn-grab-time" style="margin-top:16px; font-size:0.82rem; padding:4px 8px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;" title="ใช้วินาทีปัจจุบันของวิดีโอที่กำลังเล่นอยู่">📍 ใช้เวลาจากวิดีโอ</button>
+          <button type="button" class="button-text btn-grab-time" style="margin-top:16px; font-size:0.82rem; padding:4px 8px; border:1px solid #cbd5e1; border-radius:6px; background:#fff;" title="ใช้วินาทีปัจจุบันของวิดีโอที่กำลังเล่นอยู่">ใช้เวลาจากวิดีโอ</button>
           <label class="check-label" style="margin:16px 0 0 0; padding:0; font-weight:600; font-size:0.88rem; cursor:pointer;">
             <input type="checkbox" class="stop-enabled" ${isActive ? 'checked' : ''}> เปิดใช้งานจุดนี้
           </label>

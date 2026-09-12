@@ -183,3 +183,13 @@
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
+/* Phase 9 Editorial pilot: Home-only rhythm and motion preferences. */
+.home-page { --home-ink: #1f2937; --home-muted: #64748b; --home-space: clamp(36px, 6vw, 76px); }
+.home-page .carousel-section { padding-bottom: var(--home-space); }
+.home-page .info-section { padding-top: var(--home-space); padding-bottom: var(--home-space); }
+.home-page .info-blocks { gap: clamp(16px, 3vw, 30px); }
+.home-page .feed-hero { padding-top: var(--home-space); }
+.home-page .feed-section { padding-bottom: var(--home-space); }
+@media (prefers-reduced-motion: reduce) {
+  .home-page *, .home-page *::before, .home-page *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}

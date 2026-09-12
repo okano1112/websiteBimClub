@@ -1,0 +1,10 @@
+document.addEventListener('DOMContentLoaded', async () => {
+  const root = document.getElementById('profileApp'); const id = new URLSearchParams(location.search).get('userId');
+  if (!id || !/^\d+$/.test(id)) { root.innerHTML = '<p class="member-profile-error">ไม่พบรหัสผู้ใช้</p>'; return; }
+  const esc = v => String(v || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+  try {
+    const response = await fetch(`/api/profiles/${id}`); const data = await response.json(); if (!response.ok || !data.success) throw new Error(data.message || 'ไม่พบโปรไฟล์');
+    const u = data.user; const p = data.profile; const avatar = u.avatarUrl ? `<img class="member-profile-avatar" src="${esc(u.avatarUrl)}" alt="รูปโปรไฟล์ ${esc(u.fullName)}">` : `<div class="member-profile-avatar" role="img" aria-label="ไม่มีรูปโปรไฟล์">${esc((u.fullName || 'U').charAt(0))}</div>`;
+    root.innerHTML = `<header class="member-profile-header">${avatar}<div><h1>${esc(u.fullName || u.username)}</h1><p class="member-profile-meta">${esc(p.program || p.department || '')}</p><p class="member-profile-meta">${esc(p.memberType)}${p.graduationYear ? ` · จบปี ${esc(p.graduationYear)}` : ''}</p></div></header><section class="member-profile-section"><h2>เกี่ยวกับสมาชิก</h2><p>${esc(data.portfolio.summary || 'ยังไม่มีข้อมูลแนะนำตัว')}</p></section><section class="member-profile-section"><h2>ผลงานที่ร่วมทำ</h2>${data.projects.length ? `<ul class="member-profile-list">${data.projects.map(x => `<li><strong>${esc(x.title)}</strong>${x.role_in_project ? ` — ${esc(x.role_in_project)}` : ''}</li>`).join('')}</ul>` : '<p class="member-profile-empty">ยังไม่มีผลงานที่เผยแพร่</p>'}</section><section class="member-profile-section"><h2>โพสต์ล่าสุด</h2>${data.posts.length ? `<ul class="member-profile-list">${data.posts.map(x => `<li>${esc(x.content).slice(0,180)}</li>`).join('')}</ul>` : '<p class="member-profile-empty">ยังไม่มีโพสต์</p>'}</section>`;
+  } catch (error) { root.innerHTML = `<p class="member-profile-error">${esc(error.message)}</p>`; }
+});

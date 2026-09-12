@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentUser = null;
   let selectedUser = null;
   let page = 1;
+  let pagination = { pages: 1, total: 0 };
+  let loadSequence = 0;
 
   function getStatus(user) {
     if (user.deleted_at) return 'deleted';
@@ -22,19 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     feedback.hidden = false;
     feedback.className = `admin-feedback${isError ? ' error' : ''}`;
     feedback.textContent = message;
-  }
-
-  function filteredUsers() {
-    const query = search.value.trim().toLocaleLowerCase('th');
-    const users = allUsers.filter((user) => {
-      const searchable = [user.username, user.email, user.full_name].join(' ').toLocaleLowerCase('th');
-      return (!query || searchable.includes(query))
-        && (roleFilter.value === 'all' || user.role === roleFilter.value)
-        && (statusFilter.value === 'all' || getStatus(user) === statusFilter.value);
-    });
-    if (sortControl.value === 'name') users.sort((a, b) => (a.full_name || a.username).localeCompare(b.full_name || b.username, 'th'));
-    if (sortControl.value === 'role') users.sort((a, b) => a.role.localeCompare(b.role));
-    return users;
   }
 
   function badge(text, type) {
@@ -55,10 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderUsers() {
-    const users = filteredUsers();
-    const pageCount = Math.max(1, Math.ceil(users.length / pageSize));
-    page = Math.min(page, pageCount);
-    const visible = users.slice((page - 1) * pageSize, page * pageSize);
+    const pageCount = pagination.pages;
+    const visible = allUsers;
     usersList.innerHTML = '';
     if (!visible.length) {
       const row = document.createElement('tr');
@@ -89,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       row.append(idCell, identity, roleCell, statusCell, actions);
       usersList.appendChild(row);
     });
-    document.getElementById('userPageInfo').textContent = `หน้า ${page} จาก ${pageCount} · ${users.length} รายการ`;
+    document.getElementById('userPageInfo').textContent = `หน้า ${page} จาก ${pageCount} · ${pagination.total} รายการ`;
     document.getElementById('userPrev').disabled = page <= 1;
     document.getElementById('userNext').disabled = page >= pageCount;
   }
@@ -101,7 +88,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     return data;
   }
 
-  async function loadUsers() { const data = await request('/api/admin/users'); allUsers = data.users; renderUsers(); }
+  async function loadUsers() {
+    const sequence = ++loadSequence;
+    const query = new URLSearchParams({ page, limit: pageSize, q: search.value.trim(), role: roleFilter.value, status: statusFilter.value, sort: sortControl.value });
+    try {
+      const data = await request(`/api/admin/users?${query}`);
+      if (sequence !== loadSequence) return;
+      allUsers = data.users; pagination = data.pagination; page = pagination.page; renderUsers();
+    } catch (error) { if (sequence === loadSequence) showFeedback(error.message, true); }
+  }
   function showModal(id) { document.getElementById(id).style.display = 'block'; }
   function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -155,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('savePasswordBtn').addEventListener('click', async () => {
     const password = document.getElementById('newPassword').value;
-    if (password.length < 6) return showFeedback('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', true);
+    if (password.length < 8) return showFeedback('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', true);
     try { await request(`/api/admin/users/${selectedUser.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPassword: password }) }); closeModal('passwordModal'); showFeedback('เปลี่ยนรหัสผ่านสำเร็จ'); }
     catch (error) { showFeedback(error.message, true); }
   });
@@ -163,9 +158,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('[data-close-modal]').forEach((button) => button.addEventListener('click', () => closeModal(button.dataset.closeModal)));
   document.querySelectorAll('.modal').forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(modal.id); }));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') document.querySelectorAll('.modal').forEach((modal) => closeModal(modal.id)); });
-  [search, roleFilter, statusFilter, sortControl].forEach((control) => control.addEventListener('input', () => { page = 1; renderUsers(); }));
-  document.getElementById('userPrev').addEventListener('click', () => { page -= 1; renderUsers(); });
-  document.getElementById('userNext').addEventListener('click', () => { page += 1; renderUsers(); });
+  [search, roleFilter, statusFilter, sortControl].forEach((control) => control.addEventListener('input', () => { page = 1; loadUsers(); }));
+  document.getElementById('userPrev').addEventListener('click', () => { page -= 1; loadUsers(); });
+  document.getElementById('userNext').addEventListener('click', () => { page += 1; loadUsers(); });
 
   try {
     const auth = await request('/api/auth/me');

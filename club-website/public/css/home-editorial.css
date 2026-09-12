@@ -1,0 +1,44 @@
+/* Home composition: modify these sections, not protected carousel/feed/card styles.
+   Reuses the site's Thai font and real routes. No runtime or image dependency. */
+.home-page { --he-ink:#1d1d1f; --he-muted:#626267; --he-canvas:#f5f5f7; --he-accent:#a3131a; background:#fff; }
+.home-page site-navbar { --nav-bg:#fff; --nav-text:#1d1d1f; --nav-bg-hover:#f5f5f7; --nav-scrolled-text:#1d1d1f; }
+.home-page .navbar, .home-page .navbar.is-scrolled { background:rgba(255,255,255,.96); border-bottom:1px solid #e5e5e7; box-shadow:none; }
+.home-page .nav-hamburger span { background:var(--he-ink); }
+.home-page .navbar .menu a, .home-page .navbar .nav-dropdown-toggle { color:var(--he-ink); }
+.home-page .navbar .menu a.active { color:var(--he-accent); }
+.home-intro { text-align:center; padding:clamp(64px,9vw,132px) 24px 40px; background:var(--he-canvas); color:var(--he-ink); }
+.home-page .home-kicker { font-size:14px; font-weight:600; letter-spacing:.09em; color:var(--he-muted); margin:0 0 22px; }
+.home-intro h1 { font-size:clamp(38px,5.6vw,80px); line-height:1.3; letter-spacing:-.045em; font-weight:700; margin:0; color:var(--he-ink); }
+.home-intro h1 span { color:var(--he-accent); }
+.home-intro-copy { max-width:720px; font-size:clamp(18px,1.8vw,24px); line-height:1.8; color:var(--he-muted); margin:28px auto 30px; text-wrap:pretty; }
+.home-actions { display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap; }
+.home-page .home-primary { display:inline-flex; justify-content:center; align-items:center; min-height:48px; padding:12px 26px; background:var(--he-accent); color:#fff; border-radius:999px; text-decoration:none; font-size:17px; font-weight:500; transition:background .2s; }
+.home-page .home-primary:hover { background:#711015; }
+.home-page .home-secondary { color:var(--he-accent); font-size:17px; padding:12px 0; min-height:48px; text-decoration:none; }
+.home-page .home-secondary:hover, .home-section-heading a:hover { text-decoration:underline; text-underline-offset:5px; }
+.home-page .home-explore { display:inline-flex; align-items:center; gap:14px; min-height:44px; margin-top:52px; color:var(--he-muted); font-size:14px; text-decoration:none; }
+.home-section-heading { max-width:1200px; margin:0 auto; padding:70px 24px 28px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; scroll-margin-top:100px; }
+.home-section-heading .home-kicker { margin-bottom:12px; }
+.home-section-heading h2, .home-page .feed-hero h2, .home-closing h2 { font-size:clamp(28px,3.3vw,46px); letter-spacing:-.035em; line-height:1.4; color:var(--he-ink); margin:0; }
+.home-section-heading a { color:var(--he-accent); font-size:16px; flex-shrink:0; min-height:44px; display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
+.home-page .carousel-section { padding-top:12px; }
+.home-page .info-blocks { grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); }
+.home-page .feed-hero { background:var(--he-canvas); padding:72px 24px 40px; }
+.home-page .feed-section { background:var(--he-canvas); }
+.home-closing { text-align:center; padding:96px 24px; color:var(--he-ink); }
+.home-closing p:not(.home-kicker) { color:var(--he-muted); font-size:18px; margin:20px 0 28px; }
+.home-intro a:focus-visible, .home-section-heading a:focus-visible, .home-closing a:focus-visible { outline:3px solid var(--he-accent); outline-offset:5px; }
+@media(max-width:600px) {
+  .home-page .navbar { flex-direction:row; flex-wrap:wrap; }
+  .home-page .nav-hamburger { margin-left:auto; width:44px; height:44px; padding:10px; justify-content:center; gap:5px; }
+  .home-page .nav-hamburger span { width:24px; height:2px; flex-shrink:0; }
+  .home-intro { padding:60px 20px 28px; }
+  .home-page .home-kicker { font-size:12px; letter-spacing:.05em; }
+  .home-desktop-break { display:none; }
+  .home-intro h1 { font-size:clamp(32px,8.8vw,46px); letter-spacing:-.04em; }
+  .home-intro-copy { font-size:18px; margin-top:22px; }
+  .home-section-heading { padding:48px 20px 20px; display:block; }
+  .home-section-heading a { margin-top:12px; }
+  .home-closing { padding:64px 20px; }
+}
+@media(prefers-reduced-motion:reduce) { .home-page .home-primary { transition:none; } }

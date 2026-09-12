@@ -1,39 +1,39 @@
-// MOCKUP-START: ADMIN DASHBOARD
-// MOCKUP UI ONLY - Replace BimClubAdminMockData with an admin dashboard service before production.
 document.addEventListener('DOMContentLoaded', async () => {
   const authResponse = await fetch('/api/auth/me');
   if (!authResponse.ok) return window.location.href = 'login.html';
   const authData = await authResponse.json();
   if (authData.user?.role !== 'admin') return window.location.href = '../index.html';
 
-  const data = window.BimClubAdminMockData.dashboard;
+  const response = await fetch('/api/admin/dashboard');
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.success) {
+    const message = document.getElementById('dashboardMessage');
+    message.hidden = false;
+    message.textContent = payload.message || 'โหลดข้อมูลไม่สำเร็จ';
+    return;
+  }
+  const data = payload.metrics;
   const stats = document.getElementById('dashboardStats');
   const activity = document.getElementById('recentActivity');
   stats.innerHTML = '';
-  data.stats.forEach((item) => {
+  const statsData = [
+    ['ผู้ใช้งาน', data.users], ['ยังไม่ยืนยัน', data.unverifiedUsers],
+    ['คอร์สทั้งหมด', data.courses], ['คอร์สเผยแพร่', data.publishedCourses],
+    ['กิจกรรม', data.activities], ['ผลงาน', data.achievements],
+    ['คำขออาจารย์รอตรวจ', data.pendingInstructorRequests], ['โพสต์ชุมชน', data.posts]
+  ];
+  statsData.forEach(([labelText, valueText]) => {
     const card = document.createElement('article');
     card.className = 'admin-stat-card';
     const label = document.createElement('span');
-    label.textContent = item.label;
+    label.textContent = labelText;
     const value = document.createElement('strong');
-    value.textContent = item.value;
+    value.textContent = valueText;
     const trend = document.createElement('small');
-    trend.textContent = item.trend;
+    trend.textContent = 'ข้อมูลปัจจุบัน';
     card.append(label, value, trend);
     stats.appendChild(card);
   });
 
-  data.activities.forEach((item) => {
-    const row = document.createElement('article');
-    row.className = 'admin-activity-item';
-    const dot = document.createElement('span');
-    dot.className = 'admin-activity-dot';
-    const text = document.createElement('p');
-    text.textContent = item.text;
-    const time = document.createElement('small');
-    time.textContent = item.time;
-    row.append(dot, text, time);
-    activity.appendChild(row);
-  });
+  activity.textContent = 'สถิติอัปเดตจากฐานข้อมูลปัจจุบัน';
 });
-// MOCKUP-END: ADMIN DASHBOARD

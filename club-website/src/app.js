@@ -6,6 +6,7 @@ const helmet = require('helmet');
 
 const apiRouter = require('./routes');
 const errorHandler = require('../middleware/errorHandler');
+const db = require('../config/database');
 
 const app = express();
 
@@ -45,6 +46,17 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24
   }
 }));
+
+// Readiness endpoint used by Docker/orchestrators. It verifies the app can
+// reach its database instead of treating a static HTML response as healthy.
+app.get('/healthz', async (req, res) => {
+  try {
+    await db.query('SELECT 1');
+    res.status(200).json({ status: 'ok', database: 'ok' });
+  } catch (error) {
+    res.status(503).json({ status: 'unavailable', database: 'error' });
+  }
+});
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

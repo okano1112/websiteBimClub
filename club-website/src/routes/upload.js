@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const { saveValidatedImage, validateImageBuffer } = require('../services/imageUpload');
 const requireLogin = require('../../middleware/requireLogin');
 const requireAdmin = require('../../middleware/requireAdmin');
 const requireInstructor = require('../../middleware/requireInstructor');
@@ -11,24 +12,18 @@ const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
 const videosDir = path.join(uploadsDir, 'videos');
 fs.mkdirSync(videosDir, { recursive: true });
 
-// Configure multer storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-});
+// Images stay in memory until bytes and decoded dimensions have passed validation.
+const storage = multer.memoryStorage();
 
 // File filter - only images
 const fileFilter = (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (allowed.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('อนุญาตเฉพาะไฟล์รูปภาพเท่านั้น'), false);
+        const error = new Error('อนุญาตเฉพาะ JPG, JPEG, PNG และ WebP เท่านั้น');
+        error.code = 'UNSUPPORTED_IMAGE';
+        cb(error, false);
     }
 };
 
@@ -39,12 +34,24 @@ const upload = multer({
 });
 
 // POST /api/upload  AND  POST /api/upload/images  (ทั้งสอง path ใช้งานได้)
-const handleUpload = (req, res) => {
+const handleUpload = async (req, res, next) => {
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ success: false, message: 'กรุณาเลือกรูปภาพ' });
     }
-    const urls = req.files.map(file => '/uploads/' + file.filename);
-    res.json({ success: true, urls });
+    const savedFiles = [];
+    try {
+        const urls = [];
+        for (const file of req.files) {
+            const imageInfo = await validateImageBuffer(file.buffer, file.mimetype);
+            const saved = await saveValidatedImage(file.buffer, uploadsDir, imageInfo);
+            savedFiles.push(saved.path);
+            urls.push('/uploads/' + saved.filename);
+        }
+        return res.json({ success: true, urls });
+    } catch (error) {
+        await Promise.all(savedFiles.map(filePath => fs.promises.unlink(filePath).catch(() => {})));
+        return next(error);
+    }
 };
 
 router.post('/', requireLogin, upload.array('images', 10), handleUpload);

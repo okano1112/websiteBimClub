@@ -9,8 +9,9 @@
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/auth-layout.css">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="apple-ui apple-auth">
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
 
@@ -19,33 +20,48 @@
             <div class="auth-header">
                 <img src="../../../assets/img/logobranding/logobim.png" alt="BimClub">
                 <h1>สมัครสมาชิก</h1>
+                <p class="apple-auth-lead">เริ่มต้นเส้นทางการเรียนรู้ BIM ของคุณ</p>
             </div>
 
-            <div id="registerError" class="text-danger text-center mb-3 d-none"></div>
-            <div id="registerSuccess" class="bg-success-light text-center mb-3 p-3 rounded-sm d-none"></div>
+            <div role="alert" id="registerError" class="text-danger text-center mb-3 d-none"></div>
+            <div role="status" id="registerSuccess" class="bg-success-light text-center mb-3 p-3 rounded-sm d-none"></div>
 
+            <form id="otpForm" hidden>
+                <h2>ยืนยันอีเมล</h2><p>กรอกรหัส 6 หลักจากอีเมลล่าสุด รหัสมีอายุ 10 นาที</p>
+                <label for="otpEmail">อีเมลที่สมัคร</label><input id="otpEmail" type="email" class="form-control" autocomplete="email" required>
+                <label for="otpCode">รหัสยืนยัน</label><input id="otpCode" class="form-control" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+                <button type="submit" class="btn btn-primary btn-block">ยืนยันอีเมล</button>
+                <button type="button" id="resendOtp" class="btn btn-block">ส่งรหัสใหม่</button>
+                <p id="otpCountdown" role="status"></p>
+            </form>
+            <button id="showOtp" type="button" class="btn btn-block">มีบัญชีแล้ว แต่ยังไม่ได้ยืนยันอีเมล</button>
+            <a id="verifiedLogin" href="login.html" hidden>เข้าสู่ระบบ</a>
             <form id="registerForm">
                 <div class="grid grid-2">
                     <div class="form-group">
-                        <label class="form-label">ชื่อผู้ใช้ (Username)</label>
-                        <input type="text" id="regUsername" class="form-control" placeholder="ตั้งชื่อผู้ใช้งาน" required>
+                        <label class="form-label" for="regUsername">ชื่อผู้ใช้ (Username)</label>
+                        <input type="text" id="regUsername" maxlength="50" autocomplete="username" class="form-control" placeholder="ตั้งชื่อผู้ใช้งาน" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">อีเมล (Email)</label>
-                        <input type="email" id="regEmail" class="form-control" placeholder="example@email.com" required>
+                        <label class="form-label" for="regEmail">อีเมล (Email)</label>
+                        <input type="email" id="regEmail" maxlength="100" autocomplete="email" class="form-control" placeholder="example@email.com" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">ชื่อ - นามสกุล (Full Name)</label>
-                    <input type="text" id="regFullName" class="form-control" placeholder="ชื่อจริง นามสกุล" required>
+                    <label class="form-label" for="regFullName">ชื่อ - นามสกุล (Full Name)</label>
+                    <input type="text" id="regFullName" maxlength="100" autocomplete="name" class="form-control" placeholder="ชื่อจริง นามสกุล" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">รหัสผ่าน (Password)</label>
-                    <input type="password" id="regPassword" class="form-control" placeholder="อย่างน้อย 6 ตัวอักษร" required minlength="6">
+                    <label class="form-label" for="regPassword">รหัสผ่าน (Password)</label>
+                        <input type="password" id="regPassword" class="form-control" placeholder="อย่างน้อย 8 ตัวอักษร" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regConfirmPassword">ยืนยันรหัสผ่าน</label>
+                        <input type="password" id="regConfirmPassword" class="form-control" placeholder="กรอกรหัสผ่านอีกครั้ง" required minlength="8" autocomplete="new-password">
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">ยืนยันการสมัคร</button>
-                <div class="auth-links" class="auth-links justify-content-center mt-3">
+                <div class="auth-links justify-content-center mt-3">
                     <span>มีบัญชีอยู่แล้ว? <a href="login.html" >เข้าสู่ระบบที่นี่</a></span>
                 </div>
             </form>
@@ -55,6 +71,7 @@
     <!-- Global Footer -->
     <site-footer></site-footer>
     <script src="../js/auth.js"></script>
+    <script src="../js/register.js"></script>
 <script src="../js/footer-component.js"></script>
 </body>
 </html>

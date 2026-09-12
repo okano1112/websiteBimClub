@@ -11,8 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/navbar-component.js"></script>
     <script src="../js/portfolio-templates.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="portfolio-editor-page apple-ui apple-document">
 
     <!-- Site Navbar -->
     <site-navbar></site-navbar>
@@ -21,10 +22,10 @@
     <header class="doc-mode-bar">
         <div class="doc-switcher-tabs">
             <button type="button" class="doc-tab-btn active" id="tabPortfolio">
-                <span>📁</span> แฟ้มผลงาน (Portfolio)
+                แฟ้มผลงาน (Portfolio)
             </button>
             <a href="cv.html" class="doc-tab-btn" id="tabCv">
-                <span>📄</span> ประวัติย่อ (CV / Resume)
+                ประวัติย่อ (CV / Resume)
             </a>
         </div>
 
@@ -32,11 +33,11 @@
             <div class="visibility-switch">
                 <input type="checkbox" id="isPublicCheckbox" style="cursor:pointer;">
                 <label for="isPublicCheckbox" style="cursor:pointer; font-weight:600;">เปิดสาธารณะ</label>
-                <span id="publicStatusBadge" class="status-badge private">🔒 ส่วนตัว</span>
+                <span id="publicStatusBadge" class="status-badge private">ส่วนตัว</span>
             </div>
 
             <button type="button" class="btn-action secondary" id="btnOpenSettings" title="ตั้งค่าแม่แบบ ขนาดกระดาษ และธีมสี">
-                <span>🎨</span> <span>ธีม &amp; แม่แบบ</span>
+                <span>ธีม &amp; แม่แบบ</span>
             </button>
 
             <a href="/page/portfolio-public.html" target="_blank" class="btn-action secondary" id="btnShowcaseLink" title="เปิดดูหน้าเว็บจริง">
@@ -44,7 +45,7 @@
             </a>
 
             <button type="button" class="btn-action maroon" id="btnDownloadPdf">
-                <span>📥</span> <span>ดาวน์โหลด PDF</span>
+                <span>ดาวน์โหลด PDF</span>
             </button>
         </div>
     </header>
@@ -101,7 +102,7 @@
         <aside class="preview-panel">
             <div class="preview-toolbar">
                 <div class="preview-title">
-                    <span>👁️</span> ตัวอย่างเอกสารจริง (Live Preview)
+                ตัวอย่างเอกสารจริง (Live Preview)
                 </div>
                 <div class="preview-zoom-controls">
                     <button type="button" class="preview-zoom-btn" id="btnZoomFit" title="พอดีกรอบ">Fit</button>

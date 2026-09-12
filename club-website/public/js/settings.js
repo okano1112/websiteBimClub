@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ageInput = document.getElementById('age');
   const phoneInput = document.getElementById('phone');
   const recoveryPhoneInput = document.getElementById('recoveryPhone');
-  const avatarFileInput = document.getElementById('avatarFile');
+    const avatarFileInput = document.getElementById('avatarFile');
   const avatarPreview = document.getElementById('avatarPreview');
   const settingsRole = document.getElementById('settingsRole');
   let currentAvatarUrl = '';
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const img = document.createElement('img');
       img.src = avatarUrl;
       img.alt = 'รูปโปรไฟล์';
+      img.addEventListener('error', () => renderAvatar(userName, ''), { once: true });
       avatarPreview.appendChild(img);
       return;
     }

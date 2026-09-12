@@ -16,6 +16,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) { console.error(err); }
 
     let allAchievements = [];
+    const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
+    const safeImageUrl = (value) => {
+        const url = String(value || '').trim();
+        if (!url) return '../../../assets/img/logobranding/logobim.png';
+        // Public uploads and bundled assets are the only image sources accepted by the API.
+        return (/^(?:\/uploads\/|\.\.\/\.\.\/\.\.\/assets\/)/.test(url)) ? url : '../../../assets/img/logobranding/logobim.png';
+    };
+
+    async function fetchMemberWorks() {
+        const memberGrid = document.getElementById('memberWorksGrid');
+        if (!memberGrid) return;
+        try {
+            const response = await fetch('/api/posts?limit=6');
+            const data = await response.json();
+            const posts = Array.isArray(data.posts) ? data.posts : [];
+            memberGrid.innerHTML = posts.length ? posts.map((post) => `<article class="member-work-card"><div class="member-work-meta">${escapeHtml(post.full_name || post.username || 'สมาชิก BimClub')}</div><p>${escapeHtml(post.content || '')}</p><a href="/page/feed.html" class="member-work-link">ดูในชุมชน</a></article>`).join('') : '<p class="member-works-state">ยังไม่มีผลงานจากสมาชิกที่เผยแพร่</p>';
+        } catch (error) { console.error(error); memberGrid.innerHTML = '<p class="member-works-state">ไม่สามารถโหลดผลงานจากสมาชิกได้</p>'; }
+    }
 
     // Fetch and render achievements
     async function fetchAchievements() {
@@ -28,25 +46,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 data.achievements.forEach((ach, index) => {
                     let deleteBtn = isAdmin ? `<button onclick="deleteAch(event, ${ach.id})" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; z-index:10;">ลบ</button>` : '';
-                    let mainImg = ach.images && ach.images.length > 0 ? ach.images[0].image_url : '../../../assets/img/logobranding/logobim.png';
+                    let mainImg = ach.images && ach.images.length > 0 ? safeImageUrl(ach.images[0].image_url) : '../../../assets/img/logobranding/logobim.png';
+                    const description = String(ach.description || '');
 
                     gridContainer.innerHTML += `
                     <div class="achieve-card" onclick="openCarouselCustom(${index})" style="position:relative;">
                         ${deleteBtn}
                         <div class="card-thumbnail">
-                            <img src="${mainImg}" alt="Thumbnail">
+                            <img src="${escapeHtml(mainImg)}" alt="Thumbnail">
                             <div class="card-overlay">
-                                <span class="view-icon">🔍</span>
+                                <span class="view-icon" aria-hidden="true">ดู</span>
                                 <span>ดูผลงาน</span>
                             </div>
                         </div>
                         <div class="card-body">
-                            <span class="card-category">${ach.category}</span>
-                            <h3>${ach.title}</h3>
-                            <p>${ach.description.substring(0, 50)}...</p>
+                            <span class="card-category">${escapeHtml(ach.category || 'ผลงาน')}</span>
+                            <h3>${escapeHtml(ach.title || '')}</h3>
+                            <p>${escapeHtml(description.slice(0, 50))}${description.length > 50 ? '...' : ''}</p>
                             <div class="card-meta">
-                                <span>👥 ${ach.team_size}</span>
-                                <span>📅 ${ach.project_year}</span>
+                                <span>ทีม ${escapeHtml(ach.team_size || '')}</span>
+                                <span>ปี ${escapeHtml(ach.project_year || '')}</span>
                             </div>
                         </div>
                     </div>`;
@@ -56,6 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     fetchAchievements();
+    fetchMemberWorks();
 
     // The Custom logic to open the modal
     window.openCarouselCustom = function(index) {
@@ -76,8 +96,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const zDist = Math.round((280 / 2) / Math.tan(Math.PI / total)) + 50; 
                 ring.innerHTML += `
                 <div class="carousel-item" style="transform: rotateY(${i * angle}deg) translateZ(${zDist}px);">
-                    <img src="${img.image_url}" alt="Slide">
-                    <div class="item-caption">${img.caption || ''}</div>
+                    <img src="${escapeHtml(safeImageUrl(img.image_url))}" alt="Slide">
+                    <div class="item-caption">${escapeHtml(img.caption || '')}</div>
                 </div>
                 `;
             });

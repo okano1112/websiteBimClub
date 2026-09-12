@@ -49,7 +49,14 @@ function validatePayload(req, res) {
         return null;
     }
 
-    return { title, description, imageUrl: imageUrl || null };
+    return {
+        title,
+        description,
+        imageUrl: imageUrl || null,
+        // An omitted imageUrl means "leave the current image unchanged" on update.
+        imageProvided: Object.prototype.hasOwnProperty.call(req.body || {}, 'imageUrl')
+            || Object.prototype.hasOwnProperty.call(req.body || {}, 'image_url')
+    };
 }
 
 async function fetchActivities() {
@@ -193,8 +200,10 @@ router.put('/:section/:id', requireAdmin, async (req, res) => {
 
         if (req.params.section === 'activities') {
             const [result] = await db.query(
-                'UPDATE activities SET title = ?, description = ?, image_url = ? WHERE id = ?',
-                [payload.title, payload.description, payload.imageUrl, id]
+                `UPDATE activities SET title = ?, description = ?${payload.imageProvided ? ', image_url = ?' : ''} WHERE id = ?`,
+                payload.imageProvided
+                    ? [payload.title, payload.description, payload.imageUrl, id]
+                    : [payload.title, payload.description, id]
             );
             if (result.affectedRows === 0) {
                 return res.status(404).json({ success: false, message: 'ไม่พบกิจกรรมที่ต้องการแก้ไข' });
@@ -221,13 +230,20 @@ router.put('/:section/:id', requireAdmin, async (req, res) => {
                 return res.status(404).json({ success: false, message: 'ไม่พบผลงานที่ต้องการแก้ไข' });
             }
 
-            await connection.query('DELETE FROM achievement_images WHERE achievement_id = ?', [id]);
-            if (payload.imageUrl) {
-                await connection.query(
-                    `INSERT INTO achievement_images (achievement_id, image_url, caption, display_order)
-                     VALUES (?, ?, '', 0)`,
-                    [id, payload.imageUrl]
-                );
+            if (payload.imageProvided) {
+                // The single-image CMS edits the cover only; gallery rows retain IDs/captions/order.
+                const [images] = await connection.query('SELECT id FROM achievement_images WHERE achievement_id = ? ORDER BY display_order ASC, id ASC FOR UPDATE', [id]);
+                if (images.length && payload.imageUrl) {
+                    await connection.query('UPDATE achievement_images SET image_url = ? WHERE id = ? AND achievement_id = ?', [payload.imageUrl, images[0].id, id]);
+                } else if (images.length) {
+                    await connection.query('DELETE FROM achievement_images WHERE id = ? AND achievement_id = ?', [images[0].id, id]);
+                } else if (payload.imageUrl) {
+                    await connection.query(
+                        `INSERT INTO achievement_images (achievement_id, image_url, caption, display_order)
+                         VALUES (?, ?, '', 0)`,
+                        [id, payload.imageUrl]
+                    );
+                }
             }
 
             await connection.commit();

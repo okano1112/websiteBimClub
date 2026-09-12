@@ -61,7 +61,14 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
+  gap: 8px;
+  color: var(--nav-text);
+  font-weight: 700;
+  font-size: 1.08rem;
+  white-space: nowrap;
 }
+
+.logo-brand-text { line-height: 1; }
 
 .logo img {
   width: 80px;
@@ -317,6 +324,17 @@
   color: #111827;
 }
 
+.nav-dropdown-portfolio {
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+.nav-dropdown-portfolio:hover,
+.nav-dropdown-portfolio:focus-visible {
+  background: #fff1f2;
+  color: #7f1d1d;
+}
+
 .nav-dropdown-logout {
   color: #dc2626;
   border-radius: 0 0 8px 8px;
@@ -331,6 +349,19 @@
   height: 1px;
   margin: 4px 0;
   background: #e5e7eb;
+}
+
+.nav-dropdown-item:focus-visible,
+.nav-dropdown-logout:focus-visible,
+.nav-profile-summary:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.nav-dropdown-item:focus-visible,
+.nav-dropdown-logout:focus-visible {
+  outline-color: #ad0f0f;
+  outline-offset: -3px;
 }
 
 @media (max-width: 900px) {

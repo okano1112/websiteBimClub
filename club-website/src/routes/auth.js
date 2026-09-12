@@ -10,186 +10,82 @@ const accountController = require('../controllers/account.controller');
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
-// ============================================================
-// POST /register — สมัครสมาชิก + ส่งอีเมลยืนยัน
-// ============================================================
+const verification = require('../services/verification');
+
+// Registration commits the account before attempting delivery. A delivery failure is recoverable by resend.
 router.post('/register', async (req, res) => {
-    const connection = await db.getConnection();
+    if (['username', 'email', 'password', 'fullName'].some(key => typeof req.body?.[key] !== 'string')) return res.status(400).json({ success: false, message: 'รูปแบบข้อมูลสมัครสมาชิกไม่ถูกต้อง' });
+    const username = String(req.body.username || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const fullName = String(req.body.fullName || '').trim();
+    if (!username || username.length > 50 || !fullName || fullName.length > 100 || email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อและอีเมลให้ถูกต้อง' });
+    if (password.length < 8 || Buffer.byteLength(password) > 72) return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และไม่เกิน 72 ไบต์' });
+    let conn;
+    const token = verification.issue(email);
     try {
-        const { username, email, password, fullName } = req.body;
-
-        if (!username || !email || !password || !fullName) {
-            connection.release();
-            return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
-        }
-
-        if (password.length < 6) {
-            connection.release();
-            return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' });
-        }
-
-        const [existingUsers] = await connection.query(
-            'SELECT id FROM users WHERE username = ? OR email = ?',
-            [username, email]
-        );
-
-        if (existingUsers.length > 0) {
-            connection.release();
-            return res.status(400).json({ success: false, message: 'ชื่อผู้ใช้งานหรืออีเมลนี้มีในระบบแล้ว' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 12);
-
-        // สร้าง verify token
-        const verifyToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-        const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 ชั่วโมง
-
-        await connection.beginTransaction();
-
-        const [result] = await connection.query(
-            `INSERT INTO users (username, email, password, full_name, is_verified, verify_token, verify_token_expires) 
-             VALUES (?, ?, ?, ?, 0, ?, ?)`,
-            [username, email, hashedPassword, fullName, verifyToken, verifyExpires]
-        );
-
-        const userId = result.insertId;
-
-        await connection.query('INSERT INTO portfolios (user_id) VALUES (?)', [userId]);
-
-        // ส่งอีเมลยืนยัน
-        
-        await sendMail(
-            email,
-            'ยืนยันอีเมลสำหรับบัญชี BimClub',
-            `
-            <div style="font-family: 'Noto Sans Thai', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h1 style="color: #ad0f0f;">BimClub</h1>
-                </div>
-                <h2>สวัสดี ${fullName} 👋</h2>
-                <p>ขอบคุณที่สมัครสมาชิก BimClub! รหัส OTP สำหรับยืนยันอีเมลของคุณคือ:</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <h2 style="background: #f4f4f4; padding: 15px; border-radius: 8px; text-align: center; letter-spacing: 5px; font-size: 24px; color: #ad0f0f;">${verifyToken}</h2>
-                </div>
-                <p style="color: #666; font-size: 14px;">ลิงก์นี้จะหมดอายุภายใน 24 ชั่วโมง</p>
-                <p style="color: #999; font-size: 12px;">หากคุณไม่ได้สมัครสมาชิก กรุณาเพิกเฉยอีเมลนี้</p>
-            </div>
-            `
-        );
-
-        await connection.commit();
-        connection.release();
-
-        res.status(201).json({
-            success: true,
-            message: 'สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลของคุณเพื่อยืนยันบัญชี'
-        });
+        const passwordHash = await bcrypt.hash(password, 12);
+        conn = await db.getConnection();
+        await conn.beginTransaction();
+        const [result] = await conn.query(`INSERT INTO users (username, email, password, full_name, is_verified, verify_token, verify_token_expires, verify_sent_at, verify_attempts) VALUES (?, ?, ?, ?, 0, ?, ?, NOW(), 0)`, [username, email, passwordHash, fullName, token.hash, token.expires]);
+        await conn.query('INSERT INTO portfolios (user_id) VALUES (?)', [result.insertId]);
+        await conn.commit();
     } catch (error) {
-        await connection.rollback();
-        connection.release();
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการสมัครสมาชิก (อาจเกิดจากระบบส่งอีเมล)' });
-    }
+        if (conn) await conn.rollback();
+        if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'ชื่อผู้ใช้หรืออีเมลนี้มีบัญชีแล้ว หากยังไม่ยืนยัน ให้ขอรหัสใหม่ด้านล่าง' });
+        console.error('Registration failed:', error.code);
+        return res.status(500).json({ success: false, message: 'สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่' });
+    } finally { if (conn) conn.release(); }
+    let deliveryPending = false;
+    try { await sendMail(email, 'ยืนยันอีเมล BimClub', verification.emailHtml(token.code)); }
+    catch { deliveryPending = true; }
+    res.status(201).json({ success: true, requiresVerification: true, deliveryPending, retryAfter: 60, message: deliveryPending ? 'สร้างบัญชีแล้ว แต่ส่งอีเมลไม่สำเร็จ กรุณาขอรหัสใหม่ในอีก 60 วินาที' : 'ส่งรหัสยืนยันแล้ว กรุณาตรวจสอบอีเมลและโฟลเดอร์สแปม' });
 });
 
-// ============================================================
-// POST /verify-otp — ยืนยัน OTP
-// ============================================================
 router.post('/verify-otp', async (req, res) => {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const otp = String(req.body.otp || '').trim();
+    if (!email || !/^\d{6}$/.test(otp)) return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมลและรหัส 6 หลัก' });
+    let conn;
     try {
-        const { email, otp } = req.body;
-
-        if (!email || !otp) {
-            return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมลและรหัส OTP' });
+        conn = await db.getConnection(); await conn.beginTransaction();
+        const [[user]] = await conn.query('SELECT id, verify_token, verify_token_expires, verify_attempts FROM users WHERE email = ? AND is_verified = 0 AND deleted_at IS NULL AND is_banned = 0 FOR UPDATE', [email]);
+        if (!user || !user.verify_token_expires || new Date(user.verify_token_expires) <= new Date() || user.verify_attempts >= verification.OTP_MAX_ATTEMPTS) {
+            await conn.rollback(); return res.status(400).json({ success: false, message: 'รหัสหมดอายุ ใช้ไปแล้ว หรือครบจำนวนครั้ง กรุณาขอรหัสใหม่' });
         }
-
-        const [users] = await db.query(
-            'SELECT id, verify_token_expires FROM users WHERE email = ? AND verify_token = ? AND is_verified = 0',
-            [email, otp]
-        );
-
-        if (users.length === 0) {
-            return res.status(400).json({ success: false, message: 'รหัส OTP ไม่ถูกต้อง หรือบัญชีนี้ได้รับการยืนยันแล้ว' });
+        if (!verification.matches(email, otp, user.verify_token)) {
+            await conn.query('UPDATE users SET verify_attempts = verify_attempts + 1 WHERE id = ?', [user.id]);
+            await conn.commit(); return res.status(400).json({ success: false, message: 'รหัสไม่ถูกต้อง กรุณาตรวจสอบอีเมลล่าสุด (ลองได้สูงสุด 5 ครั้งต่อรหัส)' });
         }
-
-        const user = users[0];
-
-        // ตรวจ token หมดอายุ
-        if (new Date() > new Date(user.verify_token_expires)) {
-            return res.status(400).json({ success: false, message: 'รหัส OTP หมดอายุแล้ว กรุณาขอรหัสใหม่' });
-        }
-
-        // ยืนยันสำเร็จ
-        await db.query(
-            'UPDATE users SET is_verified = 1, verify_token = NULL, verify_token_expires = NULL WHERE id = ?',
-            [user.id]
-        );
-
-        res.json({ success: true, message: 'ยืนยันอีเมลสำเร็จ! คุณสามารถเข้าสู่ระบบได้แล้ว' });
+        await conn.query('UPDATE users SET is_verified = 1, verify_token = NULL, verify_token_expires = NULL, verify_attempts = 0 WHERE id = ?', [user.id]);
+        await conn.commit(); res.json({ success: true, message: 'ยืนยันอีเมลสำเร็จ เข้าสู่ระบบได้แล้ว' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
-    }
+        if (conn) await conn.rollback();
+        console.error('Verification failed:', error.code); res.status(500).json({ success: false, message: 'ยืนยันไม่สำเร็จ กรุณาลองใหม่' });
+    } finally { if (conn) conn.release(); }
 });
 
-// ============================================================
-// POST /resend-verify — ส่งอีเมลยืนยันซ้ำ
-// ============================================================
 router.post('/resend-verify', async (req, res) => {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!email || email.length > 100) return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
+    let conn, token;
     try {
-        const { email } = req.body;
-
-        if (!email) {
-            return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
-        }
-
-        const [users] = await db.query(
-            'SELECT id, full_name, is_verified FROM users WHERE email = ?',
-            [email]
-        );
-
-        if (users.length === 0) {
-            // ไม่บอกว่าไม่มีอีเมลนี้ เพื่อความปลอดภัย
-            return res.json({ success: true, message: 'หากอีเมลนี้มีอยู่ในระบบ จะได้รับอีเมลยืนยันใหม่' });
-        }
-
-        const user = users[0];
-
-        if (user.is_verified) {
-            return res.json({ success: true, message: 'บัญชีนี้ได้รับการยืนยันแล้ว สามารถเข้าสู่ระบบได้เลย' });
-        }
-
-        // สร้าง token ใหม่
-        const verifyToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-        const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        await db.query(
-            'UPDATE users SET verify_token = ?, verify_token_expires = ? WHERE id = ?',
-            [verifyToken, verifyExpires, user.id]
-        );
-
-        
-        await sendMail(
-            email,
-            'ยืนยันอีเมลสำหรับบัญชี BimClub (ส่งซ้ำ)',
-            `
-            <div style="font-family: 'Noto Sans Thai', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h1 style="color: #ad0f0f; text-align:center;">BimClub</h1>
-                <h2>สวัสดี ${user.full_name} 👋</h2>
-                <p>นี่คือรหัส OTP ใหม่สำหรับการยืนยันอีเมลของคุณ:</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <h2 style="background: #f4f4f4; padding: 15px; border-radius: 8px; text-align: center; letter-spacing: 5px; font-size: 24px; color: #ad0f0f;">${verifyToken}</h2>
-                </div>
-                <p style="color: #666; font-size: 14px;">ลิงก์นี้จะหมดอายุภายใน 24 ชั่วโมง</p>
-            </div>
-            `
-        );
-
-        res.json({ success: true, message: 'ส่งอีเมลยืนยันใหม่แล้ว กรุณาตรวจสอบกล่องจดหมาย' });
+        conn = await db.getConnection(); await conn.beginTransaction();
+        const [[user]] = await conn.query('SELECT id, verify_sent_at FROM users WHERE email = ? AND is_verified = 0 AND deleted_at IS NULL AND is_banned = 0 FOR UPDATE', [email]);
+        if (!user) { await conn.rollback(); return res.json({ success: true, retryAfter: 60, message: 'หากบัญชีนี้ยังไม่ยืนยัน ระบบจะส่งรหัสไปที่อีเมล' }); }
+        const remaining = Math.ceil((new Date(user.verify_sent_at).getTime() + verification.OTP_COOLDOWN_MS - Date.now()) / 1000);
+        if (remaining > 0) { await conn.rollback(); res.set('Retry-After', String(remaining)); return res.status(429).json({ success: false, retryAfter: remaining, message: `กรุณารอ ${remaining} วินาทีก่อนขอรหัสใหม่` }); }
+        token = verification.issue(email);
+        await conn.query('UPDATE users SET verify_token = ?, verify_token_expires = ?, verify_sent_at = NOW(), verify_attempts = 0 WHERE id = ?', [token.hash, token.expires, user.id]);
+        await conn.commit();
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาด' });
-    }
+        if (conn) await conn.rollback(); console.error('Resend failed:', error.code);
+        return res.status(500).json({ success: false, message: 'ขอรหัสใหม่ไม่สำเร็จ' });
+    } finally { if (conn) conn.release(); }
+    try {
+        await sendMail(email, 'รหัสยืนยัน BimClub ใหม่', verification.emailHtml(token.code));
+        res.json({ success: true, retryAfter: 60, message: 'ส่งรหัสใหม่แล้ว รหัสก่อนหน้านี้ใช้ไม่ได้อีก' });
+    } catch { res.status(503).json({ success: false, retryAfter: 60, message: 'ส่งอีเมลไม่สำเร็จ กรุณาลองใหม่ในอีก 60 วินาที' }); }
 });
 
 // ============================================================
@@ -229,6 +125,7 @@ router.post('/login', async (req, res) => {
             return res.status(403).json({
                 success: false,
                 needVerify: true,
+                verificationEmail: user.email,
                 message: 'กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ ตรวจสอบกล่องจดหมายของคุณ'
             });
         }
@@ -314,7 +211,7 @@ router.post('/forgot-password', async (req, res) => {
             `
             <div style="font-family: 'Noto Sans Thai', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h1 style="color: #ad0f0f; text-align:center;">BimClub</h1>
-                <h2>สวัสดี ${user.full_name} 👋</h2>
+                <h2>สวัสดี ${user.full_name}</h2>
                 <p>เราได้รับคำขอรีเซ็ตรหัสผ่านของคุณ กรุณากดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="${resetUrl}" 
@@ -346,8 +243,8 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
         }
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' });
+        if (newPassword.length < 8) {
+            return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร' });
         }
 
         const [users] = await db.query(

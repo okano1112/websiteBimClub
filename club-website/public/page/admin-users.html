@@ -5,8 +5,9 @@
   <title>จัดการผู้ใช้งาน - BimClub</title>
   <link rel="stylesheet" href="../css/global.css"><link rel="stylesheet" href="../css/navbar.css"><link rel="stylesheet" href="../css/admin.css">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="apple-ui apple-workspace">
   <site-navbar></site-navbar>
   <main class="admin-container">
     <nav class="admin-breadcrumb" aria-label="Breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>/</span><span>Users</span></nav>
@@ -26,7 +27,7 @@
 
   <div id="userDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="userDetailTitle"><div class="modal-content"><h2 id="userDetailTitle">รายละเอียดผู้ใช้งาน</h2><dl id="userDetails" class="admin-detail-list"></dl><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="userDetailModal" type="button">ปิด</button></div></div></div>
   <div id="editUserModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="editUserTitle"><div class="modal-content"><h2 id="editUserTitle">แก้ไขผู้ใช้งาน</h2><form id="editUserForm"><label class="form-label" for="editFullName">ชื่อ-นามสกุล</label><input id="editFullName" maxlength="100" required><label class="form-label" for="editPhone">เบอร์โทร</label><input id="editPhone" inputmode="tel"><label class="form-label" for="editRole">Role</label><select id="editRole" class="admin-select"><option value="user">User</option><option value="instructor">Instructor</option><option value="admin">Admin</option></select><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="editUserModal" type="button">ยกเลิก</button><button class="modal-btn modal-save" type="submit">บันทึก</button></div></form></div></div>
-  <div id="passwordModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="passwordTitle"><div class="modal-content"><h2 id="passwordTitle">เปลี่ยนรหัสผ่านผู้ใช้</h2><p id="passwordModalUser"></p><label class="form-label" for="newPassword">รหัสผ่านใหม่</label><input type="password" id="newPassword" placeholder="อย่างน้อย 6 ตัวอักษร" minlength="6"><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="passwordModal" type="button">ยกเลิก</button><button class="modal-btn modal-save" id="savePasswordBtn" type="button">บันทึก</button></div></div></div>
+  <div id="passwordModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="passwordTitle"><div class="modal-content"><h2 id="passwordTitle">เปลี่ยนรหัสผ่านผู้ใช้</h2><p id="passwordModalUser"></p><label class="form-label" for="newPassword">รหัสผ่านใหม่</label><input type="password" id="newPassword" placeholder="อย่างน้อย 8 ตัวอักษร" minlength="8"><div class="modal-actions"><button class="modal-btn modal-cancel" data-close-modal="passwordModal" type="button">ยกเลิก</button><button class="modal-btn modal-save" id="savePasswordBtn" type="button">บันทึก</button></div></div></div>
 
   <script src="../js/auth.js"></script><script src="../js/admin-users.js"></script>
   <site-footer></site-footer><script src="../js/footer-component.js"></script>

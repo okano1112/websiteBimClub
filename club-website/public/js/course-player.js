@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toolbarHtml = `
       <div class="video-toolbar">
         <div class="video-toolbar-info">
-          <span>📺 บทเรียนวิดีโอ</span>
-          ${activeStops.length > 0 ? `<span class="stops-count-badge" id="stopsBadge">🎯 มีจุดถามคำถาม ${activeStops.length} จุด</span>` : ''}
+          <span>บทเรียนวิดีโอ</span>
+          ${activeStops.length > 0 ? `<span class="stops-count-badge" id="stopsBadge">มีจุดถามคำถาม ${activeStops.length} จุด</span>` : ''}
         </div>
         <div class="video-toolbar-actions">
           <label class="toggle-switch-container" title="คลิกเพื่อตั้งค่าว่าจะให้วิดีโอหยุดถามคำถามระหว่างเรียนหรือไม่">

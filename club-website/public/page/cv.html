@@ -12,8 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/navbar-component.js"></script>
     <script src="../js/portfolio-templates.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="apple-ui apple-document">
 
     <!-- Site Navbar -->
     <site-navbar></site-navbar>
@@ -22,10 +23,10 @@
     <header class="doc-mode-bar">
         <div class="doc-switcher-tabs">
             <a href="portfolio.html" class="doc-tab-btn" id="tabPortfolio">
-                <span>📁</span> แฟ้มผลงาน (Portfolio)
+                แฟ้มผลงาน (Portfolio)
             </a>
             <button type="button" class="doc-tab-btn active" id="tabCv">
-                <span>📄</span> ประวัติย่อ (CV / Resume)
+                ประวัติย่อ (CV / Resume)
             </button>
         </div>
 
@@ -48,7 +49,7 @@
             </button>
 
             <button type="button" class="btn-action maroon" id="btnDownloadCvPdf">
-                <span>📥</span> <span>ดาวน์โหลด CV (PDF)</span>
+                <span>ดาวน์โหลด CV (PDF)</span>
             </button>
         </div>
     </header>
@@ -119,7 +120,7 @@
             </div>
 
             <div style="background:#F1F5F9; border-radius:8px; padding:12px; font-size:0.8rem; color:var(--cv-muted); line-height:1.5;">
-                <strong style="color:var(--cv-navy);">💡 คำแนะนำการสร้าง CV:</strong><br>
+                    <strong style="color:var(--cv-navy);">คำแนะนำการสร้าง CV:</strong><br>
                 สำหรับการสมัครงานทั่วไป แนะนำความยาว 1-2 หน้ากระดาษ A4 และใช้แม่แบบ <strong>A4 ATS-Safe</strong> หากสมัครผ่านระบบรับสมัครงานออนไลน์อัตโนมัติ
             </div>
         </aside>
@@ -165,7 +166,7 @@
         <aside class="cv-preview-panel">
             <div class="preview-toolbar" style="background:#0F172A; padding:10px 16px; display:flex; justify-content:space-between; align-items:center; color:#E2E8F0; border-bottom:1px solid #334155;">
                 <div style="font-size:0.85rem; font-weight:600;">
-                    <span>👁️</span> ตัวอย่าง CV (Live Preview)
+                    ตัวอย่าง CV (Live Preview)
                 </div>
                 <div>
                     <button type="button" class="preview-zoom-btn" id="btnRefreshCvPreview">⟳ รีเฟรช</button>

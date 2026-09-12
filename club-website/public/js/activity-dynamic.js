@@ -51,13 +51,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             <div class="card-body">
                                 <div class="card-date">
-                                    <span class="date-icon">📅</span>
+                                    <span class="date-icon" aria-hidden="true">วันที่</span>
                                     <span>${escapeHtml(act.event_date || 'ไม่ระบุวันที่')}</span>
                                 </div>
                                 <h3>${escapeHtml(act.title)}</h3>
                                 <p>${escapeHtml(act.description)}</p>
                                 <div class="card-footer">
-                                    <span class="participants"><span class="icon">👥</span> ${Number(act.participants) || 0} คน</span>
+                                    <span class="participants">ผู้เข้าร่วม ${Number(act.participants) || 0} คน</span>
                                 </div>
                             </div>
                         </div>
@@ -121,12 +121,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Initialize Calendar with all activities
                 initCalendar(data.activities, isAdmin);
+                renderUpcoming(data.activities);
 
             }
         } catch (err) { console.error(err); }
     }
 
     fetchActivities();
+
+    function renderUpcoming(activities) {
+        const target = document.getElementById('upcomingActivities');
+        if (!target) return;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const upcoming = activities
+            .map(activity => ({ activity, date: activity.start_date ? new Date(activity.start_date) : null }))
+            .filter(item => item.date && !Number.isNaN(item.date.getTime()) && item.date >= today)
+            .sort((a, b) => a.date - b.date)
+            .slice(0, 5)
+            .map(item => item.activity);
+        target.innerHTML = upcoming.length ? upcoming.map((activity) => `<article class="upcoming-item"><time>${escapeHtml(activity.event_date || activity.start_date)}</time><h4>${escapeHtml(activity.title)}</h4><p>${escapeHtml(activity.description || 'รายละเอียดกิจกรรมจะแจ้งให้ทราบเร็ว ๆ นี้')}</p></article>`).join('') : '<p>ยังไม่มีกิจกรรมถัดไป</p>';
+    }
 
     function renderAdminBox() {
         const boxHTML = `

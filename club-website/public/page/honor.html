@@ -4,14 +4,15 @@
     <link rel="stylesheet" href="../css/global.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ศิษย์เก่าของชมรมแห่งชมรม - BimClub</title>
+    <title>ศิษย์เก่า BimClub - BimClub</title>
     <link rel="icon" href="../../../assets/img/logobranding/logobim.png">
     <link rel="stylesheet" href="../css/navbar.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/honor.css">
   <script src="../js/navbar-component.js"></script>
+  <link rel="stylesheet" href="../css/apple-ui.css">
 </head>
-<body>
+<body class="honor-page apple-ui apple-public">
 
   <!-- Navbar Component -->
   <site-navbar></site-navbar>
@@ -20,7 +21,8 @@
     <section class="honor-hero">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1>ศิษย์เก่าของชมรมแห่งชมรม</h1>
+            <span class="hero-badge">PEOPLE. PURPOSE. LEGACY.</span>
+            <h1>ผู้คนที่ส่งต่อแรงบันดาลใจ</h1>
             <p>บุคคลผู้สร้างชื่อเสียง ความสำเร็จ และมีคุณูปการสำคัญให้แก่ชมรม BimClub</p>
         </div>
     </section>
@@ -38,6 +40,19 @@
     <!-- Honor Members Section -->
     <section class="honor-members">
         <div class="container">
+            <header class="hof-header">
+                <span class="hof-eyebrow">HALL OF FAME</span>
+                <h2>ทำเนียบแห่งความภาคภูมิใจ</h2>
+                <p>Celebrating Our People, Achievements &amp; Legacy</p>
+            </header>
+            <div class="hof-controls" aria-label="ตัวเลือกการแสดงผลทำเนียบรุ่น">
+                <nav class="hof-year-navigation" id="hofYearNavigation" aria-label="เลือกปี"></nav>
+                <label class="hof-year-select-label" for="hofYearSelect">เลือกปี
+                    <select class="hof-year-select" id="hofYearSelect">
+                        <option value="all">ทุกปี</option>
+                    </select>
+                </label>
+            </div>
             <div class="honor-grid" id="honorGrid">
                 <!-- Data will be injected here via JS -->
             </div>
@@ -45,9 +60,9 @@
     </section>
 
     <!-- Honor Detail Modal -->
-    <div id="honorDetailModal" class="honor-modal">
+    <div id="honorDetailModal" class="honor-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalName">
         <div class="honor-modal-content">
-            <span class="close-modal">&times;</span>
+            <button class="close-modal" type="button" aria-label="ปิดหน้าต่าง">&times;</button>
             <div class="modal-body">
                 <div class="modal-left">
                     <img id="modalImage" src="" alt="Profile">
