@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-12",
+  "nodeTests": {
+    "pass": 56,
+    "fail": 0
+  },
+  "integration": {
+    "httpChecks": 55,
+    "passed": true,
+    "database": "Docker local MariaDB",
+    "mailer": "in-memory",
+    "taggedCvPdfBytes": 111137
+  },
+  "browser": {
+    "passed": true,
+    "engine": "Chromium",
+    "workflows": [
+      "login",
+      "positions create/edit/deactivate",
+      "project edit/publish",
+      "keyboard tagging",
+      "server pagination",
+      "populated public profile/portfolio/cv",
+      "OTP panel refresh/success with intercepted responses",
+      "320px layout"
+    ],
+    "pageErrors": [],
+    "mobileDocumentGeometry": {
+      "portfolio": {
+        "paperWidth": 794,
+        "visibleWidth": 314,
+        "viewerHeight": 904
+      },
+      "cv": {
+        "paperWidth": 794,
+        "visibleWidth": 358,
+        "viewerHeight": 516
+      }
+    }
+  },
+  "runtime": {
+    "healthStatus": 200,
+    "database": "ok"
+  },
+  "limitations": [
+    "No real SMTP inbox delivery",
+    "Not full cross-browser/print/performance/release acceptance"
+  ]
+}
