@@ -149,6 +149,13 @@ Production action: `REMOVE BEFORE PRODUCTION`
 - แยก seed สำหรับ development/test ออกจาก production migration
 - ตรวจบัญชี `admin` และ `admin2` ที่ใช้รหัสผ่านเริ่มต้นที่ทราบอยู่แล้ว
 
+## Verified Hall of Fame Content
+
+Location: `database/phase11-honor-generation1-2024.sql`
+
+- รายชื่อจริง 12 คนของศิษย์เก่ารุ่นที่ 1 ปี 2024 ถูกแยกจาก seed บุคคลสมมุติแล้ว
+- seed เดิม `phase9-honor-seed-2023-2025.sql` ถูกทำให้ deprecated และไม่เพิ่มข้อมูลสมมุติอีก
+
 ## Search-term Review
 
 รายการที่ค้นพบแต่ควร `KEEP IN PRODUCTION`:
