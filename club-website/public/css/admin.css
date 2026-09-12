@@ -131,6 +131,38 @@
     padding: var(--space-4); 
 }
 
+/* ==================================================
+ BIM CLUB — ADMIN PROFILE IMAGE PREVIEW
+ EDIT THIS SECTION WHEN: ปรับกรอบรูปในฟอร์ม Admin Honor
+ DO NOT EDIT FOR: Alumni cards หรือรูป Profile ของ Settings
+ ================================================== */
+.profile-preview-container {
+    width: 120px;
+    height: 120px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--secondary-color);
+}
+
+.profile-preview-container[hidden] { display: none; }
+
+.profile-preview-image,
+.profile-img-preview {
+    display: block;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: var(--radius-sm);
+}
+
+.profile-preview-container .profile-preview-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}
+
 /* Specific Badges */
 .badge.admin { background: var(--primary-color); color: var(--white); }
 .badge.instructor { background: #4f46e5; color: var(--white); }
@@ -235,3 +267,6 @@
     .admin-detail-list { grid-template-columns: 1fr; gap: 2px; }
     .admin-detail-list dd { margin-bottom: 10px; }
 }
+.admin-dashboard-page { --admin-page-space: clamp(28px, 5vw, 64px); }
+.admin-dashboard-page .admin-container { padding-top: var(--admin-page-space); padding-bottom: var(--admin-page-space); }
+@media (prefers-reduced-motion: reduce) { .admin-dashboard-page *, .admin-dashboard-page *::before, .admin-dashboard-page *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
