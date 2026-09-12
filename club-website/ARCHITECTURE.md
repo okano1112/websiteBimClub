@@ -1,5 +1,71 @@
 # โครงสร้างโปรเจกต์ BimClub
 
+## Controlled Development — สถานะที่ตรวจจาก source วันที่ 2026-09-10
+
+ส่วนนี้อธิบายสถานะปัจจุบันสำหรับแผนพัฒนา 12 Phase; เนื้อหาหลังส่วนนี้คงไว้เป็นประวัติการปรับปรุงเดิม ไม่ใช่ผลทดสอบใหม่หรือคำสั่งให้รัน migration ทันที.
+
+- เริ่มงานต่อที่ [DEVELOPMENT-HANDOFF.md](DEVELOPMENT-HANDOFF.md).
+- วิธีแก้/ไฟล์/permission/data migration/tests/rollback ทุก Phase อยู่ใน [CONTROLLED-DEVELOPMENT-PLAN.md](CONTROLLED-DEVELOPMENT-PLAN.md).
+- หน้าเดิมทั้งหมด 34 HTML (รวม redirects) และคำถาม/QA ต่อหน้าอยู่ใน [PAGE-INVENTORY-AND-QA.md](PAGE-INVENTORY-AND-QA.md).
+- การอนุมัติรอบนี้ครอบคลุมเอกสารและแผนล่วงหน้า; runtime changes ยังไม่เริ่ม ดู [CONTROLLED-CHANGELOG.md](CONTROLLED-CHANGELOG.md).
+
+### Runtime และขอบเขตโฟลเดอร์จริง
+
+Application root คือ `club-website/` มี package.json ของแอปเอง; package.json ที่ repository root มี dependency อีกชุด จึงต้องรันคำสั่งแอปใน directory ให้ถูก. Express 5 + CommonJS ให้บริการ static HTML/CSS/JavaScript ไม่มี frontend framework/build pipeline ใน scripts ปัจจุบัน. MySQL ผ่าน mysql2; Compose ใช้ MariaDB 10.11; PDF ใช้ Puppeteer/Chromium.
+
+```text
+websiteBimClub/
+├── assets/                    # shared assets นอก application root
+│   ├── fonts/
+│   ├── img/                   # about, achievement, hornor-hero, logobranding, swiperimg
+│   └── videos/
+├── package.json               # ไม่ใช่ application package
+└── club-website/
+    ├── server.js              # listen port → src/app.js
+    ├── config/                # database pool / SMTP transport
+    ├── middleware/            # login / role / errors
+    ├── src/
+    │   ├── app.js             # headers, parsers, session store, static, health, API
+    │   ├── routes/            # feature routers; หลายไฟล์ยังมี query/business logic
+    │   ├── controllers/       # account และ course list/create เท่านั้นใน baseline
+    │   ├── models/            # user และ course ใน baseline
+    │   ├── services/          # PDF renderer + validated image upload
+    │   └── utils/             # video URL normalization
+    ├── public/                # / (index.html, page/, js/, css/)
+    ├── uploads/               # /uploads และ /uploads/videos
+    ├── database/              # schema + migration/seed แบบ manual
+    └── test/                  # Node built-in test runner
+```
+
+### Data flow และความสัมพันธ์
+
+Browser HTML → feature JS/inline script → `/api` router → login/role middleware → controller/model **หรือ query ใน router เดิม** → MySQL/MariaDB → JSON → renderer. ไม่ใช่ทุก feature แยก controller/service/model แล้ว; ไม่จำเป็นต้องย้ายพร้อมกัน.
+
+- Auth: bcrypt hashes, MySQL-backed session, regenerate session เมื่อ login; middleware โหลด user ปัจจุบันจาก DB เพื่อเช็ก banned/deleted/verified/role. `users.role` คือ user/instructor/admin.
+- Account profile: users.full_name/avatar_url/phone; frontend อยู่ Settings. Social Profile page ใหม่ในแผน Phase 5 **ยังไม่มี**.
+- Alumni: honors เก็บตำแหน่งข้อความ/year/generation; Personnel: team_members แยกตาราง. ยังไม่มี FK ของทั้งสอง domain ไป users ใน baseline.
+- Portfolio: users 1:1 portfolios; experiences/education/projects/manual certificates เป็น child tables. Portfolio/CV ใช้ renderer ร่วมและแยก settings JSON.
+- Project collaborators: **ยังไม่มี** canonical projects/project_members; portfolio_projects เป็นของ portfolio เดียว. อย่าสับสนกับ achievements หรือ posts.
+- Achievements: Club Highlights + achievement_images; Posts: social content + images/comments/likes; Course certificates ถูกอ่านไป Portfolio/CV.
+- Activities มี event_date แบบข้อความ; start_date/end_date มาจาก migration แยก. ตรวจ schema ของ target ก่อนใช้ calendar writes.
+
+### Static paths และ configuration
+
+`public/page/x.html` เป็น URL `/page/x.html`, `../assets/` เป็น `/assets/`, `uploads/` เป็น `/uploads/`. คง spelling/path ของ assets เดิม และอย่าย้ายไฟล์เพียงให้ตรงตัวอย่าง folder ใหม่.
+
+Environment variable names ที่ source ใช้: NODE_ENV, PORT, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, SESSION_SECRET, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, APP_URL, PUPPETEER_EXECUTABLE_PATH. เอกสารนี้ไม่อ่านหรือบันทึกค่าจริง. Docker development/production-like มี target/volume ต่างกัน ต้องระบุเป้าหมายก่อนรัน.
+
+### สิ่งที่ยังไม่พร้อมและข้อจำกัดของหลักฐาน
+
+- Registration API มี แต่ register.html ไม่โหลด register.js และ IDs ไม่ตรงกัน; OTP backend ยังไม่มี UI ใน baseline.
+- Admin Dashboard/Reports/System Settings เป็น MOCKUP ที่ติดป้าย; chatbot เป็นข้อความแจ้งอยู่ระหว่างพัฒนา; timeline.html ยังมี placeholder.
+- `schema.sql` มี DROP TABLE/seed จึงไม่ใช่ migration ที่ใช้รันทับระบบเดิมได้. คำแนะนำ migration ในบันทึกเก่าด้านล่างต้องตรวจ metadata/backup/approval ก่อนทุกครั้ง.
+- Portfolio GET บางเส้นทางเรียก auto-migration/ensure record; อย่าถือว่า GET ทุก route เป็น read-only. Import app อาจเปิด DB/session และสร้าง uploads directory.
+- UI ปัจจุบันมี CSS shared selectors และ inline scripts; card styles ทุกชุดเป็น Protected Components ตามแผนใหม่. แนวทาง UI เดิมในบันทึกประวัติไม่อนุญาตให้ redesign cards รอบใหม่.
+- Phase 0: 23 tests ผ่าน, JavaScript runtime 58 ไฟล์ผ่าน syntax; ไม่มี live DB/browser proof จากการตรวจรอบนั้น. ดู known bugs และ acceptance ของแต่ละ feature ใน master plan.
+
+---
+
 ## โครงสร้างปัจจุบันหลังปรับปรุง
 
 ```text
@@ -23,6 +89,13 @@ club-website/
 ├── Dockerfile
 └── docker-compose.yml
 ```
+
+### เพิ่มเติมจาก UI/UX refactor
+
+- `team_members` เป็น domain แยกจาก `honors` โดยเก็บปีทีมงาน ตำแหน่ง ลำดับ และสถานะเผยแพร่ รองรับการหมุนเวียนทีมรายปีผ่าน `database/phase10-current-team.sql` หรือ `database/schema.sql` สำหรับ installation ใหม่
+- `/api/team` เป็น public read API และ `/api/team/admin` รวมถึง POST/PUT/DELETE เป็น admin-only เพื่อให้ต่อเข้าหน้า CMS เดิมได้โดยไม่ปะปนกับ Alumni
+- `/page/team.html` คงไว้เป็น backward-compatible redirect ไปยัง About → Personnel เพื่อไม่สร้างหน้า Personnel ซ้ำ
+- หน้า `public/page/achievement.html` แยก Club Highlights (achievements) ออกจาก Community Member Works (posts) โดยใช้ API เดิม ไม่สร้าง submission pipeline ซ้ำ
 
 ## หน้าที่ของแต่ละโฟลเดอร์
 
