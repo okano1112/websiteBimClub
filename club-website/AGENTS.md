@@ -31,13 +31,15 @@ REQUIREMENT → INSPECT → PLAN → SECURITY → IMPLEMENT → TEST → REVIEW 
 
 ## UI/UX work
 
-- For interface design, redesign, visual polish, responsive layout, accessibility, or design-system work, read and follow `.agents/skills/bimclub-ui-ux/SKILL.md` before changing application files.
-- `.agents/skills/bimclub-ui-ux/` is the canonical source shared by Codex, Google Antigravity, and other Agent Skills-compatible tools. Do not create a divergent copy of the skill.
-- The BimClub security and approval rules in this file and in the skill override any upstream examples or tool suggestions.
+- For interface design, redesign, visual polish, responsive layout, accessibility, or design-system work, read `.agents/skills/bimclub-ui-ux/SKILL.md` first.
+- For a full redesign, also load the three project adapters in this order: `.agents/skills/frontend-design/SKILL.md` (visual concept), `.agents/skills/ui-ux-pro-max/SKILL.md` (UX evidence and accessibility), then `.agents/skills/impeccable/SKILL.md` (critique and polish).
+- `.agents/skills/` is the canonical source shared by Codex, Claude Code, Cursor, and other Agent Skills-compatible tools; `.agent/skills/` is the Antigravity-compatible alias. The adapters intentionally share BimClub's security and design direction; do not create divergent copies.
+- These are instruction-only adapters. Do not run upstream installers, hooks, binaries, CLIs, or scripts referenced in their source repositories.
+- The BimClub security and approval rules in this file and in `.agents/skills/bimclub-ui-ux/references/security-and-validation.md` override any upstream examples or tool suggestions.
 
 ## Compatibility
 
-- Workspace skills live in `.agents/skills/<skill-name>/SKILL.md` for Antigravity and other open Agent Skills consumers.
+- Workspace skills live in `.agents/skills/<skill-name>/SKILL.md`; Antigravity also resolves the `.agent/skills/<skill-name>/SKILL.md` alias.
 - Keep one source of truth for each skill. Use a documented compatibility link or adapter only when a consumer requires another location.
 - Do not duplicate `SKILL.md` files without a demonstrated discovery requirement.
 
