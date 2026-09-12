@@ -4,7 +4,7 @@
 
 - Project root: `/Users/mac368/Documents/websiteBimClub/club-website`
 - Codex: user skill directory `/Users/mac368/.codex/skills`; project skills linked from `.agents/skills`
-- Antigravity: workspace convention is `.agents/skills/<skill>/SKILL.md`; Antigravity CLI executable was not found on this machine
+- Antigravity: workspace convention is `.agent/skills/<skill>/SKILL.md` (with `.agents/skills/` compatibility); Antigravity CLI executable was not found on this machine
 - Repository branch at baseline: `main`
 - Baseline was captured before this task; the working tree already contained unrelated BimClub refactor/UI changes
 
@@ -55,7 +55,7 @@ Discovery test: **UNVERIFIED** in this turn because the current session's skill 
 
 ## 7. Antigravity compatibility
 
-The skills are placed in the workspace-scoped `.agents/skills/` directory, which is the documented Antigravity workspace location. The current machine does not expose an `agy` or `antigravity` CLI executable, so an interactive `/skills` test could not be run.
+The skills are placed in the canonical workspace-scoped `.agents/skills/` directory and exposed through the Antigravity-compatible `.agent/skills/` alias. The current machine does not expose an `agy` or `antigravity` CLI executable, so an interactive `/skills` test could not be run.
 
 Discovery test: **UNVERIFIED**. To verify manually, open this workspace in Antigravity, run `/skills`, and confirm the three names appear.
 
@@ -117,5 +117,15 @@ Keep the three installed skills as the minimum trusted set. Verify discovery in 
 - `AGENTS.md` now routes UI/UX work to the canonical `.agents/skills/bimclub-ui-ux/SKILL.md`, enabling Google Antigravity and other Agent Skills-compatible consumers to use the same source of truth.
 - Codex compatibility uses `/Users/mac368/.codex/skills/bimclub-ui-ux` as a symlink to the canonical project skill. A fresh session may be required before automatic discovery updates.
 - Claude Code and Cursor compatibility links are `.claude/skills/bimclub-ui-ux` and `.cursor/skills/bimclub-ui-ux`; both resolve to the same `.agents/skills/bimclub-ui-ux` source instead of duplicating it.
-- Antigravity uses the canonical `.agents/skills/bimclub-ui-ux/SKILL.md` directly and is also routed through `AGENTS.md`. Its CLI is not available on this machine, so interactive discovery remains unverified.
+- Antigravity resolves `.agent/skills/bimclub-ui-ux/SKILL.md` (symlinked to the canonical `.agents/skills/` source) and is also routed through `AGENTS.md`. Its CLI is not available on this machine, so interactive discovery remains unverified.
 - The bundled validator could not start because its optional `PyYAML` dependency is not installed. No package was installed to work around this. Frontmatter was instead parsed with Ruby's standard YAML library, references and symlinks were resolved, hashes were recorded, and the repository diff was checked.
+
+## 18. Frontend design skill stack — 2026-09-10
+
+- Added three project adapters under `.agents/skills/`: `frontend-design`, `impeccable`, and `ui-ux-pro-max`.
+- `frontend-design` adapts the official Anthropic skill (commit `41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f`) for BimClub's Thai-first, modern-minimal direction.
+- `impeccable` adapts the command vocabulary and critique workflow from `pbakaus/impeccable` (commit `67d018fe052853c104a96d441ce175dd5ec4c39d`) but deliberately excludes its launcher, binary, downloader, live mode, and edit hooks.
+- `ui-ux-pro-max` adapts the priority model from `nextlevelbuilder/ui-ux-pro-max-skill` (commit `4aad0584d92131626b16d4ff4d77f0455385013c`) but deliberately excludes its CLI, Python scripts, generated catalogs, and installer.
+- All three adapters are plain Markdown with valid Agent Skills frontmatter, no executable files, no package manifests, no hooks, no binaries, no network calls, and no API-key workflows. They all delegate to the canonical BimClub UI/UX and security references.
+- `.claude/skills/` and `.cursor/skills/` symlinks plus Codex user-level symlinks point to the same project source. Antigravity uses `.agent/skills/` and `AGENTS.md` directly.
+- `.dockerignore` excludes `.agents`, `.agent`, `.claude`, `.cursor`, and AI instruction files so the skill stack remains available for development but is not copied into production images.
