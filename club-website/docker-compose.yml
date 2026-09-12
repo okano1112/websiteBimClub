@@ -5,17 +5,21 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=rootpassword
-      - DB_NAME=club_database
-      - PORT=3000
-      - SESSION_SECRET=bimclub-super-secret-2026-change-me
-      - SMTP_HOST=smtp.ethereal.email
-      - SMTP_PORT=587
-      - SMTP_USER=nfuc6qldtcuvfxoj@ethereal.email
-      - SMTP_PASS=QpDP8H5ajhHqbJrHcT
-      - APP_URL=http://localhost:3000
+      - NODE_ENV=${NODE_ENV:-development}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_USER=${DB_USER:-root}
+      # Local-only fallback keeps the original `docker compose up` workflow
+      # usable when .env has not been created yet. Production compose still
+      # requires an explicit secret.
+      - DB_PASSWORD=${DB_PASSWORD:-bimclub_local_dev_password}
+      - DB_NAME=${DB_NAME:-club_database}
+      - PORT=${PORT:-3000}
+      - SESSION_SECRET=${SESSION_SECRET:-bimclub_local_dev_session_secret}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - APP_URL=${APP_URL:-http://localhost:3000}
     volumes:
       - ./src:/usr/src/app/src
       - ./public:/usr/src/app/public
@@ -33,12 +37,12 @@ services:
     container_name: bimclub_db
     restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=rootpassword
-      - MARIADB_DATABASE=club_database
+      - MARIADB_ROOT_PASSWORD=${DB_PASSWORD:-bimclub_local_dev_password}
+      - MARIADB_DATABASE=${DB_NAME:-club_database}
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data_local:/var/lib/mysql
       # Map the schema.sql to the init folder so tables are auto-created!
       - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
@@ -48,6 +52,7 @@ services:
       retries: 5
 
   phpmyadmin:
+    profiles: ["debug"]
     image: phpmyadmin:latest
     container_name: bimclub_phpmyadmin
     restart: always
@@ -56,9 +61,11 @@ services:
     environment:
       - PMA_HOST=db
       - PMA_USER=root
-      - PMA_PASSWORD=rootpassword
+      - PMA_PASSWORD=${DB_PASSWORD:-bimclub_local_dev_password}
     depends_on:
       - db
 
 volumes:
-  db_data:
+  # Keep the legacy volume untouched; this fresh local volume is initialized
+  # with the documented development fallback credentials.
+  db_data_local:
