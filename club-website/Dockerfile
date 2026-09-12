@@ -15,19 +15,22 @@ RUN apk add --no-cache \
     font-noto-thai
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --omit=dev
 
 # Copy the rest of the application code
 COPY . .
 
 # Create uploads directory if it doesn't exist
-RUN mkdir -p uploads
+RUN mkdir -p uploads && chown -R node:node /usr/src/app
+
+# The application does not need root privileges at runtime.
+USER node
 
 # Expose port
 EXPOSE 3000
