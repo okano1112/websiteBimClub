@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/portfolio-public.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/navbar-component.js"></script>
+    <script src="../js/portfolio-model.js"></script>
     <script src="../js/portfolio-templates.js"></script>
   <link rel="stylesheet" href="../css/apple-ui.css">
   <script src="../js/document-viewer-fit.js" defer></script>
@@ -72,38 +73,7 @@
                 const data = await res.json();
                 const p = data.portfolio || data;
 
-                const cvSettings = p.cv_settings || {
-                    docType: 'cv',
-                    template: 'cv-a4-standard',
-                    pageSize: 'a4',
-                    orientation: 'portrait',
-                    theme: { primary: '#012240', secondary: '#AD0F0F', bg: 'white' },
-                    language: 'th'
-                };
-                cvSettings.docType = 'cv';
-
-                const payload = {
-                    profile: {
-                        fullName: p.user_name || p.full_name || 'สมาชิก BimClub',
-                        headline: p.headline || '',
-                        targetRole: p.target_role || p.headline || '',
-                        summary: p.summary || '',
-                        careerObjective: p.career_objective || '',
-                        avatarUrl: p.user_avatar || p.avatar_url || '',
-                        email: p.email || '',
-                        phone: p.phone || '',
-                        websiteUrl: p.website_url || '',
-                        customLinks: p.extra_sections?.custom_contacts || []
-                    },
-                    skills: p.skills || [],
-                    experiences: p.experiences || [],
-                    education: p.education || [],
-                    projects: [...(p.projects || []), ...(p.involved_projects || [])],
-                    certificates: p.certificates || { system: [], manual: [] },
-                    extraSections: p.extra_sections || {},
-                    settings: cvSettings
-                };
-
+                const payload = PortfolioModel.documentPayload(p, {}, { docType: 'cv' });
                 const html = PortfolioTemplates.renderDocument(payload);
                 
                 // Render inside iframe for style isolation

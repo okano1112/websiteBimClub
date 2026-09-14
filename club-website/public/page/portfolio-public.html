@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/portfolio-public.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/navbar-component.js"></script>
+    <script src="../js/portfolio-model.js"></script>
     <script src="../js/portfolio-templates.js"></script>
   <link rel="stylesheet" href="../css/apple-ui.css">
   <script src="../js/document-viewer-fit.js" defer></script>
@@ -76,61 +77,8 @@
                 const userName = p.user_name || p.full_name || 'สมาชิก BimClub';
                 document.title = `${userName} - Professional Portfolio | BimClub`;
 
-                const settings = p.portfolio_settings || {};
-                const theme = settings.theme || {};
-                const hidden = settings.hiddenSections || [];
-                const extra = p.extra_sections || {};
-
-                // The public website must use the same template renderer as the editor preview and PDF export.
-                // This keeps the selected template, paper geometry, theme, hidden sections, and branding in sync.
-                const portfolioSettings = {
-                    docType: 'portfolio',
-                    template: settings.template || 'maroon-editorial',
-                    pageSize: settings.pageSize || 'a4',
-                    orientation: settings.orientation || 'portrait',
-                    theme: {
-                        primary: theme.primary || '#012240',
-                        secondary: theme.secondary || '#AD0F0F',
-                        bg: theme.bg || 'white',
-                        textColor: theme.textColor,
-                        accentColor: theme.accentColor
-                    },
-                    branding: settings.branding || {
-                        showSoeLogo: true,
-                        showBimClubLogo: true,
-                        footerStyle: 'footer-bar',
-                        scope: 'all',
-                        logoSize: 'medium'
-                    },
-                    hiddenSections: hidden,
-                    language: settings.language || 'th'
-                };
-
-                const templateSkills = Array.isArray(p.skills)
-                    ? p.skills
-                    : (typeof p.skills === 'string' ? JSON.parse(p.skills || '[]') : []);
-                const publicPayload = {
-                    profile: {
-                        fullName: p.user_name || p.full_name || 'สมาชิก BimClub',
-                        headline: p.headline || '',
-                        targetRole: p.target_role || p.headline || '',
-                        summary: p.summary || '',
-                        careerObjective: p.career_objective || '',
-                        avatarUrl: p.user_avatar || p.avatar_url || '',
-                        email: p.email || '',
-                        phone: p.phone || '',
-                        websiteUrl: p.website_url || '',
-                        customLinks: extra.custom_contacts || []
-                    },
-                    skills: templateSkills,
-                    experiences: p.experiences || [],
-                    education: p.education || [],
-                    projects: [...(p.projects || []), ...(p.involved_projects || [])],
-                    certificates: p.certificates || { system: [], manual: [] },
-                    extraSections: extra,
-                    settings: portfolioSettings
-                };
-
+                const publicPayload = PortfolioModel.documentPayload(p);
+                const portfolioSettings = publicPayload.settings;
                 const renderedDocument = PortfolioTemplates.renderDocument(publicPayload);
                 const templatePreviewBannerHtml = p.is_owner && !p.is_public ? `
                     <div class="preview-mode-banner">

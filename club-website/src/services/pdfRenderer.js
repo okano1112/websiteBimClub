@@ -92,6 +92,7 @@ async function generatePdf(payload) {
             timeout: 30000
         });
 
+        await page.evaluate(() => document.fonts.ready);
         // Determine format/dimensions
         let pdfOptions = {
             printBackground: true,

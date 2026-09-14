@@ -4,6 +4,7 @@ const requireLogin = require('../../middleware/requireLogin');
 const requireAdmin = require('../../middleware/requireAdmin');
 
 const router = express.Router();
+const { transferToAlumni } = require('../services/alumniTransfer');
 
 function parseId(value) {
     const id = Number(value);
@@ -35,7 +36,7 @@ router.get('/', async (req, res) => {
     try {
         const year = clean(req.query.year);
         const params = [];
-        let sql = 'SELECT * FROM team_members WHERE is_published = 1';
+        let sql = 'SELECT * FROM team_members WHERE is_published = 1 AND alumni_honor_id IS NULL';
         if (year) { sql += ' AND team_year = ?'; params.push(year); }
         sql += ' ORDER BY team_year DESC, display_order ASC, id ASC';
         const [members] = await db.query(sql, params);
@@ -48,7 +49,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/admin', requireLogin, requireAdmin, async (req, res) => {
-    const [members] = await db.query('SELECT * FROM team_members ORDER BY team_year DESC, display_order ASC, id ASC');
+    const [members] = await db.query('SELECT * FROM team_members WHERE alumni_honor_id IS NULL ORDER BY team_year DESC, display_order ASC, id ASC');
     res.json({ success: true, team: members });
 });
 
@@ -61,7 +62,7 @@ router.post('/', requireLogin, requireAdmin, async (req, res) => {
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [payload.fullName, payload.nickname, payload.role, payload.teamYear, payload.bio, payload.profileImage, payload.displayOrder, payload.isPublished]
         );
-        const [rows] = await db.query('SELECT * FROM team_members WHERE id = ?', [result.insertId]);
+        const [rows] = await db.query('SELECT * FROM team_members WHERE id = ? AND alumni_honor_id IS NULL', [result.insertId]);
         res.status(201).json({ success: true, member: rows[0] });
     } catch (error) {
         console.error(error);
@@ -69,11 +70,19 @@ router.post('/', requireLogin, requireAdmin, async (req, res) => {
     }
 });
 
+router.post('/:id/alumni', requireLogin, requireAdmin, async (req,res) => {
+    const id=parseId(req.params.id);if(!id)return res.status(400).json({success:false,message:'รหัสไม่ถูกต้อง'});
+    let conn;
+    try {conn=await db.getConnection();await conn.beginTransaction();const honorId=await transferToAlumni(conn,id);await conn.commit();res.json({success:true,honorId});}
+    catch(error){if(conn)await conn.rollback();res.status(409).json({success:false,message:error.message});}
+    finally{conn?.release();}
+});
+
 router.put('/:id', requireLogin, requireAdmin, async (req, res) => {
     const id = parseId(req.params.id);
     if (!id) return res.status(400).json({ success: false, message: 'รหัสทีมงานไม่ถูกต้อง' });
     try {
-        const [existingRows] = await db.query('SELECT * FROM team_members WHERE id = ?', [id]);
+        const [existingRows] = await db.query('SELECT * FROM team_members WHERE id = ? AND alumni_honor_id IS NULL', [id]);
         if (!existingRows.length) return res.status(404).json({ success: false, message: 'ไม่พบทีมงาน' });
         const existing = existingRows[0];
         const merged = { ...existing, ...req.body };
@@ -93,7 +102,7 @@ router.put('/:id', requireLogin, requireAdmin, async (req, res) => {
 router.delete('/:id', requireLogin, requireAdmin, async (req, res) => {
     const id = parseId(req.params.id);
     if (!id) return res.status(400).json({ success: false, message: 'รหัสทีมงานไม่ถูกต้อง' });
-    await db.query('DELETE FROM team_members WHERE id = ?', [id]);
+    await db.query('DELETE FROM team_members WHERE id = ? AND alumni_honor_id IS NULL', [id]);
     res.json({ success: true, message: 'ลบทีมงานสำเร็จ' });
 });
 

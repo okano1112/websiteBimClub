@@ -117,11 +117,11 @@
         if (branding.scope === 'cover-only' && !isCover) return '';
         if (branding.scope === 'cover-footer' && !isCover && position !== 'footer') return '';
 
-        const soeUrl = branding.soeLogoUrl || '/assets/img/logobranding/soe-logo.svg';
+        const soeUrl = branding.soeLogoUrl || '/assets/img/logobranding/soe-logo.png';
         const bimUrl = branding.bimClubLogoUrl || '/assets/img/logobranding/logobim.png';
         const showSoe = branding.showSoeLogo !== false;
         const showBim = branding.showBimClubLogo !== false;
-        const instText = branding.institutionText || 'BimClub Official Accredited • Faculty of Engineering';
+        const instText = branding.institutionText ?? 'BimClub Official Accredited • Faculty of Engineering';
 
         let heightPx = 36;
         if (branding.logoSize === 'small') heightPx = 26;
@@ -177,7 +177,7 @@
 
             @page {
                 size: ${dim.w} ${dim.h};
-                margin: 0;
+                margin: 8mm;
             }
 
             :root {
@@ -210,7 +210,7 @@
 
             .doc-page {
                 width: var(--doc-w);
-                height: var(--doc-h);
+                height: auto;
                 min-height: var(--doc-h);
                 background-color: var(--theme-bg);
                 position: relative;
@@ -219,7 +219,7 @@
                 display: block;
                 page-break-after: always;
                 break-after: page;
-                overflow: hidden;
+                overflow: visible;
             }
 
             @media print {
@@ -230,8 +230,9 @@
                     margin: 0;
                     box-shadow: none;
                     width: 100% !important;
-                    min-height: var(--doc-h) !important;
-                    height: var(--doc-h) !important;
+                    min-height: 0 !important;
+                    height: auto !important;
+                    overflow: visible !important;
                     page-break-after: always;
                     break-after: page;
                 }
@@ -243,6 +244,19 @@
                 padding-bottom: 82px !important;
             }
 
+            .entry-desc { white-space: pre-line; }
+            .doc-page p, .entry-desc, .doc-page h1, .doc-page h2, .doc-page h3 { overflow-wrap:anywhere; }
+            .doc-page div, .doc-section { min-width:0; overflow-wrap:anywhere; }
+            @media print {
+                .doc-page-content { min-height:0; padding-bottom:24px !important; }
+                .doc-branding-bar { position:static !important; margin-top:16px; }
+                .doc-page:last-child { break-after:auto; page-break-after:auto; }
+                .doc-section { break-inside:auto; }
+                .entry-item, .project-doc-card, .cert-doc-card { break-inside:avoid; }
+                h2, h3, .section-title-wrap { break-after:avoid; }
+                p { orphans:3; widows:3; }
+                .doc-page:has(.doc-page-content):not(:has(.doc-page-content :is(h1,h2,h3,p,img,.entry-item,.skill-tag))) { display:none; }
+            }
             /* Branding Bar */
             .doc-branding-bar {
                 display: flex;
@@ -553,7 +567,8 @@
     function isSectionVisible(payload, sectionKey) {
         const settings = payload.settings || {};
         const hiddenList = settings.hiddenSections || [];
-        if (hiddenList.includes(sectionKey)) return false;
+        const aliases = {about:'about_me', objective:'career_objective'};
+        if (hiddenList.includes(sectionKey) || hiddenList.includes(aliases[sectionKey])) return false;
 
         const extra = payload.extraSections || {};
         const states = extra.sectionStates || {};
@@ -574,6 +589,8 @@
         </div>
         `;
     }
+
+    function renderProfessionalRole(profile) { return [...new Set([profile.targetRole, profile.headline].filter(Boolean))].map(esc).join('<br>'); }
 
     function renderAboutMe(payload, lang) {
         if (!isSectionVisible(payload, 'about')) return '';
@@ -708,6 +725,7 @@
                     <div class="cert-doc-card">
                         <div class="cert-doc-title">${esc(mc.title)}</div>
                         <div class="cert-doc-issuer">${esc(mc.issuer)} • ${mc.issue_date ? (mc.issue_date instanceof Date ? mc.issue_date.toISOString().substring(0,10) : String(mc.issue_date).substring(0,10)) : ''}</div>
+                        ${mc.credential_url ? `<p class="entry-desc">${esc(mc.credential_url)}</p>` : ''}
                     </div>
                 `).join('')}
             </div>
@@ -841,6 +859,9 @@
             </div>`;
         }
 
+        if (isSectionVisible(payload, 'contact_links') && extra.custom_contacts?.length) {
+            html += `<div class="doc-section"><h2 class="entry-title">${lang === 'en' ? 'Links' : 'ช่องทางติดต่อ'}</h2>${extra.custom_contacts.map(item => `<p class="entry-desc">${esc(item.label)}: ${esc(item.url)}</p>`).join('')}</div>`;
+        }
         return html;
     }
 
@@ -861,7 +882,7 @@
                     <div class="maroon-cover-copy">
                         <span class="maroon-cover-tag">PROFESSIONAL PORTFOLIO</span>
                         <h1 class="maroon-cover-name">${esc(profile.fullName || 'ชื่อ นามสกุล')}</h1>
-                        <div class="maroon-cover-role">${esc(profile.targetRole || profile.headline || 'BIM Engineer & Computational Designer')}</div>
+                        <div class="maroon-cover-role">${renderProfessionalRole(profile)}</div>
                         <div class="maroon-cover-contacts">
                             ${profile.email ? `<span>✉ ${esc(profile.email)}</span>` : ''}
                             ${profile.phone ? `<span>✆ ${esc(profile.phone)}</span>` : ''}
@@ -911,7 +932,7 @@
                     <div style="flex: 1;">
                         <span style="font-size: 11px; font-weight: 700; color: var(--theme-secondary); letter-spacing: 1px;">PROFESSIONAL DOSSIER</span>
                         <h1 style="font-size: 28px; font-weight: 800; color: var(--theme-primary); margin: 4px 0;">${esc(profile.fullName)}</h1>
-                        <div style="font-size: 15px; font-weight: 600; color: var(--theme-muted);">${esc(profile.targetRole || profile.headline)}</div>
+                        <div style="font-size: 15px; font-weight: 600; color: var(--theme-muted);">${renderProfessionalRole(profile)}</div>
                         <div style="display: flex; gap: 14px; font-size: 11.5px; margin-top: 8px; color: var(--theme-text);">
                             ${profile.email ? `<span>✉ ${esc(profile.email)}</span>` : ''}
                             ${profile.phone ? `<span>✆ ${esc(profile.phone)}</span>` : ''}
@@ -921,6 +942,7 @@
                 </div>
 
                 ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                 ${renderSkills(payload, lang)}
                 ${renderExperiences(payload, lang)}
             </div>
@@ -951,17 +973,20 @@
         return `
         <div class="doc-page">
             <div class="doc-page-content">
-                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px; margin-bottom:24px; align-items:center;">
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px; margin-bottom:24px; align-items:start;">
                     <div>
+                        ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="Avatar" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:12px;">` : ''}
                         <h1 style="font-size: 26px; font-weight: 800; color: var(--theme-primary); margin: 0 0 6px 0;">${esc(profile.fullName)}</h1>
-                        <div style="font-size: 14px; font-weight: 600; color: var(--theme-secondary);">${esc(profile.targetRole || profile.headline)}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--theme-secondary);">${renderProfessionalRole(profile)}</div>
                         <div style="margin-top:10px; font-size:11px; color:var(--theme-muted); line-height:1.6;">
                             ${profile.email ? `<div>✉ ${esc(profile.email)}</div>` : ''}
                             ${profile.phone ? `<div>✆ ${esc(profile.phone)}</div>` : ''}
+                            ${profile.websiteUrl ? `<p class="entry-desc">${esc(profile.websiteUrl)}</p>` : ''}
                         </div>
                     </div>
                     <div style="background:var(--theme-card-bg); padding:16px; border-radius:8px; border:1px solid var(--theme-border);">
                         ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                     </div>
                 </div>
 
@@ -998,7 +1023,7 @@
                 <div style="text-align: center; margin-bottom: 28px; border-bottom: 1px solid var(--theme-border); padding-bottom: 20px;">
                     ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="รูปโปรไฟล์ ${esc(profile.fullName || '')}" style="width: 74px; height: 74px; border-radius: 50%; object-fit: cover; border: 2px solid var(--theme-secondary); margin-bottom: 10px;">` : ''}
                     <h1 style="font-size: 26px; font-weight: 700; color: var(--theme-primary); margin: 0 0 6px 0; letter-spacing: 0.5px;">${esc(profile.fullName)}</h1>
-                    <div style="font-size: 13.5px; font-weight: 500; color: var(--theme-muted); text-transform: uppercase; letter-spacing: 1px;">${esc(profile.targetRole || profile.headline)}</div>
+                    <div style="font-size: 13.5px; font-weight: 500; color: var(--theme-muted); text-transform: uppercase; letter-spacing: 1px;">${renderProfessionalRole(profile)}</div>
                     <div style="display:flex; justify-content:center; gap:16px; font-size:11.5px; color:var(--theme-muted); margin-top:8px;">
                         ${profile.email ? `<span>${esc(profile.email)}</span>` : ''}
                         ${profile.phone ? `<span>• ${esc(profile.phone)}</span>` : ''}
@@ -1007,6 +1032,7 @@
                 </div>
 
                 ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                 ${renderSkills(payload, lang)}
                 ${renderExperiences(payload, lang)}
                 ${renderEducation(payload, lang)}
@@ -1036,7 +1062,7 @@
                     <div style="background:var(--theme-card-bg); padding:28px; border-radius:12px; border:1px solid var(--theme-border);">
                         ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="Avatar" style="width:120px; height:120px; border-radius:12px; object-fit:cover; margin-bottom:16px;">` : ''}
                         <h1 style="font-size: 28px; font-weight: 800; color: var(--theme-primary); margin: 0 0 6px 0;">${esc(profile.fullName)}</h1>
-                        <div style="font-size: 15px; font-weight: 600; color: var(--theme-secondary); margin-bottom:16px;">${esc(profile.targetRole || profile.headline)}</div>
+                        <div style="font-size: 15px; font-weight: 600; color: var(--theme-secondary); margin-bottom:16px;">${renderProfessionalRole(profile)}</div>
                         
                         <div style="font-size:12px; color:var(--theme-muted); margin-bottom:20px; line-height:1.7;">
                             ${profile.email ? `<div>✉ ${esc(profile.email)}</div>` : ''}
@@ -1045,6 +1071,7 @@
                         </div>
 
                         ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                         ${renderSkills(payload, lang)}
                         ${renderCertificates(payload, lang)}
                     </div>
@@ -1069,11 +1096,7 @@
     function renderInstitutionalBimClub(payload) {
         const lang = payload.settings?.language || 'th';
         const profile = payload.profile || {};
-        const branding = Object.assign({}, payload.settings?.branding || {}, {
-            showSoeLogo: true,
-            showBimClubLogo: true,
-            footerStyle: 'footer-bar'
-        });
+        const branding = payload.settings?.branding || {};
         const theme = payload.settings?.theme || {};
 
         return `
@@ -1082,18 +1105,21 @@
             <div class="doc-page-content" style="padding: 28px 48px;">
                 <div style="background: ${theme.primary || '#012240'}08; border: 1.5px solid ${theme.primary || '#012240'}33; border-radius: 8px; padding: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
+                        ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="Avatar" style="width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;margin-bottom:8px;">` : ''}
                         <span style="font-size: 11px; font-weight: 700; color: var(--theme-secondary); text-transform: uppercase;">FACULTY ACCREDITED PORTFOLIO</span>
                         <h1 style="font-size: 26px; font-weight: 800; color: var(--theme-primary); margin: 4px 0;">${esc(profile.fullName)}</h1>
-                        <div style="font-size: 14px; font-weight: 600; color: var(--theme-muted);">${esc(profile.targetRole || profile.headline)}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--theme-muted);">${renderProfessionalRole(profile)}</div>
                     </div>
                     <div style="text-align: right; font-size: 11.5px; color: var(--theme-muted);">
                         ${profile.email ? `<div>${esc(profile.email)}</div>` : ''}
                         ${profile.phone ? `<div>${esc(profile.phone)}</div>` : ''}
+                        ${profile.websiteUrl ? `<p class="entry-desc">${esc(profile.websiteUrl)}</p>` : ''}
                         <div style="margin-top: 4px; font-weight: 700; color: var(--theme-primary);">BimClub Official Member</div>
                     </div>
                 </div>
 
                 ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                 ${renderSkills(payload, lang)}
                 ${renderExperiences(payload, lang)}
             </div>
@@ -1141,7 +1167,7 @@
                 <div style="border-bottom: 2px solid var(--theme-primary); padding-bottom: 16px; margin-bottom: 18px; display:flex; justify-content:space-between; align-items:flex-end;">
                     <div>
                         <h1 style="font-size: 26px; font-weight: 800; color: var(--theme-primary); margin: 0 0 4px 0;">${esc(profile.fullName)}</h1>
-                        <div style="font-size: 14px; font-weight: 600; color: var(--theme-secondary);">${esc(profile.targetRole || profile.headline || 'Curriculum Vitae')}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--theme-secondary);">${renderProfessionalRole(profile)}</div>
                     </div>
                     ${profile.avatarUrl ? `<img src="${esc(profile.avatarUrl)}" alt="รูปโปรไฟล์ ${esc(profile.fullName || '')}" style="width: 68px; height: 68px; border-radius: 12px; object-fit: cover; border: 2px solid var(--theme-primary); margin-left: 18px;">` : ''}
                     <div style="text-align: right; font-size: 11px; color: var(--theme-muted); line-height: 1.5;">
@@ -1151,7 +1177,8 @@
                     </div>
                 </div>
 
-                ${renderCareerObjective(payload, lang) || renderAboutMe(payload, lang)}
+                ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                 ${renderEducation(payload, lang)}
                 ${renderExperiences(payload, lang)}
                 ${renderSkills(payload, lang)}
@@ -1176,7 +1203,7 @@
         <div class="doc-page ats-document" style="padding: 36px 44px; font-family: 'Inter', 'Noto Sans Thai', sans-serif;">
             <div style="text-align: center; border-bottom: 1.5px solid #000000; padding-bottom: 14px; margin-bottom: 16px;">
                 <h1 style="font-size: 24px; font-weight: 700; color: #000000; margin: 0 0 4px 0; text-transform: uppercase;">${esc(profile.fullName)}</h1>
-                <div style="font-size: 13px; font-weight: 600; color: #333333;">${esc(profile.targetRole || profile.headline)}</div>
+                <div style="font-size: 13px; font-weight: 600; color: #333333;">${renderProfessionalRole(profile)}</div>
                 <div style="font-size: 11px; color: #444444; margin-top: 6px;">
                     ${profile.email ? `Email: ${esc(profile.email)} | ` : ''}
                     ${profile.phone ? `Phone: ${esc(profile.phone)} | ` : ''}
@@ -1184,7 +1211,8 @@
                 </div>
             </div>
 
-            ${renderCareerObjective(payload, lang) || renderAboutMe(payload, lang)}
+            ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
             ${renderExperiences(payload, lang)}
             ${renderEducation(payload, lang)}
             ${renderSkills(payload, lang)}
@@ -1218,7 +1246,7 @@
                     <!-- Column 1: Info & Skills -->
                     <div style="border-right: 1.5px solid var(--theme-border); padding-right: 20px;">
                         <h1 style="font-size: 22px; font-weight: 800; color: var(--theme-primary); margin: 0 0 4px 0;">${esc(profile.fullName)}</h1>
-                        <div style="font-size: 13px; font-weight: 600; color: var(--theme-secondary); margin-bottom: 14px;">${esc(profile.targetRole || profile.headline)}</div>
+                        <div style="font-size: 13px; font-weight: 600; color: var(--theme-secondary); margin-bottom: 14px;">${renderProfessionalRole(profile)}</div>
                         <div style="font-size: 11px; color: var(--theme-muted); margin-bottom: 20px; line-height: 1.6;">
                             ${profile.email ? `<div>✉ ${esc(profile.email)}</div>` : ''}
                             ${profile.phone ? `<div>✆ ${esc(profile.phone)}</div>` : ''}
@@ -1230,7 +1258,8 @@
 
                     <!-- Column 2: Work Experience -->
                     <div>
-                        ${renderCareerObjective(payload, lang) || renderAboutMe(payload, lang)}
+                        ${renderAboutMe(payload, lang)}
+                ${renderCareerObjective(payload, lang)}
                         ${renderExperiences(payload, lang)}
                     </div>
 
@@ -1258,6 +1287,12 @@
      * Master Render Function
      */
     function renderDocument(payload) {
+        payload = JSON.parse(JSON.stringify(payload));
+        const hidden = payload.settings?.hiddenSections || [];
+        if (hidden.includes('profile_photo')) payload.profile.avatarUrl = '';
+        if (hidden.includes('personal_info')) { payload.profile.fullName = ''; payload.profile.email = ''; payload.profile.phone = ''; }
+        if (hidden.includes('name_headline_role')) { payload.profile.headline = ''; payload.profile.targetRole = ''; }
+        if (hidden.includes('contact_links')) { payload.profile.websiteUrl = ''; payload.profile.customLinks = []; }
         const settings = payload.settings || {};
         const docType = settings.docType || 'portfolio';
         const template = settings.template || (docType === 'cv' ? 'cv-a4-standard' : 'maroon-editorial');

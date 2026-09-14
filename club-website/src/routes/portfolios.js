@@ -70,71 +70,7 @@ function parseJsonSafe(val, fallback) {
     }
 }
 
-function buildDocumentPayload(portfolio, user, overrides = {}) {
-    const docType = overrides.docType || overrides.type || 'portfolio';
-    const savedSettings = docType === 'cv' 
-        ? parseJsonSafe(portfolio.cv_settings, {})
-        : parseJsonSafe(portfolio.portfolio_settings, {});
-
-    const extraSections = parseJsonSafe(portfolio.extra_sections, {
-        internships: [],
-        awards: [],
-        activities: [],
-        languages: [],
-        publications: [],
-        volunteer: [],
-        references: [],
-        sectionStates: {}
-    });
-
-    const settings = {
-        docType: docType,
-        template: overrides.template || savedSettings.template || (docType === 'cv' ? 'cv-a4-standard' : 'maroon-editorial'),
-        pageSize: overrides.pageSize || savedSettings.pageSize || 'a4',
-        orientation: overrides.orientation || savedSettings.orientation || 'portrait',
-        theme: {
-            primary: overrides.theme?.primary || savedSettings.theme?.primary || '#012240',
-            secondary: overrides.theme?.secondary || savedSettings.theme?.secondary || '#AD0F0F',
-            bg: overrides.theme?.bg || savedSettings.theme?.bg || 'white',
-            textColor: overrides.theme?.textColor || savedSettings.theme?.textColor,
-            accentColor: overrides.theme?.accentColor || savedSettings.theme?.accentColor
-        },
-        branding: {
-            showSoeLogo: overrides.branding?.showSoeLogo ?? savedSettings.branding?.showSoeLogo ?? true,
-            showBimClubLogo: overrides.branding?.showBimClubLogo ?? savedSettings.branding?.showBimClubLogo ?? true,
-            soeLogoUrl: overrides.branding?.soeLogoUrl || savedSettings.branding?.soeLogoUrl || '',
-            bimClubLogoUrl: overrides.branding?.bimClubLogoUrl || savedSettings.branding?.bimClubLogoUrl || '',
-            footerStyle: overrides.branding?.footerStyle || savedSettings.branding?.footerStyle || 'footer-bar',
-            scope: overrides.branding?.scope || savedSettings.branding?.scope || 'all',
-            logoSize: overrides.branding?.logoSize || savedSettings.branding?.logoSize || 'medium',
-            institutionText: overrides.branding?.institutionText || savedSettings.branding?.institutionText || 'BimClub Official Accredited • Faculty of Engineering'
-        },
-        hiddenSections: overrides.hiddenSections || savedSettings.hiddenSections || [],
-        language: overrides.language || savedSettings.language || 'th'
-    };
-
-    return {
-        profile: {
-            fullName: user.full_name || user.fullName || 'สมาชิก BimClub',
-            headline: portfolio.headline || '',
-            targetRole: portfolio.target_role || '',
-            summary: portfolio.summary || '',
-            careerObjective: portfolio.career_objective || '',
-            avatarUrl: user.avatar_url || '',
-            email: user.email || '',
-            phone: user.phone || '',
-            websiteUrl: portfolio.website_url || '',
-            customLinks: extraSections.custom_contacts || []
-        },
-        skills: parseJsonSafe(portfolio.skills, []),
-        experiences: portfolio.experiences || [],
-        education: portfolio.education || [],
-        projects: [...(portfolio.projects || []), ...(portfolio.involved_projects || [])],
-        certificates: portfolio.certificates || { system: [], manual: [] },
-        extraSections: extraSections,
-        settings: settings
-    };
-}
+const { documentPayload: buildDocumentPayload } = require('../../public/js/portfolio-model');
 
 // GET /me
 router.get('/me', requireLogin, async (req, res) => {

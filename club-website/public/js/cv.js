@@ -191,32 +191,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Build Current CV Payload
     function buildCvPayload() {
-        const user = portfolioData.user_profile || currentUser || {};
         cvSettings.hiddenSections = collectHiddenSections();
         cvSettings.template = selectCvTemplate.value;
         cvSettings.language = cvLanguageSelect.value;
-
-        return {
-            profile: {
-                fullName: user.full_name || 'สมาชิก BimClub',
-                headline: portfolioData.headline || '',
-                targetRole: cvTargetRole.value.trim() || portfolioData.target_role || '',
-                summary: portfolioData.summary || '',
-                careerObjective: cvObjectiveText.value.trim() || portfolioData.career_objective || '',
-                avatarUrl: user.avatar_url || '',
-                email: user.email || '',
-                phone: user.phone || '',
-                websiteUrl: portfolioData.website_url || '',
-                customLinks: portfolioData.extra_sections?.custom_contacts || []
-            },
-            skills: portfolioData.skills || [],
-            experiences: portfolioData.experiences || [],
-            education: portfolioData.education || [],
-            projects: [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])],
-            certificates: portfolioData.certificates || { system: [], manual: [] },
-            extraSections: portfolioData.extra_sections || {},
-            settings: cvSettings
-        };
+        return PortfolioModel.documentPayload({ ...portfolioData, target_role: cvTargetRole.value, career_objective: cvObjectiveText.value }, portfolioData.user_profile || currentUser || {}, { ...cvSettings, docType: 'cv' });
     }
 
     // Update Live Preview

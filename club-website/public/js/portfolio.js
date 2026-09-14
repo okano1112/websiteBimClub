@@ -118,7 +118,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await fetch('/api/portfolios/me');
             if (res.ok) {
                 const data = await res.json();
-                portfolioData = data.portfolio || data;
+                portfolioData = PortfolioModel.clone(data.portfolio || data);
+                portfolioData.user_profile ||= {...currentUser};
+                savedPortfolio = PortfolioModel.clone(portfolioData);
 
                 // Sync settings
                 if (portfolioData.portfolio_settings && Object.keys(portfolioData.portfolio_settings).length > 0) {
@@ -242,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
 
             li.querySelector('.nav-item-left').addEventListener('click', () => {
+                syncFormDraftToState();
                 activeSectionIndex = idx;
                 renderSectionNav();
                 renderActiveSectionForm();
@@ -271,10 +274,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentSettings.hiddenSections.push(secId);
             showToast(`ซ่อนหมวด "${SECTIONS.find(s=>s.id===secId)?.name}" ออกจากเอกสารแล้ว`);
         }
+        syncFormDraftToState();
         renderSectionNav();
         renderActiveSectionForm();
         updateLivePreview();
-        await savePortfolioSettings();
+        markDirty();
     }
 
     // Render Active Section Form
@@ -311,7 +315,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="form-group">
                             <label>อีเมล (Email)</label>
-                            <input type="text" id="inpEmail" value="${escapeHtml(user.email || '')}" placeholder="เช่น somchai@example.com">
+                            <input type="text" id="inpEmail" readonly aria-label="อีเมลบัญชี (แก้ไขจากระบบบัญชี)" value="${escapeHtml(user.email || '')}" placeholder="เช่น somchai@example.com">
                         </div>
                     </div>
                     <div class="form-row">
@@ -876,451 +880,119 @@ document.addEventListener('DOMContentLoaded', async () => {
         attachFormEventListeners(sec.id);
     }
 
-    // Attach event listeners for dynamic form actions
-    function attachFormEventListeners(secId) {
-        // Avatar upload
-        const inpAvatar = document.getElementById('inpAvatarFile');
-        if (inpAvatar) {
-            inpAvatar.addEventListener('change', async (e) => {
-                if (e.target.files.length > 0) {
-                    const fd = new FormData();
-                    fd.append('images', e.target.files[0]);
-                    try {
-                        showToast('กำลังอัปโหลดรูปโปรไฟล์...');
-                        const upRes = await fetch('/api/upload', { method: 'POST', body: fd });
-                        const upData = await upRes.json();
-                        if (upData.success && upData.urls && upData.urls.length > 0) {
-                            if (!portfolioData.user_profile) portfolioData.user_profile = {};
-                            portfolioData.user_profile.avatar_url = upData.urls[0];
-                            showToast('อัปโหลดรูปโปรไฟล์สำเร็จ');
-                            renderActiveSectionForm();
-                            updateLivePreview();
-                        }
-                    } catch (err) {
-                        alert('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ');
-                    }
-                }
-            });
+    const pendingRows = {};
+    let pendingSkill = '', temporaryId = -1, savedPortfolio = {}, saving = false, dirty = false, uploadCount = 0;
+    const collectionKey = () => SECTIONS[activeSectionIndex].id === 'contact_links' ? 'custom_contacts' : SECTIONS[activeSectionIndex].id;
+    function markDirty() { dirty = true; autoSaveIndicator.textContent = 'ฉบับร่าง — ยังไม่ได้บันทึก'; }
+    function syncFormDraftToState() {
+        PortfolioModel.syncFormDraftToState(portfolioData, activeFormContainer);
+        const key = collectionKey(), config = PortfolioModel.collections[key];
+        if (config) {
+            const row = { ...pendingRows[key] };
+            for (const [field,id] of Object.entries(config.fields)) { const input = document.getElementById(id); if (input) row[field] = input.type === 'checkbox' ? input.checked : input.value; }
+            if (row.image_url || Object.entries(config.fields).some(([field,id]) => { const input = document.getElementById(id); return input && input.type !== 'checkbox' && String(row[field] || '').trim() && (input.tagName !== 'SELECT' || input.value !== input.options[0]?.value); })) pendingRows[key] = row;
+            else delete pendingRows[key];
         }
-
-        // Skills presets & add
-        const btnAddSkill = document.getElementById('btnAddSkillBtn');
-        const inpNewSkill = document.getElementById('inpNewSkill');
-        if (btnAddSkill && inpNewSkill) {
-            const addSkillFn = async () => {
-                const val = inpNewSkill.value.trim();
-                if (val) {
-                    if (!portfolioData.skills) portfolioData.skills = [];
-                    if (!portfolioData.skills.includes(val)) {
-                        portfolioData.skills.push(val);
-                        inpNewSkill.value = '';
-                        await saveCurrentSectionData(false);
-                        renderActiveSectionForm();
-                        updateLivePreview();
-                        showToast(`เพิ่มทักษะ "${val}" แล้ว`);
-                    }
-                }
-            };
-            btnAddSkill.addEventListener('click', addSkillFn);
-            inpNewSkill.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); addSkillFn(); }
-            });
-        }
-
-        document.querySelectorAll('.btn-remove-skill').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
-                if (portfolioData.skills && portfolioData.skills[idx]) {
-                    portfolioData.skills.splice(idx, 1);
-                    await saveCurrentSectionData(false);
-                    renderActiveSectionForm();
-                    updateLivePreview();
-                }
-            });
-        });
-
-        document.querySelectorAll('.preset-chip').forEach(chip => {
-            chip.addEventListener('click', async () => {
-                const skill = chip.getAttribute('data-skill');
-                if (skill) {
-                    if (!portfolioData.skills) portfolioData.skills = [];
-                    if (!portfolioData.skills.includes(skill)) {
-                        portfolioData.skills.push(skill);
-                        await saveCurrentSectionData(false);
-                        renderActiveSectionForm();
-                        updateLivePreview();
-                        showToast(`เพิ่มทักษะ "${skill}" แล้ว`);
-                    }
-                }
-            });
-        });
-
-        // Add Experience Submit
-        const btnAddExp = document.getElementById('btnAddExpSubmit');
-        if (btnAddExp) {
-            btnAddExp.addEventListener('click', async () => {
-                const company = document.getElementById('inpExpCompany').value.trim();
-                const position = document.getElementById('inpExpPosition').value.trim();
-                const startDate = document.getElementById('inpExpStart').value;
-                const endDate = document.getElementById('inpExpEnd').value || null;
-                const description = document.getElementById('inpExpDesc').value.trim();
-
-                if (!company || !position) {
-                    alert('กรุณากรอกชื่อบริษัทและตำแหน่ง');
-                    return;
-                }
-
-                const res = await fetch('/api/portfolios/me/experiences', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ company, position, startDate, endDate, description })
-                });
-
-                if (res.ok) {
-                    showToast('เพิ่มประวัติการทำงานสำเร็จ');
-                    await loadPortfolioData();
-                }
-            });
-        }
-
-        // Add Project Submit
-        const btnAddProj = document.getElementById('btnAddProjSubmit');
-        if (btnAddProj) {
-            btnAddProj.addEventListener('click', async () => {
-                const title = document.getElementById('inpProjTitle').value.trim();
-                const projectUrl = document.getElementById('inpProjUrl').value.trim();
-                const description = document.getElementById('inpProjDesc').value.trim();
-                const fileInput = document.getElementById('inpProjImage');
-
-                if (!title) {
-                    alert('กรุณาระบุชื่อผลงาน/โครงการ');
-                    return;
-                }
-
-                let imageUrl = '';
-                if (fileInput && fileInput.files.length > 0) {
-                    try {
-                        showToast('กำลังอัปโหลดรูปภาพผลงาน...');
-                        const fd = new FormData();
-                        fd.append('images', fileInput.files[0]);
-                        const upRes = await fetch('/api/upload', { method: 'POST', body: fd });
-                        const upData = await upRes.json();
-                        if (upData.success && upData.urls && upData.urls.length > 0) {
-                            imageUrl = upData.urls[0];
-                        } else { throw new Error(upData.message || 'อัปโหลดรูปไม่สำเร็จ'); }
-                    } catch (error) { showToast(error.message); return; }
-                }
-
-                const res = await fetch('/api/portfolios/me/projects', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, projectUrl, description, imageUrl, is_public: document.getElementById('inpProjPublic').checked })
-                });
-
-                if (res.ok) {
-                    showToast('เพิ่มผลงานโครงการเรียบร้อย');
-                    await loadPortfolioData();
-                } else { const data = await res.json(); showToast(data.message || 'บันทึกผลงานไม่สำเร็จ'); }
-            });
-        }
-
-        document.querySelectorAll('.btn-project-visibility').forEach(button => button.addEventListener('click', async () => {
-            button.disabled = true;
-            try {
-                const response = await fetch(`/api/projects/${button.dataset.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_public: Number(button.dataset.public) !== 1 }) });
-                const data = await response.json(); if (!response.ok) throw new Error(data.message);
-                await loadPortfolioData(); showToast('บันทึกการเผยแพร่แล้ว');
-            } catch (error) { showToast(error.message); } finally { button.disabled = false; }
-        }));
-
-        // Add Education Submit
-        const btnAddEdu = document.getElementById('btnAddEduSubmit');
-        if (btnAddEdu) {
-            btnAddEdu.addEventListener('click', async () => {
-                const institution = document.getElementById('inpEduInstitution').value.trim();
-                const degree = document.getElementById('inpEduDegree').value.trim();
-                const fieldOfStudy = document.getElementById('inpEduField').value.trim();
-                const endYear = document.getElementById('inpEduYear').value.trim();
-
-                if (!institution) {
-                    alert('กรุณาระบุชื่อสถาบันการศึกษา');
-                    return;
-                }
-
-                const res = await fetch('/api/portfolios/me/education', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ institution, degree, fieldOfStudy, endYear })
-                });
-
-                if (res.ok) {
-                    showToast('เพิ่มประวัติการศึกษาเรียบร้อย');
-                    await loadPortfolioData();
-                }
-            });
-        }
-
-        // Add Certificate Submit
-        const btnAddCert = document.getElementById('btnAddCertSubmit');
-        if (btnAddCert) {
-            btnAddCert.addEventListener('click', async () => {
-                const title = document.getElementById('inpCertTitle').value.trim();
-                const issuer = document.getElementById('inpCertIssuer').value.trim();
-                const issueDate = document.getElementById('inpCertDate').value;
-                const credentialUrl = document.getElementById('inpCertUrl').value.trim();
-
-                if (!title || !issuer) {
-                    alert('กรุณาระบุชื่อใบรับรองและผู้ออกให้');
-                    return;
-                }
-
-                const res = await fetch('/api/portfolios/me/certificates', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, issuer, issueDate, credentialUrl })
-                });
-
-                if (res.ok) {
-                    showToast('เพิ่มใบรับรองเรียบร้อย');
-                    await loadPortfolioData();
-                }
-            });
-        }
-
-        // Add Extra Sections Handlers (Internship, Award, Activity, Language, Publication, Volunteer, Reference, Custom Contact)
-        const initExtraAdd = (btnId, key, objFn, successMsg) => {
-            const btn = document.getElementById(btnId);
-            if (btn) {
-                btn.addEventListener('click', async () => {
-                    const item = objFn();
-                    if (!item) return;
-                    if (!portfolioData.extra_sections) portfolioData.extra_sections = {};
-                    if (!portfolioData.extra_sections[key]) portfolioData.extra_sections[key] = [];
-                    portfolioData.extra_sections[key].push(item);
-                    await saveCurrentSectionData(false);
-                    renderActiveSectionForm();
-                    updateLivePreview();
-                    showToast(successMsg);
-                });
-            }
-        };
-
-        initExtraAdd('btnAddInternSubmit', 'internships', () => {
-            const company = document.getElementById('inpInternCompany').value.trim();
-            const role = document.getElementById('inpInternRole').value.trim();
-            const period = document.getElementById('inpInternPeriod').value.trim();
-            const description = document.getElementById('inpInternDesc').value.trim();
-            if (!company || !role) { alert('กรุณากรอกชื่อบริษัทและบทบาท'); return null; }
-            return { company, role, period, description };
-        }, 'เพิ่มการฝึกงานเรียบร้อย');
-
-        initExtraAdd('btnAddAwardSubmit', 'awards', () => {
-            const title = document.getElementById('inpAwardTitle').value.trim();
-            const issuer = document.getElementById('inpAwardIssuer').value.trim();
-            const year = document.getElementById('inpAwardYear').value.trim();
-            const description = document.getElementById('inpAwardDesc').value.trim();
-            if (!title) { alert('กรุณากรอกชื่อรางวัล'); return null; }
-            return { title, issuer, year, description };
-        }, 'เพิ่มรางวัลเรียบร้อย');
-
-        initExtraAdd('btnAddActSubmit', 'activities', () => {
-            const title = document.getElementById('inpActTitle').value.trim();
-            const role = document.getElementById('inpActRole').value.trim();
-            const year = document.getElementById('inpActYear').value.trim();
-            if (!title) { alert('กรุณากรอกชื่อกิจกรรม'); return null; }
-            return { title, role, year };
-        }, 'เพิ่มกิจกรรมเรียบร้อย');
-
-        initExtraAdd('btnAddLangSubmit', 'languages', () => {
-            const language = document.getElementById('inpLangName').value.trim();
-            const level = document.getElementById('inpLangLevel').value;
-            if (!language) { alert('กรุณากรอกภาษา'); return null; }
-            return { language, level };
-        }, 'เพิ่มภาษาเรียบร้อย');
-
-        initExtraAdd('btnAddPubSubmit', 'publications', () => {
-            const title = document.getElementById('inpPubTitle').value.trim();
-            const publisher = document.getElementById('inpPubPublisher').value.trim();
-            const year = document.getElementById('inpPubYear').value.trim();
-            if (!title) { alert('กรุณาระบุชื่องานตีพิมพ์'); return null; }
-            return { title, publisher, year };
-        }, 'เพิ่มงานตีพิมพ์เรียบร้อย');
-
-        initExtraAdd('btnAddVolSubmit', 'volunteer', () => {
-            const role = document.getElementById('inpVolRole').value.trim();
-            const organization = document.getElementById('inpVolOrg').value.trim();
-            if (!role) { alert('กรุณาระบุบทบาทจิตอาสา'); return null; }
-            return { role, organization };
-        }, 'เพิ่มงานจิตอาสาเรียบร้อย');
-
-        initExtraAdd('btnAddRefSubmit', 'references', () => {
-            const name = document.getElementById('inpRefName').value.trim();
-            const title = document.getElementById('inpRefTitle').value.trim();
-            const organization = document.getElementById('inpRefOrg').value.trim();
-            const contact = document.getElementById('inpRefContact').value.trim();
-            if (!name) { alert('กรุณาระบุชื่อบุคคลอ้างอิง'); return null; }
-            return { name, title, organization, contact };
-        }, 'เพิ่มบุคคลอ้างอิงเรียบร้อย');
-
-        initExtraAdd('btnAddLinkSubmit', 'custom_contacts', () => {
-            const label = document.getElementById('inpLinkTitle').value.trim();
-            const url = document.getElementById('inpLinkUrl').value.trim();
-            if (!label || !url) { alert('กรุณาระบุชื่อและลิงก์'); return null; }
-            return { label, url };
-        }, 'เพิ่มช่องทางติดต่อเรียบร้อย');
-
-        // Delete buttons
-        document.querySelectorAll('.btn-item-delete').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const type = e.currentTarget.getAttribute('data-type');
-                const id = e.currentTarget.getAttribute('data-id');
-                const idx = e.currentTarget.getAttribute('data-idx');
-
-                if (!confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
-
-                if (type === 'exp') {
-                    await fetch(`/api/portfolios/me/experiences/${id}`, { method: 'DELETE' });
-                    await loadPortfolioData();
-                } else if (type === 'edu') {
-                    await fetch(`/api/portfolios/me/education/${id}`, { method: 'DELETE' });
-                    await loadPortfolioData();
-                } else if (type === 'project') {
-                    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-                    await loadPortfolioData();
-                } else if (type === 'cert') {
-                    await fetch(`/api/portfolios/me/certificates/${id}`, { method: 'DELETE' });
-                    await loadPortfolioData();
-                } else {
-                    // Extra sections in memory
-                    const keyMap = {
-                        internship: 'internships',
-                        award: 'awards',
-                        activity: 'activities',
-                        language: 'languages',
-                        publication: 'publications',
-                        volunteer: 'volunteer',
-                        reference: 'references',
-                        custom_contact: 'custom_contacts'
-                    };
-                    const extraKey = keyMap[type];
-                    if (extraKey && portfolioData.extra_sections && portfolioData.extra_sections[extraKey]) {
-                        portfolioData.extra_sections[extraKey].splice(parseInt(idx, 10), 1);
-                        await saveCurrentSectionData(false);
-                        renderActiveSectionForm();
-                        updateLivePreview();
-                        showToast('ลบรายการเรียบร้อย');
-                    }
-                }
-            });
-        });
-
-        // Trigger auto live preview update on input
-        activeFormContainer.querySelectorAll('input, textarea, select').forEach(inp => {
-            inp.addEventListener('input', () => {
-                queueLivePreviewUpdate();
-            });
-        });
+        const skill = document.getElementById('inpNewSkill'); if (skill) pendingSkill = skill.value;
     }
-
-    // Save Section Data to Server
+    function appendPending(key) {
+        const row = pendingRows[key], config = PortfolioModel.collections[key];
+        if (!row) return;
+        if (config.required.some(field => !String(row[field] || '').trim())) throw new Error('กรุณากรอกข้อมูลรายการใหม่ให้ครบ: ' + key);
+        PortfolioModel.list(portfolioData,key).push(config.extra ? {...row} : {...row,id:temporaryId--,can_edit:1});
+        delete pendingRows[key];
+    }
+    async function api(url, method, body) {
+        const response = await fetch(url, {method, headers:{'Content-Type':'application/json'}, ...(body !== undefined ? {body:JSON.stringify(body)} : {})});
+        const data = await response.json(); if (!response.ok || !data.success) throw new Error(data.message || 'บันทึกไม่สำเร็จ'); return data;
+    }
+    async function uploadDraftImage(input, receive) {
+        if (!input.files?.length) return;
+        const form = new FormData(); form.append('images',input.files[0]);uploadCount++;
+        try { const response = await fetch('/api/upload',{method:'POST',body:form}); const result = await response.json(); if (!response.ok || !result.urls?.[0]) throw new Error(result.message || 'อัปโหลดไม่สำเร็จ'); receive(result.urls[0]); markDirty(); updateLivePreview(); }
+        catch(error) { showToast(error.message); } finally { uploadCount--; input.value = ''; }
+    }
+    function attachFormEventListeners() {
+        const key = collectionKey(), config = PortfolioModel.collections[key];
+        if (config && pendingRows[key]) for (const [field,id] of Object.entries(config.fields)) { const input = document.getElementById(id); if (input) { if (input.type === 'checkbox') input.checked = !!pendingRows[key][field]; else input.value = pendingRows[key][field] || ''; } }
+        const avatar = document.getElementById('inpAvatarFile');
+        avatar?.addEventListener('change',()=>uploadDraftImage(avatar,url=>{portfolioData.user_profile.avatar_url=url; renderActiveSectionForm();}));
+        const projectImage = document.getElementById('inpProjImage');
+        projectImage?.addEventListener('change',()=>uploadDraftImage(projectImage,url=>{syncFormDraftToState(); (pendingRows.projects ||= {}).image_url=url;}));
+        const skillInput = document.getElementById('inpNewSkill'); if (skillInput) skillInput.value = pendingSkill;
+        function addSkill(value) { if (value.trim() && !(portfolioData.skills ||= []).includes(value.trim())) portfolioData.skills.push(value.trim()); pendingSkill=''; markDirty(); renderActiveSectionForm(); updateLivePreview(); }
+        document.getElementById('btnAddSkillBtn')?.addEventListener('click',()=>addSkill(skillInput.value));
+        skillInput?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();addSkill(skillInput.value);}});
+        document.querySelectorAll('.preset-chip').forEach(button=>button.addEventListener('click',()=>addSkill(button.dataset.skill)));
+        document.querySelectorAll('.btn-remove-skill').forEach(button=>button.addEventListener('click',()=>{portfolioData.skills.splice(Number(button.dataset.idx),1);markDirty();renderActiveSectionForm();updateLivePreview();}));
+        if (config) { const add = document.getElementById(config.button); if (add) { add.textContent = '+ เพิ่มรายการในฉบับร่าง'; add.addEventListener('click',()=>{try{syncFormDraftToState();appendPending(key);markDirty();renderActiveSectionForm();updateLivePreview();}catch(error){showToast(error.message);}}); } }
+        document.querySelectorAll('.btn-project-visibility').forEach(button=>button.addEventListener('click',()=>{const row = portfolioData.projects.find(item=>Number(item.canonical_project_id || item.id)===Number(button.dataset.id));if(row){row.is_public=!row.is_public;markDirty();renderActiveSectionForm();updateLivePreview();}}));
+        const types = {exp:'experiences',edu:'education',project:'projects',cert:'certificates',internship:'internships',award:'awards',activity:'activities',language:'languages',publication:'publications',volunteer:'volunteer',reference:'references',custom_contact:'custom_contacts'};
+        document.querySelectorAll('.btn-item-delete').forEach(button=>button.addEventListener('click',()=>{const type=types[button.dataset.type];if(!type)return;const rows=PortfolioModel.list(portfolioData,type);const index=button.dataset.idx !== undefined ? Number(button.dataset.idx) : rows.findIndex(row=>Number(type==='projects' ? row.canonical_project_id || row.id : row.id)===Number(button.dataset.id));if(index>=0){rows.splice(index,1);markDirty();renderActiveSectionForm();updateLivePreview();}}));
+        activeFormContainer.querySelectorAll('input,textarea,select').forEach(input=>{if(input.type==='file')return; for(const event of ['input','change']) input.addEventListener(event,()=>{syncFormDraftToState();markDirty();queueLivePreviewUpdate();});});
+    }
+    // Explicit save reuses the existing user/profile and collection APIs. Retry keeps IDs already created.
     async function saveCurrentSectionData(showNotification = true) {
-        const sec = SECTIONS[activeSectionIndex];
-        if (!sec) return;
-
-        // Gather current form values if present
-        const inpFullName = document.getElementById('inpFullName');
-        const inpTargetRole = document.getElementById('inpTargetRole');
-        const inpHeadline = document.getElementById('inpHeadline');
-        const inpSummary = document.getElementById('inpSummary');
-        const inpCareerObj = document.getElementById('inpCareerObjective');
-        const inpWebsite = document.getElementById('inpWebsiteUrl') || document.getElementById('inpWebsiteLink');
-
-        if (inpTargetRole) portfolioData.target_role = inpTargetRole.value.trim();
-        if (inpHeadline) portfolioData.headline = inpHeadline.value.trim();
-        if (inpSummary) portfolioData.summary = inpSummary.value.trim();
-        if (inpCareerObj) portfolioData.career_objective = inpCareerObj.value.trim();
-        if (inpWebsite) portfolioData.website_url = inpWebsite.value.trim();
-
-        const payload = {
-            headline: portfolioData.headline,
-            targetRole: portfolioData.target_role,
-            summary: portfolioData.summary,
-            careerObjective: portfolioData.career_objective,
-            skills: portfolioData.skills || [],
-            websiteUrl: portfolioData.website_url,
-            isPublic: isPublicCheckbox.checked,
-            extraSections: portfolioData.extra_sections || {},
-            portfolioSettings: currentSettings
-        };
-
+        if(saving)return false;
+        if(uploadCount){showToast('กรุณารออัปโหลดรูปภาพให้เสร็จก่อนบันทึก');return false;}
+        saving=true; document.getElementById('btnSaveCurrentSection').disabled=true;
+        const locked = [activeFormContainer, sectionNavList, settingsModal, isPublicCheckbox];
+        locked.forEach(element => element.inert = true);
         try {
-            autoSaveIndicator.textContent = 'กำลังบันทึก...';
-            const res = await fetch('/api/portfolios/me', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                autoSaveIndicator.textContent = '✓ บันทึกเรียบร้อย';
-                setTimeout(() => { autoSaveIndicator.textContent = ''; }, 3000);
-                if (showNotification) showToast('บันทึกข้อมูลเรียบร้อยแล้ว');
-                renderSectionNav();
+            syncFormDraftToState();
+            for(const key of Object.keys(pendingRows)) appendPending(key);
+            if(pendingSkill.trim() && !portfolioData.skills.includes(pendingSkill.trim())) portfolioData.skills.push(pendingSkill.trim()); pendingSkill='';
+            renderActiveSectionForm(); // Clear committed row inputs so a failed request can be retried without duplicate rows.
+            autoSaveIndicator.textContent='กำลังบันทึก...';
+            const user=portfolioData.user_profile;
+            if (!user.full_name?.trim()) throw new Error('กรุณากรอกชื่อ-นามสกุล');
+            const result=await api('/api/auth/profile','PUT',{fullName:user.full_name.trim(),phone:user.phone || '',avatarUrl:user.avatar_url || '',age:currentUser.age ?? ''});
+            currentUser=result.user; portfolioData.user_profile={...user,...result.user};
+            for(const [key,config] of Object.entries(PortfolioModel.collections)) {
+                if(config.extra)continue;
+                const rows=PortfolioModel.list(portfolioData,key), previous=PortfolioModel.list(savedPortfolio,key);
+                for(let index=0;index<rows.length;index++) {
+                    const row=rows[index];
+                    if(row.id < 0) {
+                        const created=await api(`/api/portfolios/me/${config.path}`,'POST',{...row,startDate:row.start_date ? row.start_date + (row.start_date.length === 7 ? '-01' : '') : null,endDate:row.end_date ? row.end_date + (row.end_date.length === 7 ? '-01' : '') : null,fieldOfStudy:row.field_of_study,endYear:row.end_year,issueDate:row.issue_date,credentialUrl:row.credential_url});
+                        rows[index]={...row,...created[config.response],can_edit:1}; previous.push(PortfolioModel.clone(rows[index]));
+                    } else if(key==='projects') {
+                        const old=previous.find(item=>item.id===row.id);
+                        if(old && !!old.is_public !== !!row.is_public){await api(`/api/projects/${row.canonical_project_id || row.id}`,'PUT',{is_public:!!row.is_public});old.is_public=row.is_public;}
+                    }
+                }
+                for(const old of [...previous]) if(!rows.some(row=>row.id===old.id)) {
+                    await api(key==='projects' ? `/api/projects/${old.canonical_project_id || old.id}` : `/api/portfolios/me/${config.path}/${old.id}`,'DELETE');previous.splice(previous.findIndex(row=>row.id===old.id),1);
+                }
             }
-        } catch (err) {
-            console.error(err);
-            autoSaveIndicator.textContent = '⚠️ บันทึกไม่สำเร็จ';
-        }
+            await api('/api/portfolios/me','PUT',PortfolioModel.saveFields(portfolioData,currentSettings));
+            savedPortfolio=PortfolioModel.clone(portfolioData); dirty=false;
+            autoSaveIndicator.textContent='บันทึกครบแล้ว';
+            renderSectionNav();renderActiveSectionForm();updateLivePreview();
+            if(showNotification)showToast('บันทึกข้อมูลครบแล้ว');return true;
+        } catch(error) { autoSaveIndicator.textContent='บันทึกไม่ครบ — ฉบับร่างยังอยู่ กรุณาลองใหม่';showToast(error.message);return false; }
+        finally {saving=false;locked.forEach(element => element.inert = false);document.getElementById('btnSaveCurrentSection').disabled=false;}
     }
-
-    // Save portfolio settings specifically
-    async function savePortfolioSettings() {
-        try {
-            await fetch('/api/portfolios/me', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ portfolioSettings: currentSettings })
-            });
-        } catch (e) {}
-    }
-
-    // Build Payload for Client-side Template Rendering
+    async function savePortfolioSettings() { return saveCurrentSectionData(); }
     function buildCurrentPayload() {
-        const user = portfolioData.user_profile || currentUser || {};
-        return {
-            profile: {
-                fullName: user.full_name || 'สมาชิก BimClub',
-                headline: portfolioData.headline || '',
-                targetRole: portfolioData.target_role || '',
-                summary: portfolioData.summary || '',
-                careerObjective: portfolioData.career_objective || '',
-                avatarUrl: user.avatar_url || '',
-                email: user.email || '',
-                phone: user.phone || '',
-                websiteUrl: portfolioData.website_url || '',
-                customLinks: portfolioData.extra_sections?.custom_contacts || []
-            },
-            skills: portfolioData.skills || [],
-            experiences: portfolioData.experiences || [],
-            education: portfolioData.education || [],
-            projects: [...(portfolioData.projects || []), ...(portfolioData.involved_projects || [])],
-            certificates: portfolioData.certificates || { system: [], manual: [] },
-            extraSections: portfolioData.extra_sections || {},
-            settings: currentSettings
-        };
+        const draft=PortfolioModel.clone(portfolioData);
+        for(const [key,row] of Object.entries(pendingRows)) PortfolioModel.list(draft,key).push({...row,id:undefined});
+        if(pendingSkill.trim() && !draft.skills.includes(pendingSkill.trim())) draft.skills.push(pendingSkill.trim());
+        return PortfolioModel.documentPayload(draft,currentUser,currentSettings);
     }
 
     // Debounced Live Preview Update
     function queueLivePreviewUpdate() {
         clearTimeout(previewDebounceTimer);
         previewDebounceTimer = setTimeout(() => {
-            updateLivePreview();
-        }, 350);
+            syncFormDraftToState(); updateLivePreview();
+        }, 200);
     }
 
     // Update Live Preview Iframe
     function updateLivePreview() {
         if (!docPreviewIframe) return;
+        syncFormDraftToState();
         const payload = buildCurrentPayload();
         const html = PortfolioTemplates.renderDocument(payload);
         docPreviewIframe.srcdoc = html;
@@ -1332,22 +1004,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnDownloadPdf.disabled = true;
             btnDownloadPdf.innerHTML = '<span>⏳</span> <span>กำลังสร้าง PDF...</span>';
 
-            const payload = {
-                type: 'portfolio',
-                template: currentSettings.template,
-                pageSize: currentSettings.pageSize,
-                orientation: currentSettings.orientation,
-                theme: currentSettings.theme,
-                branding: currentSettings.branding,
-                language: currentSettings.language,
-                hiddenSections: currentSettings.hiddenSections
-            };
-
-            const res = await fetch('/api/portfolios/me/export/pdf', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            if (!await saveCurrentSectionData(false)) throw new Error('กรุณาบันทึกข้อมูลให้ครบก่อนดาวน์โหลด');
+            const res = await fetch('/api/portfolios/me/export/pdf?type=portfolio');
 
             if (!res.ok) {
                 throw new Error('Server error');
@@ -1371,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF กรุณาลองใหม่อีกครั้ง');
         } finally {
             btnDownloadPdf.disabled = false;
-            btnDownloadPdf.innerHTML = '<span>ดาวน์โหลด PDF</span>';
+            btnDownloadPdf.innerHTML = '<span>บันทึกและดาวน์โหลด PDF</span>';
         }
     }
 
@@ -1390,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkShowSoeLogo.checked = branding.showSoeLogo !== false;
         checkShowBimLogo.checked = branding.showBimClubLogo !== false;
         selectFooterStyle.value = branding.footerStyle || 'footer-bar';
-        inputInstitutionText.value = branding.institutionText || 'BimClub Official Accredited • Faculty of Engineering';
+        inputInstitutionText.value = branding.institutionText ?? 'BimClub Official Accredited • Faculty of Engineering';
         selectLogoSize.value = branding.logoSize || 'medium';
         selectBrandingScope.value = branding.scope || 'all';
         soeLogoStatus.textContent = branding.soeLogoUrl ? 'ใช้โลโก้ที่อัปโหลดไว้แล้ว' : 'ใช้โลโก้เริ่มต้นของระบบ';
@@ -1444,8 +1102,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Section Prev / Next
     document.getElementById('btnPrevSection').addEventListener('click', async () => {
-        if (activeSectionIndex > 0) {
-            await saveCurrentSectionData(false);
+        if (!saving && activeSectionIndex > 0) {
+            syncFormDraftToState();
             activeSectionIndex--;
             renderSectionNav();
             renderActiveSectionForm();
@@ -1453,8 +1111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('btnNextSection').addEventListener('click', async () => {
-        if (activeSectionIndex < SECTIONS.length - 1) {
-            await saveCurrentSectionData(false);
+        if (!saving && activeSectionIndex < SECTIONS.length - 1) {
+            syncFormDraftToState();
             activeSectionIndex++;
             renderSectionNav();
             renderActiveSectionForm();
@@ -1464,11 +1122,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Public toggle
     isPublicCheckbox.addEventListener('change', async () => {
         const isPub = isPublicCheckbox.checked;
+        portfolioData.is_public = isPub; markDirty();
         updatePublicBadge(isPub);
-        await saveCurrentSectionData(false);
-        showToast(isPub ? 'เปิดเผยแพร่พอร์ตโฟลิโอเป็นสาธารณะแล้ว' : 'ซ่อนพอร์ตโฟลิโอเป็นส่วนตัวแล้ว');
+        showToast(isPub ? 'จะเปิดเผยแพร่เมื่อกดบันทึก' : 'จะซ่อนเมื่อกดบันทึก');
     });
 
+    function syncSettingsDraftToState() {
+        currentSettings.pageSize = selectPageSize.value;
+        currentSettings.orientation = selectOrientation.value;
+        currentSettings.language = selectLanguage.value;
+        Object.assign(currentSettings.theme, {primary:colorPickerPrimary.value, secondary:colorPickerSecondary.value, bg:selectBgTheme.value, textColor:PortfolioTemplates.BG_THEMES[selectBgTheme.value].text, accentColor:colorPickerSecondary.value});
+        Object.assign(currentSettings.branding, {showSoeLogo:checkShowSoeLogo.checked, showBimClubLogo:checkShowBimLogo.checked, footerStyle:selectFooterStyle.value, institutionText:inputInstitutionText.value, logoSize:selectLogoSize.value, scope:selectBrandingScope.value});
+    }
+    for (const event of ['input','change']) settingsModal.addEventListener(event, () => {syncSettingsDraftToState();markDirty();checkContrast();queueLivePreviewUpdate();});
     // Settings Modal
     btnOpenSettings.addEventListener('click', () => {
         syncSettingsUiFromState();
@@ -1484,66 +1150,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.addEventListener('click', () => {
             document.querySelectorAll('#portfolioTemplateGrid .template-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            currentSettings.template = card.getAttribute('data-template');
+            currentSettings.template = card.getAttribute('data-template'); markDirty();
             updateLivePreview();
         });
     });
 
-    // Color Pickers & Swap
-    colorPickerPrimary.addEventListener('input', () => {
-        currentSettings.theme.primary = colorPickerPrimary.value;
-        checkContrast();
-        queueLivePreviewUpdate();
-    });
-    colorPickerSecondary.addEventListener('input', () => {
-        currentSettings.theme.secondary = colorPickerSecondary.value;
-        queueLivePreviewUpdate();
-    });
+    // Swap changes the same local settings draft as the individual controls.
     btnSwapColors.addEventListener('click', () => {
-        const temp = colorPickerPrimary.value;
+        const primary = colorPickerPrimary.value;
         colorPickerPrimary.value = colorPickerSecondary.value;
-        colorPickerSecondary.value = temp;
-        currentSettings.theme.primary = colorPickerPrimary.value;
-        currentSettings.theme.secondary = colorPickerSecondary.value;
-        checkContrast();
-        updateLivePreview();
-    });
-    selectBgTheme.addEventListener('change', () => {
-        currentSettings.theme.bg = selectBgTheme.value;
-        checkContrast();
-        updateLivePreview();
-    });
-
-    // Page size & orientation & language
-    selectPageSize.addEventListener('change', () => {
-        currentSettings.pageSize = selectPageSize.value;
-        updateLivePreview();
-    });
-    selectOrientation.addEventListener('change', () => {
-        currentSettings.orientation = selectOrientation.value;
-        updateLivePreview();
-    });
-    selectLanguage.addEventListener('change', () => {
-        currentSettings.language = selectLanguage.value;
-        updateLivePreview();
+        colorPickerSecondary.value = primary;
+        syncSettingsDraftToState();markDirty();checkContrast();updateLivePreview();
     });
 
     // Apply Settings
     btnApplySettings.addEventListener('click', async () => {
-        currentSettings.pageSize = selectPageSize.value;
-        currentSettings.orientation = selectOrientation.value;
-        currentSettings.language = selectLanguage.value;
-        currentSettings.theme.primary = colorPickerPrimary.value;
-        currentSettings.theme.secondary = colorPickerSecondary.value;
-        currentSettings.theme.bg = selectBgTheme.value;
-        currentSettings.branding.showSoeLogo = checkShowSoeLogo.checked;
-        currentSettings.branding.showBimClubLogo = checkShowBimLogo.checked;
-        currentSettings.branding.footerStyle = selectFooterStyle.value;
-        currentSettings.branding.institutionText = inputInstitutionText.value.trim();
-        currentSettings.branding.logoSize = selectLogoSize.value;
-        currentSettings.branding.scope = selectBrandingScope.value;
-
-        await savePortfolioSettings();
+        syncSettingsDraftToState();
+        markDirty();
+        if (!await savePortfolioSettings()) return;
         updateLivePreview();
         settingsModal.style.display = 'none';
         showToast('บันทึกการตั้งค่าธีมและแม่แบบเรียบร้อย');
@@ -1553,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!input?.files?.length) return;
         const file = input.files[0];
         const formData = new FormData();
-        formData.append('images', file);
+        formData.append('images', file);uploadCount++;
         statusNode.textContent = `กำลังอัปโหลด${label}...`;
         try {
             const response = await fetch('/api/upload', { method: 'POST', body: formData });
@@ -1561,14 +1185,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok || !result.success || !result.urls?.[0]) {
                 throw new Error(result.message || 'Upload failed');
             }
-            currentSettings.branding[key] = result.urls[0];
+            currentSettings.branding[key] = result.urls[0];markDirty();
             statusNode.textContent = 'อัปโหลดแล้ว — กดบันทึกการตั้งค่าเพื่อใช้งาน';
             updateLivePreview();
         } catch (error) {
             console.error('Branding logo upload error:', error);
             statusNode.textContent = 'อัปโหลดไม่สำเร็จ กรุณาเลือกไฟล์รูปภาพไม่เกิน 5MB';
         } finally {
-            input.value = '';
+            uploadCount--;input.value = '';
         }
     }
 
@@ -1588,6 +1212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateLivePreview();
     });
 
+    window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
     // Initialize
     loadPortfolioData();
 });
