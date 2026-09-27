@@ -14,3 +14,12 @@ db_data
 .cursor
 AGENTS.md
 AGENT-SKILLS-INSTALLATION-REPORT.md
+
+.env.*
+.git
+output
+test
+docs
+*.log
+var
+backups

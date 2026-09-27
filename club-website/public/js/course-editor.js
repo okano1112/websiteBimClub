@@ -4,13 +4,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const message = document.getElementById('courseMessage');
   const stopsEl = document.getElementById('stops');
   const quizEl = document.getElementById('quizQuestions');
+  let legacyVideoNeedsReplacement = false;
   const show = (text, type = '') => { message.textContent = text; message.className = `notice ${type}`; message.hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const esc = (value = '') => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
   const normalizeYouTubeUrl = (value) => {
     const raw = String(value || '').trim();
     if (!raw) return '';
-    const match = raw.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?[^\s"']*v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i);
-    return match ? `https://www.youtube-nocookie.com/embed/${match[1]}` : null;
+    let url;
+    try { url = new URL(raw); } catch { return null; }
+    if (url.protocol !== 'https:' || url.username || url.password || url.port) return null;
+    const host = url.hostname.toLowerCase();
+    let videoId;
+    if (host === 'youtu.be' || host === 'www.youtu.be') videoId = url.pathname.match(/^\/([A-Za-z0-9_-]{11})\/?$/)?.[1];
+    else if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(host)) {
+      videoId = url.pathname === '/watch' ? url.searchParams.get('v') : url.pathname.match(/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})\/?$/)?.[1];
+    }
+    return videoId && /^[A-Za-z0-9_-]{11}$/.test(videoId) ? `https://www.youtube-nocookie.com/embed/${videoId}` : null;
   };
   function formatSeconds(sec) {
     const s = Math.max(0, Math.floor(Number(sec) || 0));
@@ -75,9 +84,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const thumb = document.getElementById('thumbnailUrl').value;
     const video = document.getElementById('videoUrl').value;
     document.getElementById('thumbnailPreview').innerHTML = thumb ? `<img src="${esc(thumb)}" alt="ตัวอย่างรูปปก">` : '';
-    document.getElementById('videoPreview').innerHTML = video
-      ? (video.includes('youtube-nocookie.com/embed/') ? `<iframe src="${esc(video)}" title="ตัวอย่างวิดีโอ YouTube" allowfullscreen></iframe>` : `<video controls src="${esc(video)}"></video>`)
-      : '';
+    const youtubeVideo = normalizeYouTubeUrl(video);
+    document.getElementById('videoPreview').innerHTML = youtubeVideo
+      ? `<iframe src="${esc(youtubeVideo)}" title="ตัวอย่างวิดีโอ YouTube" allowfullscreen></iframe>`
+      : video ? '<p class="help-text">วิดีโอเดิมไม่ใช่ลิงก์ YouTube กรุณาใส่ลิงก์ YouTube ก่อนบันทึก</p>' : '';
   }
   document.getElementById('addStop').addEventListener('click', () => addQuestion('stop'));
   document.getElementById('addQuiz').addEventListener('click', () => addQuestion('quiz'));
@@ -103,28 +113,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   document.getElementById('thumbnailFile').addEventListener('change', async event => { try { const url = await upload(event.target.files[0], '/api/upload/images', 'images'); if (url) { document.getElementById('thumbnailUrl').value = url; renderMedia(); } } catch (error) { show(error.message); } });
-  document.getElementById('videoFile').addEventListener('change', async event => { try { show('กำลังอัปโหลดวิดีโอ โปรดรอสักครู่'); const url = await upload(event.target.files[0], '/api/upload/video', 'video'); if (url) { document.getElementById('videoUrl').value = url; renderMedia(); message.hidden = true; } } catch (error) { show(error.message); } });
   document.getElementById('youtubeEmbed').addEventListener('input', event => {
     const normalized = normalizeYouTubeUrl(event.target.value);
     const error = document.getElementById('youtubeError');
     event.target.setAttribute('aria-invalid', String(normalized === null));
-    error.textContent = normalized === null ? 'กรุณาวางลิงก์หรือโค้ดฝังจาก YouTube ที่ถูกต้อง' : '';
+    error.textContent = normalized === null ? 'กรุณาวางลิงก์ URL จาก YouTube ที่ถูกต้อง' : '';
     document.getElementById('videoUrl').value = normalized || '';
     renderMedia();
   });
-  document.getElementById('clearVideo').addEventListener('click', () => { if (!confirm('ต้องการลบวิดีโอออกจากคอร์สใช่หรือไม่?')) return; document.getElementById('videoUrl').value = ''; document.getElementById('youtubeEmbed').value = ''; document.getElementById('videoFile').value = ''; renderMedia(); });
+  document.getElementById('clearVideo').addEventListener('click', () => { if (!confirm('ต้องการลบวิดีโอออกจากคอร์สใช่หรือไม่?')) return; legacyVideoNeedsReplacement = false; document.getElementById('videoUrl').value = ''; document.getElementById('youtubeEmbed').value = ''; renderMedia(); });
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (document.getElementById('youtubeEmbed').getAttribute('aria-invalid') === 'true') return document.getElementById('youtubeEmbed').focus();
     const youtubeValue = document.getElementById('youtubeEmbed').value.trim();
-    const videoUrl = youtubeValue ? normalizeYouTubeUrl(youtubeValue) : document.getElementById('videoUrl').value;
+    if (legacyVideoNeedsReplacement && !youtubeValue) { show('คอร์สนี้มีไฟล์วิดีโอเดิม กรุณาใส่ลิงก์ YouTube หรือกดลบวิดีโอก่อนบันทึก'); document.getElementById('youtubeEmbed').focus(); return; }
+    const videoUrl = youtubeValue ? normalizeYouTubeUrl(youtubeValue) : '';
     const payload = { title: document.getElementById('title').value.trim(), description: document.getElementById('description').value.trim(), passScore: Number(document.getElementById('passScore').value), isPublished: document.getElementById('isPublished').checked, thumbnailUrl: document.getElementById('thumbnailUrl').value, videoUrl, stops: collect(stopsEl, true), quizQuestions: collect(quizEl, false) };
-    try { const response = await fetch(`/api/courses/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const data = await response.json(); if (!response.ok) throw new Error(data.message); document.getElementById('videoUrl').value = data.course.videoUrl || ''; if (data.course.videoUrl?.includes('youtube-nocookie.com/embed/')) document.getElementById('youtubeEmbed').value = data.course.videoUrl; renderMedia(); show(data.course.isPublished ? 'บันทึกและเผยแพร่คอร์สเรียบร้อย' : 'บันทึกคอร์สเป็นฉบับร่างเรียบร้อย', 'success'); } catch (error) { show(error.message || 'ไม่สามารถบันทึกคอร์สได้'); }
+    try { const response = await fetch(`/api/courses/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const data = await response.json(); if (!response.ok) throw new Error(data.message); legacyVideoNeedsReplacement = false; document.getElementById('videoUrl').value = data.course.videoUrl || ''; if (data.course.videoUrl?.includes('youtube-nocookie.com/embed/')) document.getElementById('youtubeEmbed').value = data.course.videoUrl; renderMedia(); show(data.course.isPublished ? 'บันทึกและเผยแพร่คอร์สเรียบร้อย' : 'บันทึกคอร์สเป็นฉบับร่างเรียบร้อย', 'success'); } catch (error) { show(error.message || 'ไม่สามารถบันทึกคอร์สได้'); }
   });
   try {
     if (!id) throw new Error('ไม่พบรหัสคอร์ส');
     const response = await fetch(`/api/courses/${id}/editor`); const data = await response.json();
     if (response.status === 401) return location.href = 'login.html'; if (!response.ok) throw new Error(data.message);
-    const course = data.course; document.getElementById('editorTitle').textContent = `แก้ไข: ${course.title}`; document.getElementById('title').value = course.title; document.getElementById('description').value = course.description || ''; document.getElementById('passScore').value = course.passScore; document.getElementById('isPublished').checked = course.isPublished; document.getElementById('thumbnailUrl').value = course.thumbnailUrl || ''; document.getElementById('videoUrl').value = course.videoUrl || ''; if ((course.videoUrl || '').includes('youtube-nocookie.com/embed/')) document.getElementById('youtubeEmbed').value = course.videoUrl; course.stops.forEach(item => addQuestion('stop', item)); course.quizQuestions.forEach(item => addQuestion('quiz', item)); renderMedia();
+    const course = data.course; document.getElementById('editorTitle').textContent = `แก้ไข: ${course.title}`; document.getElementById('title').value = course.title; document.getElementById('description').value = course.description || ''; document.getElementById('passScore').value = course.passScore; document.getElementById('isPublished').checked = course.isPublished; document.getElementById('thumbnailUrl').value = course.thumbnailUrl || ''; document.getElementById('videoUrl').value = course.videoUrl || ''; const existingYoutube = normalizeYouTubeUrl(course.videoUrl || ''); legacyVideoNeedsReplacement = Boolean(course.videoUrl && !existingYoutube); if (existingYoutube) document.getElementById('youtubeEmbed').value = course.videoUrl; course.stops.forEach(item => addQuestion('stop', item)); course.quizQuestions.forEach(item => addQuestion('quiz', item)); renderMedia();
   } catch (error) { form.hidden = true; show(error.message || 'ไม่สามารถโหลดคอร์สได้'); }
 });

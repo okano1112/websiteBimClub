@@ -11,14 +11,39 @@ test('Form synchronization reads fullName, phone and every scalar into local dra
  model.syncFormDraftToState(draft,{querySelector:id=>values[id.slice(1)]===undefined?null:{value:values[id.slice(1)]}});
  assert.equal(draft.user_profile.full_name,'New name');assert.equal(draft.user_profile.phone,'0899999999');assert.equal(draft.headline,'Live headline');assert.equal(draft.summary,'Live summary');assert.equal(draft.career_objective,'Live objective');
 });
-test('All Portfolio templates retain headline, target role, summary, objective and collections',()=>{
+test('Legacy Portfolio choices immediately display P1 with existing content',()=>{
  for(const template of ['maroon-editorial','navy-professional','modern-grid','minimal-a4','a3-landscape-showcase','institutional-bimclub']){
   const payload=model.documentPayload(saved,{}, {template});const html=templates.renderDocument(payload);
+  assert.equal(payload.settings.template,'portfolio-p1');assert.ok(html.includes('approved-document portfolio-p1'));
   for(const text of ['BIM Club Developer','BIM Coordinator','สรุปภาษาไทย','เป้าหมายอาชีพ','Project fixture','Achievement fixture','Activity fixture','https://example.test/link','https://example.test','/assets/img/logobranding/logobim.png'])assert.ok(html.includes(text),template+': '+text);
+ }
+});
+test('Saved legacy public settings resolve without saving or mutating stored data',()=>{
+ const fixture={...saved,cv_settings:JSON.stringify({template:'modern-cv',pageSize:'a3',orientation:'landscape',hiddenSections:['skills']})};
+ const before=JSON.stringify(fixture);
+ assert.equal(model.documentPayload(fixture).settings.template,'portfolio-p1');
+ const cv=model.documentPayload(fixture,{}, {docType:'cv'});
+ assert.equal(cv.settings.template,'cv-c2');assert.equal(cv.settings.pageSize,'a3');
+ assert.equal(cv.settings.orientation,'landscape');assert.deepEqual(cv.settings.hiddenSections,['skills']);
+ assert.equal(JSON.stringify(fixture),before);
+ for(const design of templates.DESIGNS){
+  const key=design.type==='cv'?'cv_settings':'portfolio_settings';
+  assert.equal(model.documentPayload({...fixture,[key]:JSON.stringify({template:design.id})},{},{docType:design.type}).settings.template,design.id);
  }
 });
 test('Editor visibility names map to renderer names and input payload is immutable',()=>{
  const payload=model.documentPayload(saved,{}, {hiddenSections:['about_me','career_objective','name_headline_role','contact_links']});const before=JSON.stringify(payload);const html=templates.renderDocument(payload);
  for(const text of ['สรุปภาษาไทย','เป้าหมายอาชีพ','BIM Club Developer','BIM Coordinator','https://example.test/link'])assert.ok(!html.includes(text),text);
  assert.equal(JSON.stringify(payload),before);
+});
+test('Approved R3 C2 and P1–P3 retain content and use distinct layouts',()=>{
+ assert.equal(templates.DESIGNS.length,5);
+ for(const design of templates.DESIGNS){
+  const html=templates.renderDocument(model.documentPayload(saved,{}, {docType:design.type,template:design.id}));
+  for(const value of ['BIM Club Developer','BIM Coordinator','สรุปภาษาไทย','เป้าหมายอาชีพ','Project fixture','Achievement fixture','Activity fixture','https://example.test/link']) assert.ok(html.includes(value),design.id+': '+value);
+  assert.ok(html.includes('approved-document '+design.id));
+  assert.ok(!html.includes('FACULTY ACCREDITED PORTFOLIO'));
+  const hidden=templates.renderDocument(model.documentPayload(saved,{}, {docType:design.type,template:design.id,hiddenSections:['projects','about_me','career_objective']}));
+  for(const value of ['Project fixture','สรุปภาษาไทย','เป้าหมายอาชีพ'])assert.ok(!hidden.includes(value),design.id+' hidden '+value);
+ }
 });

@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Default Portfolio Settings
     let currentSettings = {
         docType: 'portfolio',
-        template: 'maroon-editorial',
+        template: 'portfolio-p1',
         pageSize: 'a4',
         orientation: 'portrait',
         theme: {
@@ -126,6 +126,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (portfolioData.portfolio_settings && Object.keys(portfolioData.portfolio_settings).length > 0) {
                     currentSettings = Object.assign(currentSettings, portfolioData.portfolio_settings);
                 }
+
+                if (!PortfolioTemplates.DESIGNS.some(d => d.type === 'portfolio' && d.id === currentSettings.template)) currentSettings.template = 'portfolio-p1';
 
                 // Public checkbox
                 const isPub = Boolean(portfolioData.is_public ?? portfolioData.isPublic);
@@ -1058,6 +1060,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('#portfolioTemplateGrid .template-card').forEach(card => {
             const tpl = card.getAttribute('data-template');
             card.classList.toggle('active', tpl === currentSettings.template);
+            card.setAttribute('aria-pressed', String(tpl === currentSettings.template));
         });
 
         checkContrast();
@@ -1151,6 +1154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('#portfolioTemplateGrid .template-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             currentSettings.template = card.getAttribute('data-template'); markDirty();
+            document.querySelectorAll('#portfolioTemplateGrid .template-card').forEach(c => c.setAttribute('aria-pressed', String(c === card)));
             updateLivePreview();
         });
     });

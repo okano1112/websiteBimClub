@@ -1,0 +1,20 @@
+# Overlay on docker-compose.production.yml. Requires Docker Compose 2.24.4+.
+# cloudflared on the host points to http://127.0.0.1:3000.
+services:
+  app:
+    container_name: !reset null
+    ports: !reset []
+    environment:
+      TRUST_PROXY_HOPS: 2
+    deploy:
+      replicas: 2
+  gateway:
+    image: haproxy:3.0-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PORT:-3000}:8080"
+    volumes:
+      - ./deploy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      app:
+        condition: service_healthy

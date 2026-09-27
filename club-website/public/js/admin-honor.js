@@ -50,13 +50,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadAssignmentOptions() {
         try {
-            const [positionsRes, usersRes] = await Promise.all([fetch('/api/positions/admin'), fetch('/api/admin/users')]);
+            const positionsRes = await fetch('/api/positions/admin');
             const positionsData = await positionsRes.json();
-            const usersData = await usersRes.json();
+            if (!positionsRes.ok) throw new Error(positionsData.message || 'โหลดตำแหน่งไม่สำเร็จ');
             (positionsData.positions || []).forEach(item => { const option = new Option(`${item.position_name_th}${item.is_leader ? ' (ผู้นำ)' : ''}${!item.active ? ' (ปิดใช้งาน)' : ''}`, item.id); option.disabled = !item.active; positionId.add(option); });
-            (usersData.users || []).filter(item => !item.deleted_at).forEach(item => { userId.add(new Option(`${item.full_name || item.username} (${item.username})`, item.id)); });
         } catch (error) { console.error('โหลดรายการตำแหน่ง/บัญชีไม่สำเร็จ', error); }
     }
+
+    let lookupTimer, lookupSequence = 0;
+    document.getElementById('memberLookup').addEventListener('input', event => {
+        clearTimeout(lookupTimer);
+        const q = event.target.value.trim();
+        const sequence = ++lookupSequence;
+        lookupTimer = setTimeout(async () => {
+            const status = document.getElementById('memberLookupStatus');
+            try {
+                status.textContent = 'กำลังค้นหา…';
+                const response = await fetch(`/api/admin/users/search?q=${encodeURIComponent(q)}`);
+                const data = await response.json();
+                if (sequence !== lookupSequence) return;
+                if (!response.ok) throw new Error(data.message || 'ค้นหาไม่สำเร็จ');
+                const selected = userId.selectedOptions[0];
+                userId.replaceChildren(new Option('ยังไม่จับคู่บัญชี', ''));
+                if (selected?.value) userId.add(selected);
+                for (const user of data.users) {
+                    if (String(user.id) !== selected?.value) userId.add(new Option(`${user.full_name || user.username} (${user.username})`, user.id));
+                }
+                if (selected?.value) userId.value = selected.value;
+                status.textContent = q ? `พบ ${data.users.length} บัญชี (แสดงสูงสุด 20)` : 'พิมพ์ชื่อเพื่อค้นหาบัญชี';
+            } catch (error) { if (sequence === lookupSequence) status.textContent = error.message; }
+        }, 250);
+    });
 
     function renderTable(list) {
         if (list.length === 0) {
@@ -182,6 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('generation').value = item.generation || '';
                 document.getElementById('position').value = item.position || '';
                 positionId.value = item.position_id || '';
+                if (item.user_id && !Array.from(userId.options).some(option => option.value === String(item.user_id))) userId.add(new Option(`บัญชีที่จับคู่ #${item.user_id}`, item.user_id));
                 userId.value = item.user_id || '';
                 hiddenImg.value = item.profile_image || '';
                 if (item.profile_image) {

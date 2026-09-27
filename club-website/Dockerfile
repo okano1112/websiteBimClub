@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 # Install Chromium and fonts for headless PDF generation
 RUN apk add --no-cache \
     chromium \
+    ffmpeg \
+    mariadb-client \
     nss \
     freetype \
     harfbuzz \
@@ -27,7 +29,7 @@ RUN npm ci --omit=dev
 COPY . .
 
 # Create uploads directory if it doesn't exist
-RUN mkdir -p uploads && chown -R node:node /usr/src/app
+RUN mkdir -p uploads var/quarantine && chown -R node:node /usr/src/app
 
 # The application does not need root privileges at runtime.
 USER node

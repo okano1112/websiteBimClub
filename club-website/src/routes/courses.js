@@ -422,7 +422,7 @@ router.put('/:id', requireInstructor, async (req, res) => {
         return res.status(400).json({ success: false, message: 'รูปปกต้องอัปโหลดผ่านระบบเท่านั้น' });
     }
     if (videoUrl === null) {
-        return res.status(400).json({ success: false, message: 'วิดีโอต้องเป็นไฟล์ที่อัปโหลดผ่านระบบ หรือลิงก์/โค้ดฝังจาก YouTube เท่านั้น' });
+        return res.status(400).json({ success: false, message: 'กรุณาใส่ลิงก์ URL จาก YouTube เท่านั้น' });
     }
 
     const stopsResult = normalizeQuestions(req.body.stops || [], 'จุดหยุด');

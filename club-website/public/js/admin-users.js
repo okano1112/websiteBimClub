@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let page = 1;
   let pagination = { pages: 1, total: 0 };
   let loadSequence = 0;
+  let saving = false;
 
   function getStatus(user) {
     if (user.deleted_at) return 'deleted';
@@ -83,7 +84,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function request(url, options = {}) {
     const response = await fetch(url, options);
-    const data = await response.json();
+    if (response.status === 401) { window.location.href = 'login.html'; throw new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'); }
+    const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.success) throw new Error(data.message || 'ดำเนินการไม่สำเร็จ');
     return data;
   }
@@ -109,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   usersList.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-action]');
-    if (!button) return;
+    if (!button || saving) return;
     const user = allUsers.find((item) => Number(item.id) === Number(button.dataset.userId));
     if (!user) return;
     selectedUser = user;
@@ -129,36 +131,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       const confirmation = { ban: user.is_banned ? 'ยืนยันการปลดแบนบัญชีนี้?' : 'ยืนยันการแบนบัญชีนี้?', delete: 'ยืนยันการ Soft Delete บัญชีนี้?', restore: 'ยืนยันการกู้คืนบัญชีนี้?' }[button.dataset.action];
       if (!confirm(confirmation)) return;
+      saving = true; button.disabled = true;
       if (button.dataset.action === 'ban') await request(`/api/admin/users/${user.id}/ban`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isBanned: !user.is_banned }) });
       if (button.dataset.action === 'delete') await request(`/api/admin/users/${user.id}`, { method: 'DELETE' });
       if (button.dataset.action === 'restore') await request(`/api/admin/users/${user.id}/restore`, { method: 'PUT' });
       showFeedback('อัปเดตสถานะผู้ใช้งานสำเร็จ'); await loadUsers();
     } catch (error) { showFeedback(error.message, true); }
+    finally { saving = false; button.disabled = false; }
   });
 
   document.getElementById('editUserForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!selectedUser) return;
+    if (!selectedUser || saving) return;
+    saving = true;
+    const submit = event.submitter;
+    if (submit) submit.disabled = true;
     try {
       const nextRole = document.getElementById('editRole').value;
       if (nextRole !== selectedUser.role && Number(selectedUser.id) !== Number(currentUser.id) && !confirm(`ยืนยันการเปลี่ยน Role เป็น ${nextRole}?`)) return;
-      await request(`/api/admin/users/${selectedUser.id}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fullName: document.getElementById('editFullName').value, phone: document.getElementById('editPhone').value }) });
-      if (nextRole !== selectedUser.role && Number(selectedUser.id) !== Number(currentUser.id)) await request(`/api/admin/users/${selectedUser.id}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: nextRole }) });
+      await request(`/api/admin/users/${selectedUser.id}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fullName: document.getElementById('editFullName').value, phone: document.getElementById('editPhone').value, role: nextRole }) });
       closeModal('editUserModal'); showFeedback('บันทึกข้อมูลผู้ใช้งานสำเร็จ'); await loadUsers();
     } catch (error) { showFeedback(error.message, true); }
+    finally { saving = false; if (submit) submit.disabled = false; }
   });
 
-  document.getElementById('savePasswordBtn').addEventListener('click', async () => {
+  document.getElementById('savePasswordBtn').addEventListener('click', async event => {
+    if (saving || !selectedUser) return;
     const password = document.getElementById('newPassword').value;
     if (password.length < 8) return showFeedback('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', true);
+    saving = true; event.currentTarget.disabled = true;
+    const button = event.currentTarget;
     try { await request(`/api/admin/users/${selectedUser.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPassword: password }) }); closeModal('passwordModal'); showFeedback('เปลี่ยนรหัสผ่านสำเร็จ'); }
     catch (error) { showFeedback(error.message, true); }
+    finally { saving = false; button.disabled = false; }
   });
 
   document.querySelectorAll('[data-close-modal]').forEach((button) => button.addEventListener('click', () => closeModal(button.dataset.closeModal)));
   document.querySelectorAll('.modal').forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(modal.id); }));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') document.querySelectorAll('.modal').forEach((modal) => closeModal(modal.id)); });
-  [search, roleFilter, statusFilter, sortControl].forEach((control) => control.addEventListener('input', () => { page = 1; loadUsers(); }));
+  let searchTimer;
+  search.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { page = 1; loadUsers(); }, 250); });
+  [roleFilter, statusFilter, sortControl].forEach(control => control.addEventListener('change', () => { page = 1; loadUsers(); }));
   document.getElementById('userPrev').addEventListener('click', () => { page -= 1; loadUsers(); });
   document.getElementById('userNext').addEventListener('click', () => { page += 1; loadUsers(); });
 

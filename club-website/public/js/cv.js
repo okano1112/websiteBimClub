@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let portfolioData = {};
     let cvSettings = {
         docType: 'cv',
-        template: 'cv-a4-standard',
+        template: 'cv-c2',
         pageSize: 'a4',
         orientation: 'portrait',
         theme: {
@@ -87,12 +87,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     cvSettings = Object.assign(cvSettings, portfolioData.cv_settings);
                 }
 
+                if (!['resume-r3','cv-c2'].includes(cvSettings.template)) cvSettings.template = 'cv-c2';
                 // Initial inputs
                 cvTargetRole.value = portfolioData.target_role || '';
-                cvObjectiveText.value = portfolioData.career_objective || portfolioData.summary || '';
-                selectCvTemplate.value = cvSettings.template || 'cv-a4-standard';
+                cvObjectiveText.value = portfolioData.career_objective || '';
+                selectCvTemplate.value = cvSettings.template || 'cv-c2';
                 cvLanguageSelect.value = cvSettings.language || 'th';
-                applyTemplateGeometryDefaults(selectCvTemplate.value);
+                if (!['resume-r3','cv-c2'].includes(portfolioData.cv_settings?.template) || !portfolioData.cv_settings?.pageSize) applyTemplateGeometryDefaults(selectCvTemplate.value);
+                document.dispatchEvent(new Event('cv-settings-loaded'));
 
                 // Checklists
                 const hidden = cvSettings.hiddenSections || [];
@@ -137,26 +139,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update ATS Badge Indicator
     function updateAtsBadge() {
-        const tpl = selectCvTemplate.value;
-        if (tpl === 'cv-a4-ats') {
-            atsBadgeIndicator.className = 'ats-badge-pill';
-            atsBadgeIndicator.innerHTML = '<span>✓</span> <span>ATS Safe (ระบบคัดกรองอัตโนมัติ)</span>';
-        } else if (tpl === 'cv-a3-presentation') {
-            atsBadgeIndicator.className = 'ats-badge-pill warning';
-            atsBadgeIndicator.innerHTML = '<span>⚠️</span> <span>A3 Presentation (ไม่แนะนำสำหรับส่งงาน)</span>';
-        } else if (tpl === 'cv-a4-landscape-creative') {
-            atsBadgeIndicator.className = 'ats-badge-pill warning';
-            atsBadgeIndicator.innerHTML = '<span>Creative Horizontal</span>';
-        } else {
-            atsBadgeIndicator.className = 'ats-badge-pill';
-            atsBadgeIndicator.innerHTML = '<span>✓</span> <span>Professional Standard</span>';
-        }
+        const resume = selectCvTemplate.value === 'resume-r3';
+        atsBadgeIndicator.className = 'ats-badge-pill';
+        atsBadgeIndicator.textContent = resume ? 'R3 · Resume' : 'C2 · CV';
+        btnDownloadCvPdf.textContent = resume ? 'ดาวน์โหลด Resume (PDF)' : 'ดาวน์โหลด CV (PDF)';
     }
 
     // Keep a named CV layout aligned with its real-world paper geometry.
     // Users may still override the geometry afterward from the settings drawer.
     function applyTemplateGeometryDefaults(template) {
         const defaults = {
+            'resume-r3': {pageSize:'a4',orientation:'portrait'},
+            'cv-c2': {pageSize:'a4',orientation:'portrait'},
             'cv-a4-standard': { pageSize: 'a4', orientation: 'portrait' },
             'cv-a4-ats': { pageSize: 'a4', orientation: 'portrait' },
             'cv-letter-standard': { pageSize: 'letter', orientation: 'portrait' },
@@ -223,11 +217,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (res.ok && showNotification) {
-                showToast('บันทึกการตั้งค่า CV เรียบร้อยแล้ว');
+            const result = await res.json();
+            if (!res.ok || !result.success) throw new Error(result.message || 'บันทึกไม่สำเร็จ');
+            if (showNotification) {
+                showToast('บันทึกการตั้งค่าเอกสารเรียบร้อยแล้ว');
             }
+            return true;
         } catch (e) {
             console.error('Save CV error:', e);
+            showToast('บันทึกไม่สำเร็จ กรุณาลองใหม่');
+            return false;
         }
     }
 
@@ -237,6 +236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnDownloadCvPdf.disabled = true;
             btnDownloadCvPdf.innerHTML = '<span>⏳</span> <span>กำลังสร้าง PDF...</span>';
 
+            if (!await saveCvData(false)) throw new Error('Save failed');
             const payload = {
                 type: 'cv',
                 template: selectCvTemplate.value,
@@ -262,19 +262,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             a.style.display = 'none';
             a.href = url;
             const userName = (currentUser.full_name || 'CV').replace(/[^a-zA-Z0-9_\u0E00-\u0E7F]/g, '_');
-            a.download = `${userName}_CV.pdf`;
+            a.download = `${userName}_${selectCvTemplate.value === 'resume-r3' ? 'Resume' : 'CV'}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
 
-            showToast('ดาวน์โหลด CV (PDF) สำเร็จ!');
+            showToast('ดาวน์โหลดเอกสาร PDF สำเร็จ');
         } catch (err) {
             console.error(err);
             alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
         } finally {
             btnDownloadCvPdf.disabled = false;
-            btnDownloadCvPdf.innerHTML = '<span>ดาวน์โหลด CV (PDF)</span>';
+            updateAtsBadge();
         }
     }
 

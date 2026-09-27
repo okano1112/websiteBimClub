@@ -1283,6 +1283,82 @@
         return renderA3LandscapeShowcase(payload);
     }
 
+    // Approved document directions: R3, C2 and P1–P3. Existing templates stay readable for older saved documents.
+    const DESIGNS = [
+        {id:'resume-r3',type:'cv',title:'R3 · Resume',description:'สองคอลัมน์ แยกทักษะและข้อมูลติดต่อจากประสบการณ์'},
+        {id:'cv-c2',type:'cv',title:'C2 · CV',description:'ประวัติแบบลำดับเวลา วันที่ด้านซ้าย รายละเอียดด้านขวา'},
+        {id:'portfolio-p1',type:'portfolio',title:'P1 · Technical grid',description:'ตารางผลงาน เหมาะกับโมเดล แบบ และรายละเอียดทางเทคนิค'},
+        {id:'portfolio-p2',type:'portfolio',title:'P2 · Image-led editorial',description:'ภาพผลงานขนาดใหญ่ พื้นที่ว่างมาก เน้นการนำเสนอภาพ'},
+        {id:'portfolio-p3',type:'portfolio',title:'P3 · Project case study',description:'เล่ารายละเอียดทีละโครงการ พร้อมบทบาทและผลงาน'}
+    ];
+    function renderApprovedDocument(payload, template) {
+        const p = payload.profile || {}, lang = payload.settings?.language || 'th';
+        const contact = [p.email,p.phone,p.websiteUrl].filter(Boolean).map(value=>`<div>${esc(value)}</div>`).join('');
+        const photo = p.avatarUrl ? `<img class="professional-avatar" src="${esc(p.avatarUrl)}" alt="${esc(p.fullName)}">` : '';
+        const identity = `<header class="professional-header">${photo}<div><h1>${esc(p.fullName)}</h1><div class="professional-role">${renderProfessionalRole(p)}</div></div></header>`;
+        const summary = renderAboutMe(payload,lang) + renderCareerObjective(payload,lang);
+        const history = renderExperiences(payload,lang) + renderEducation(payload,lang);
+        const extras = renderExtraSections(payload,lang);
+        let content;
+        if(template==='resume-r3') {
+            content = `${identity}<div class="resume-columns"><aside><div class="professional-contact">${contact}</div>${renderSkills(payload,lang)}${renderEducation(payload,lang)}${renderCertificates(payload,lang)}</aside><main>${summary}${renderExperiences(payload,lang)}${renderCvProjects(payload,lang)}${extras}</main></div>`;
+        } else if(template==='cv-c2') {
+            content = `${identity}<div class="professional-contact">${contact}</div>${summary}<div class="chronology">${history}</div>${renderCvProjects(payload,lang)}${renderSkills(payload,lang)}${renderCertificates(payload,lang)}${extras}`;
+        } else {
+            const projects = isSectionVisible(payload,'projects') ? (payload.projects || []) : [];
+            content = `<div class="portfolio-heading"><span>${lang==='en'?'SELECTED WORKS':'แฟ้มผลงาน'}</span>${identity}<div class="professional-contact">${contact}</div></div>${summary}<div class="selected-projects">${projects.map((project,index)=>`<article class="selected-project"><header><span class="project-number">${String(index+1).padStart(2,'0')}</span><h2>${esc(project.title)}</h2></header>${project.image_url || project.imageUrl ? `<img src="${esc(project.image_url || project.imageUrl)}" alt="${esc(project.title)}">` : ''}<div class="project-narrative">${project.role_in_project ? `<p>${esc(project.role_in_project)}</p>` : ''}${project.description ? `<p>${esc(project.description)}</p>` : ''}${project.project_url || project.projectUrl ? `<p class="project-link">${esc(project.project_url || project.projectUrl)}</p>` : ''}</div></article>`).join('')}</div><div class="portfolio-background">${history}${renderSkills(payload,lang)}${renderCertificates(payload,lang)}${extras}</div>`;
+        }
+        return `<div class="doc-page approved-document ${template}"><div class="doc-page-content">${content}</div></div>`;
+    }
+    function approvedStyles() {
+        return `<style>
+        .approved-document {color:var(--theme-text);font-size:12px;line-height:1.65;}
+        .approved-document .doc-page-content {padding:42px 44px!important;}
+        .professional-header {display:flex;align-items:center;gap:22px;margin-bottom:20px;break-inside:avoid;}
+        .professional-header h1 {font-size:30px;line-height:1.25;font-weight:700;margin:0 0 7px;letter-spacing:-.6px;color:var(--theme-primary);}
+        .professional-role {font-size:14px;color:var(--theme-secondary);}
+        .professional-avatar {width:76px;height:76px;object-fit:cover;border-radius:0;flex-shrink:0;}
+        .professional-contact {font-size:11px;overflow-wrap:anywhere;margin-bottom:24px;color:var(--theme-muted);}
+        .approved-document .section-title-wrap {border-bottom:1px solid var(--theme-border);margin-bottom:12px;}
+        .approved-document .section-title-wrap h2 {font-size:14px;letter-spacing:.3px;}
+        .approved-document .section-title-badge {display:none;}
+        .approved-document .doc-section {margin-bottom:24px;}
+        .approved-document .skill-badge {background:none!important;border:0;padding:0 10px 0 0;border-radius:0;color:var(--theme-text)!important;}
+        .approved-document .entry-item {margin-bottom:15px;}
+        .approved-document .entry-desc {font-size:12px;line-height:1.65;}
+        .approved-document .certs-doc-grid {display:block;}
+        .approved-document .cert-doc-card {background:none;border-left:1px solid var(--theme-border);border-radius:0;margin-bottom:10px;}
+        .resume-columns {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.15fr);gap:30px;align-items:start;}
+        .resume-columns aside {padding-right:20px;border-right:1px solid var(--theme-border);}
+        .resume-r3 .professional-header {border-bottom:2px solid var(--theme-primary);padding-bottom:22px;}
+        .cv-c2 .professional-header {margin-bottom:8px;}
+        .cv-c2 .professional-contact {display:flex;gap:18px;flex-wrap:wrap;}
+        .chronology .entry-item {display:grid;grid-template-columns:100px minmax(0,1fr);column-gap:20px;}
+        .chronology .entry-header {display:contents;}
+        .chronology .entry-date {grid-column:1;grid-row:1 / span 3;white-space:normal;color:var(--theme-secondary);font-size:11px;}
+        .chronology .entry-role,.chronology .entry-company,.chronology .entry-desc {grid-column:2;}
+        .portfolio-heading {margin-bottom:32px;border-bottom:1px solid var(--theme-border);}
+        .portfolio-heading>span {font-size:11px;letter-spacing:2px;display:block;margin-bottom:18px;}
+        .selected-project header {display:flex;gap:12px;align-items:baseline;break-after:avoid;}
+        .selected-project h2 {font-size:19px;margin:0 0 12px;line-height:1.4;color:var(--theme-primary);}
+        .project-number {font-size:12px;color:var(--theme-secondary);}
+        .selected-project img {display:block;width:100%;height:auto;max-height:370px;object-fit:contain;background:var(--theme-card-bg);break-inside:avoid;}
+        .project-narrative p {white-space:pre-line;overflow-wrap:anywhere;}
+        .project-link {font-size:11px;color:var(--theme-muted);}
+        .selected-project {margin-bottom:32px;min-width:0;}
+        .portfolio-p1 .selected-projects {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start;}
+        .portfolio-p1 .selected-project img {max-height:210px;}
+        .portfolio-p1 .selected-project h2 {font-size:15px;}
+        .portfolio-p2 .professional-header h1 {font-size:42px;}
+        .portfolio-p2 .selected-project img {max-height:540px;}
+        .portfolio-p2 .project-narrative {max-width:85%;}
+        .portfolio-p3 .selected-project {border-top:1px solid var(--theme-border);padding-top:24px;}
+        .portfolio-p3 .project-number {font-size:30px;}
+        .portfolio-background {margin-top:36px;}
+        @media print {.approved-document .doc-page-content {padding:18px 20px!important;} .selected-project {break-inside:auto;} .selected-project header {break-after:avoid;} .professional-header {break-inside:avoid;}}
+        </style>`;
+    }
+
     /**
      * Master Render Function
      */
@@ -1299,7 +1375,9 @@
 
         let bodyHtml = '';
 
-        if (docType === 'cv') {
+        if (DESIGNS.some(design => design.id === template)) {
+            bodyHtml = renderApprovedDocument(payload, template);
+        } else if (docType === 'cv') {
             switch (template) {
                 case 'cv-a4-ats':
                     bodyHtml = renderCvA4Ats(payload);
@@ -1353,6 +1431,7 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${esc(payload.profile?.fullName || 'BimClub Document')} - ${docType.toUpperCase()}</title>
             ${styles}
+            ${approvedStyles()}
         </head>
         <body class="doc-body">
             ${bodyHtml}
@@ -1362,6 +1441,7 @@
     }
 
     return {
+        DESIGNS,
         renderDocument: renderDocument,
         getDocumentStyles: getDocumentStyles,
         getContrastRatio: getContrastRatio,

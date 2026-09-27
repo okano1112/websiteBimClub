@@ -51,28 +51,21 @@ router.get('/:userId', async (req, res) => {
     catch (error) { console.error(error); res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการโหลดโปรไฟล์' }); }
 });
 
-router.put('/me', requireLogin, async (req, res) => {
-    const userId = viewerId(req); const allowedType = ['member', 'alumni', 'instructor']; const memberType = allowedType.includes(req.body.memberType) ? req.body.memberType : 'member';
-    try {
-        await db.query(`INSERT INTO member_profiles (user_id, cover_url, department, program, member_type, graduation_year, generation, is_public)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE cover_url=VALUES(cover_url), department=VALUES(department), program=VALUES(program), member_type=VALUES(member_type), graduation_year=VALUES(graduation_year), generation=VALUES(generation), is_public=VALUES(is_public)`, [userId, text(req.body.coverUrl, 500) || null, text(req.body.department, 150) || null, text(req.body.program, 150) || null, memberType, text(req.body.graduationYear, 10) || null, text(req.body.generation, 50) || null, req.body.isPublic === false ? 0 : 1]);
-        res.json({ success: true, profile: await readProfile(userId, true) });
-    } catch (error) { console.error(error); res.status(500).json({ success: false, message: 'บันทึกโปรไฟล์ไม่สำเร็จ' }); }
-});
-
-router.put('/:userId', requireLogin, async (req, res) => {
-    const userId = idOf(req.params.userId);
-    if (req.session?.user?.role !== 'admin') return res.status(403).json({ success: false, message: 'เฉพาะผู้ดูแลระบบเท่านั้น' });
-    if (!userId) return res.status(400).json({ success: false, message: 'รหัสผู้ใช้ไม่ถูกต้อง' });
-    const allowedType = ['member', 'alumni', 'instructor'];
-    const memberType = allowedType.includes(req.body.memberType) ? req.body.memberType : 'member';
-    try {
-        await db.query(`INSERT INTO member_profiles (user_id, cover_url, department, program, member_type, graduation_year, generation, is_public)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE cover_url=VALUES(cover_url), department=VALUES(department), program=VALUES(program), member_type=VALUES(member_type), graduation_year=VALUES(graduation_year), generation=VALUES(generation), is_public=VALUES(is_public)`, [userId, text(req.body.coverUrl, 500) || null, text(req.body.department, 150) || null, text(req.body.program, 150) || null, memberType, text(req.body.graduationYear, 10) || null, text(req.body.generation, 50) || null, req.body.isPublic === false ? 0 : 1]);
-        const profile = await readProfile(userId, true);
-        if (!profile) return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
-        res.json({ success: true, profile });
-    } catch (error) { console.error(error); res.status(500).json({ success: false, message: 'ผู้ดูแลบันทึกโปรไฟล์ไม่สำเร็จ' }); }
-});
-
+function updateProfile(asAdmin) {
+    return async (req, res) => {
+        const id = asAdmin ? idOf(req.params.userId) : viewerId(req);
+        if (asAdmin && req.currentUser?.role !== 'admin') return res.status(403).json({ success: false, message: 'เฉพาะผู้ดูแลระบบเท่านั้น' });
+        if (!id) return res.status(400).json({ success: false, message: 'รหัสผู้ใช้ไม่ถูกต้อง' });
+        try {
+            const [[user]] = await db.query('SELECT id FROM users WHERE id = ? AND deleted_at IS NULL', [id]);
+            if (!user) return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            await require('../services/profileUpdate').saveProfile(db, id, req.body);
+            res.json({ success: true, profile: await readProfile(id, true) });
+        } catch (error) {
+            res.status(error.status === 400 ? 400 : 500).json({ success: false, message: error.status === 400 ? error.message : 'บันทึกโปรไฟล์ไม่สำเร็จ' });
+        }
+    };
+}
+router.put('/me', requireLogin, updateProfile(false));
+router.put('/:userId', requireLogin, updateProfile(true));
 module.exports = router;

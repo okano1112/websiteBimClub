@@ -9,8 +9,6 @@ const requireAdmin = require('../../middleware/requireAdmin');
 const requireInstructor = require('../../middleware/requireInstructor');
 
 const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
-const videosDir = path.join(uploadsDir, 'videos');
-fs.mkdirSync(videosDir, { recursive: true });
 
 // Images stay in memory until bytes and decoded dimensions have passed validation.
 const storage = multer.memoryStorage();
@@ -58,34 +56,8 @@ router.post('/', requireLogin, upload.array('images', 10), handleUpload);
 router.post('/images', requireLogin, upload.array('images', 10), handleUpload);
 router.post('/cms', requireAdmin, upload.array('images', 1), handleUpload);
 
-const videoStorage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, videosDir),
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-});
-
-const videoFilter = (req, file, cb) => {
-    const allowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-    if (allowed.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('อนุญาตเฉพาะไฟล์วิดีโอ MP4, WebM หรือ OGG'), false);
-    }
-};
-
-const uploadVideo = multer({
-    storage: videoStorage,
-    fileFilter: videoFilter,
-    limits: { fileSize: 200 * 1024 * 1024 }
-});
-
-router.post('/video', requireInstructor, uploadVideo.single('video'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์วิดีโอ' });
-    }
-    res.json({ success: true, url: '/uploads/videos/' + req.file.filename });
+router.post('/video', requireInstructor, (req, res) => {
+    res.status(410).json({ success: false, message: 'คอร์สรองรับเฉพาะลิงก์ URL จาก YouTube' });
 });
 
 module.exports = router;

@@ -5,9 +5,13 @@
   function documentPayload(portfolio, user = {}, overrides = {}) {
     const type = overrides.docType || overrides.type || 'portfolio';
     const saved = json(type === 'cv' ? portfolio.cv_settings : portfolio.portfolio_settings, {});
-    const settings = { docType: type, template: type === 'cv' ? 'cv-a4-standard' : 'maroon-editorial', pageSize: 'a4', orientation: 'portrait', language: 'th', hiddenSections: [], ...saved, ...overrides,
+    const settings = { docType: type, template: type === 'cv' ? 'cv-c2' : 'portfolio-p1', pageSize: 'a4', orientation: 'portrait', language: 'th', hiddenSections: [], ...saved, ...overrides,
       theme: { primary: '#012240', secondary: '#AD0F0F', bg: 'white', ...saved.theme, ...overrides.theme },
       branding: { showSoeLogo: true, showBimClubLogo: true, footerStyle: 'footer-bar', scope: 'all', logoSize: 'medium', institutionText: 'BimClub Official Accredited • Faculty of Engineering', ...saved.branding, ...overrides.branding } };
+    // Resolve persisted legacy choices on every read, including public pages and PDF exports.
+    // Keep approved selections and all saved content without requiring an editor save.
+    const approved = type === 'cv' ? ['resume-r3', 'cv-c2'] : ['portfolio-p1', 'portfolio-p2', 'portfolio-p3'];
+    if (!approved.includes(settings.template)) settings.template = type === 'cv' ? 'cv-c2' : 'portfolio-p1';
     const extra = json(portfolio.extra_sections, {});
     const profile = portfolio.user_profile || user;
     const value = (snake, camel, fallback = '') => profile[snake] ?? profile[camel] ?? portfolio[snake] ?? fallback;

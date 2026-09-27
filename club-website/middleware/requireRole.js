@@ -25,6 +25,8 @@ function normalizeUser(user) {
 }
 
 async function loadCurrentUser(req, res) {
+    // Reuse only the fresh, request-local account checked by sessionCredential.
+    if (req.currentUser) return req.currentUser;
     if (!req.session || !req.session.user || !req.session.user.id) {
         res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบ' });
         return null;

@@ -14,6 +14,7 @@
     <script src="../js/portfolio-model.js"></script>
     <script src="../js/portfolio-templates.js"></script>
   <link rel="stylesheet" href="../css/apple-ui.css">
+<link rel="stylesheet" href="../css/document-template-picker.css">
 </head>
 <body class="apple-ui apple-document">
 
@@ -34,15 +35,12 @@
         <div class="doc-top-actions">
             <!-- Template Quick Selector -->
             <div style="display:flex; align-items:center; gap:8px;">
-                <label for="selectCvTemplate" style="font-size:0.85rem; font-weight:600; color:var(--cv-navy);">แม่แบบ CV:</label>
+                <label for="selectCvTemplate" style="font-size:0.85rem; font-weight:600; color:var(--cv-navy);">ประเภทเอกสาร:</label>
                 <select id="selectCvTemplate" style="padding:6px 12px; border-radius:8px; border:1px solid var(--cv-border); font-size:0.88rem; background:#FFF; font-weight:600;">
-                    <option value="cv-a4-standard" selected>A4 Standard (สากล มาตรฐาน)</option>
-                    <option value="cv-a4-ats">A4 ATS-Safe (สำหรับระบบคัดกรองออนไลน์)</option>
-                    <option value="cv-letter-standard">Letter Standard (มาตรฐานสหรัฐฯ)</option>
-                    <option value="cv-a4-landscape-creative">A4 Landscape Creative (สายครีเอทีฟ)</option>
-                    <option value="cv-a3-presentation">A3 Presentation (สำหรับนำเสนอบนจอ/โปสเตอร์)</option>
+                    <option value="cv-c2">C2 · CV — ประวัติแบบลำดับเวลา</option>
+                    <option value="resume-r3">R3 · Resume — สองคอลัมน์</option>
                 </select>
-                <span id="atsBadgeIndicator" class="ats-badge-pill">✓ ATS Friendly</span>
+                <span id="atsBadgeIndicator" class="ats-badge-pill">Professional document</span>
             </div>
 
             <button type="button" class="btn-action secondary" id="btnOpenCvSettings" title="ปรับแต่งขนาดกระดาษและธีมสี">
@@ -54,6 +52,8 @@
             </button>
         </div>
     </header>
+
+    <details class="cv-template-gallery" aria-label="ตัวอย่าง Resume และ CV"><summary>ดูหน้าตาและเลือก Resume / CV</summary><p>ตัวอย่างหน้าแรกจากข้อมูลสมมติ เลือกแม่แบบแล้วระบบจะบันทึกการเลือกอัตโนมัติ</p><div data-document-picker="cv" class="template-grid"></div></details>
 
     <!-- 3-Column Layout -->
     <main class="cv-layout">
@@ -224,8 +224,10 @@
         </div>
     </div>
 
+
     <!-- Scripts -->
     <script src="../js/auth.js"></script>
+    <script src="../js/document-template-picker.js"></script>
     <script src="../js/cv.js"></script>
 </body>
 </html>

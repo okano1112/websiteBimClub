@@ -17,6 +17,17 @@
     border: 1px solid var(--border-color);
 }
 
+.register-card { max-width: 720px; }
+.register-intro { margin: 0 0 24px; color: var(--text-body); line-height: 1.75; }
+.register-section-title { margin: 28px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); font-size: 1.15rem; color: var(--text-dark); }
+.register-help { margin: 6px 0 0; color: var(--text-body); font-size: .875rem; line-height: 1.55; }
+.required-note, .optional-note { font-size: .8rem; font-weight: 500; }
+.required-note { color: var(--primary-color); }
+.optional-note { color: var(--text-body); }
+.register-card [hidden] { display: none !important; }
+.register-card .form-control:focus-visible { outline: 3px solid var(--primary-color); outline-offset: 2px; }
+@media (max-width: 600px) { .register-card { padding: 24px 18px; } }
+
 .auth-header {
     text-align: center;
     margin-bottom: var(--space-4);

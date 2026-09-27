@@ -124,6 +124,7 @@ router.get('/me', requireLogin, async (req, res) => {
 // PUT /me
 router.put('/me', requireLogin, async (req, res) => {
     try {
+        require('../services/portfolioInput')(req.body);
         const userId = req.currentUser ? req.currentUser.id : req.session.user.id;
         await ensurePortfolio(userId);
 
@@ -189,9 +190,18 @@ router.put('/me', requireLogin, async (req, res) => {
         res.json({ success: true, portfolio, ...portfolio });
     } catch (error) {
         console.error('Error updating portfolio:', error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการอัปเดตพอร์ตโฟลิโอ' });
+        res.status(error.status === 400 ? 400 : 500).json({ success: false, message: error.status === 400 ? error.message : 'เกิดข้อผิดพลาดในการอัปเดตพอร์ตโฟลิโอ' });
     }
 });
+
+function sendPdfError(res, error) {
+    const status = [503, 504].includes(error.status) ? error.status : 500;
+    if (status === 503) res.setHeader('Retry-After', '5');
+    const message = status === 503 ? 'ระบบกำลังสร้าง PDF กรุณาลองใหม่อีกครั้ง'
+        : status === 504 ? 'สร้าง PDF ใช้เวลานานเกินกำหนด กรุณาลองใหม่'
+        : 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF';
+    return res.status(status).json({ success: false, message });
+}
 
 // POST & GET /me/export/pdf (Download PDF for authenticated owner)
 const handlePdfExportMe = async (req, res) => {
@@ -233,7 +243,7 @@ const handlePdfExportMe = async (req, res) => {
         res.send(pdfBuffer);
     } catch (err) {
         console.error('Export PDF error:', err);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF: ' + err.message });
+        sendPdfError(res, err);
     }
 };
 
@@ -300,7 +310,7 @@ router.get('/public/:userId/export/pdf', async (req, res) => {
         res.send(pdfBuffer);
     } catch (err) {
         console.error('Public PDF Export error:', err);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF' });
+        sendPdfError(res, err);
     }
 });
 

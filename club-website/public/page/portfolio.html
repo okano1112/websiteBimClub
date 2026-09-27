@@ -13,6 +13,7 @@
     <script src="../js/portfolio-model.js"></script>
     <script src="../js/portfolio-templates.js"></script>
   <link rel="stylesheet" href="../css/apple-ui.css">
+<link rel="stylesheet" href="../css/document-template-picker.css">
 </head>
 <body class="portfolio-editor-page apple-ui apple-document">
 
@@ -129,32 +130,8 @@
                 
                 <!-- 1. Template Choice -->
                 <h4 class="settings-section-title">1. เลือกแม่แบบพอร์ตโฟลิโอ (Templates)</h4>
-                <div class="template-grid" id="portfolioTemplateGrid">
-                    <div class="template-card active" data-template="maroon-editorial">
-                        <div class="template-card-title">Maroon Editorial</div>
-                        <div class="template-card-desc">สไตล์บรรณาธิการพรีเมียม โทนแดงเลือดหมู-น้ำเงิน ปกเด่นชัด</div>
-                    </div>
-                    <div class="template-card" data-template="navy-professional">
-                        <div class="template-card-title">Navy Professional</div>
-                        <div class="template-card-desc">สไตล์วิศวกรรม/BIM ทางการ โทนน้ำเงินเข้ม สะอาดตา</div>
-                    </div>
-                    <div class="template-card" data-template="modern-grid">
-                        <div class="template-card-title">Modern Grid</div>
-                        <div class="template-card-desc">ตารางการ์ดผลงาน เหมาะสำหรับผู้ที่มีผลงานหลายโครงการ</div>
-                    </div>
-                    <div class="template-card" data-template="minimal-a4">
-                        <div class="template-card-title">Minimal A4</div>
-                        <div class="template-card-desc">มินิมอล พื้นที่ขาวสูง อ่านง่าย เหมาะสำหรับการสมัครงานทั่วไป</div>
-                    </div>
-                    <div class="template-card" data-template="a3-landscape-showcase">
-                        <div class="template-card-title">A3 Landscape Showcase</div>
-                        <div class="template-card-desc">แนวนอน A3 สำหรับนำเสนอโมเดล BIM และภาพแปลนสถาปัตย์</div>
-                    </div>
-                    <div class="template-card" data-template="institutional-bimclub">
-                        <div class="template-card-title">Institutional BimClub</div>
-                        <div class="template-card-desc">รูปแบบทางการของชมรมและคณะวิศวกรรมศาสตร์ พร้อมแถบรับรอง</div>
-                    </div>
-                </div>
+                <p>เลือกจากตัวอย่างหน้าแรก (ข้อมูลสมมติ) แล้วกดบันทึกการตั้งค่าเพื่อใช้ในหน้า public และ PDF</p>
+                <div class="template-grid" id="portfolioTemplateGrid" data-document-picker="portfolio"></div>
 
                 <!-- 2. Paper Size & Orientation -->
                 <h4 class="settings-section-title">2. ขนาดกระดาษและการวางแนว (Paper Geometry)</h4>
@@ -213,6 +190,8 @@
                     <span>✓</span> <span>ระดับคอนทราสต์สีผ่านเกณฑ์การอ่านสบายตา (WCAG AA)</span>
                 </div>
 
+                <!-- Kept for legacy settings compatibility; approved designs have no institutional banner. -->
+                <fieldset hidden>
                 <!-- 4. Institutional Branding -->
                 <h4 class="settings-section-title" style="margin-top:24px;">4. ตราสัญลักษณ์และสถาบัน (Institutional Branding)</h4>
                 <div class="form-group">
@@ -274,6 +253,7 @@
                     </div>
                 </div>
 
+                </fieldset>
                 <button type="button" class="btn-action primary" id="btnApplySettings" style="width:100%; justify-content:center; margin-top:12px;">
                     บันทึกการตั้งค่าธีม &amp; แม่แบบ
                 </button>
@@ -284,6 +264,7 @@
 
     <!-- Scripts -->
     <script src="../js/auth.js"></script>
+    <script src="../js/document-template-picker.js"></script>
     <script src="../js/portfolio.js"></script>
 </body>
 </html>

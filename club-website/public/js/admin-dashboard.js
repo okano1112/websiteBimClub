@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  try {
   const authResponse = await fetch('/api/auth/me');
   if (!authResponse.ok) return window.location.href = 'login.html';
   const authData = await authResponse.json();
@@ -8,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload.success) {
     const message = document.getElementById('dashboardMessage');
+    document.getElementById('dashboardStats').replaceChildren();
     message.hidden = false;
     message.textContent = payload.message || 'โหลดข้อมูลไม่สำเร็จ';
     return;
@@ -17,9 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const activity = document.getElementById('recentActivity');
   stats.innerHTML = '';
   const statsData = [
-    ['ผู้ใช้งาน', data.users], ['ยังไม่ยืนยัน', data.unverifiedUsers],
+    ['บัญชีที่ยังไม่ถูกลบ', data.users], ['ยังไม่ยืนยัน', data.unverifiedUsers],
     ['คอร์สทั้งหมด', data.courses], ['คอร์สเผยแพร่', data.publishedCourses],
-    ['กิจกรรม', data.activities], ['ผลงาน', data.achievements],
+    ['กิจกรรม', data.activities], ['ผลงานทางการของชมรม', data.achievements],
     ['คำขออาจารย์รอตรวจ', data.pendingInstructorRequests], ['โพสต์ชุมชน', data.posts]
   ];
   statsData.forEach(([labelText, valueText]) => {
@@ -36,4 +38,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   activity.textContent = 'สถิติอัปเดตจากฐานข้อมูลปัจจุบัน';
+  } catch {
+    document.getElementById('dashboardStats').replaceChildren();
+    const message = document.getElementById('dashboardMessage');
+    message.hidden = false; message.textContent = 'เชื่อมต่อไม่สำเร็จ กรุณารีเฟรชเพื่อลองใหม่';
+  }
 });

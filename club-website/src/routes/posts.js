@@ -111,6 +111,7 @@ router.post('/', requireLogin, async (req, res) => {
     try {
         const content = cleanText(req.body.content);
         const imageUrls = Array.isArray(req.body.imageUrls) ? req.body.imageUrls : [];
+        if (req.body.imageUrls !== undefined && (!Array.isArray(req.body.imageUrls) || imageUrls.length > 10)) return res.status(400).json({ success: false, message: 'ส่งรูปภาพได้ไม่เกิน 10 รูป' });
 
         if (!content) {
             return res.status(400).json({ success: false, message: 'กรุณากรอกเนื้อหาโพสต์' });
@@ -120,18 +121,22 @@ router.post('/', requireLogin, async (req, res) => {
             return res.status(400).json({ success: false, message: 'รูปภาพต้องอัปโหลดผ่านระบบเท่านั้น' });
         }
 
-        const [result] = await db.query(
-            'INSERT INTO posts (author_id, content) VALUES (?, ?)',
-            [req.currentUser.id, content]
-        );
-        const postId = result.insertId;
-
-        for (let i = 0; i < imageUrls.length; i += 1) {
-            await db.query(
-                'INSERT INTO post_images (post_id, image_url, display_order) VALUES (?, ?, ?)',
-                [postId, imageUrls[i], i]
+        const postId = await require('../services/transaction')(db, async conn => {
+            const [result] = await conn.query(
+                'INSERT INTO posts (author_id, content) VALUES (?, ?)',
+                [req.currentUser.id, content]
             );
-        }
+            const postId = result.insertId;
+
+            for (let i = 0; i < imageUrls.length; i += 1) {
+                await conn.query(
+                    'INSERT INTO post_images (post_id, image_url, display_order) VALUES (?, ?, ?)',
+                    [postId, imageUrls[i], i]
+                );
+            }
+
+            return postId;
+        });
 
         res.status(201).json({ success: true, post: await fetchPost(postId, req.currentUser.id) });
     } catch (error) {
@@ -146,6 +151,7 @@ router.put('/:id', requireLogin, async (req, res) => {
         const content = cleanText(req.body.content);
         if (!postId) return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
         if (!content) return res.status(400).json({ success: false, message: 'กรุณากรอกเนื้อหาโพสต์' });
+        if (req.body.imageUrls !== undefined && (!Array.isArray(req.body.imageUrls) || req.body.imageUrls.length > 10)) return res.status(400).json({ success: false, message: 'ส่งรูปภาพได้ไม่เกิน 10 รูป' });
         if (Array.isArray(req.body.imageUrls)
             && req.body.imageUrls.some((url) => !String(url).startsWith('/uploads/'))) {
             return res.status(400).json({ success: false, message: 'รูปภาพต้องอัปโหลดผ่านระบบเท่านั้น' });
@@ -157,17 +163,20 @@ router.put('/:id', requireLogin, async (req, res) => {
             return res.status(403).json({ success: false, message: 'คุณไม่มีสิทธิ์แก้ไขโพสต์นี้' });
         }
 
-        await db.query('UPDATE posts SET content = ? WHERE id = ?', [content, postId]);
+        await require('../services/transaction')(db, async conn => {
+            await conn.query('UPDATE posts SET content = ? WHERE id = ?', [content, postId]);
 
-        if (Array.isArray(req.body.imageUrls)) {
-            await db.query('DELETE FROM post_images WHERE post_id = ?', [postId]);
-            for (let i = 0; i < req.body.imageUrls.length; i += 1) {
-                await db.query(
-                    'INSERT INTO post_images (post_id, image_url, display_order) VALUES (?, ?, ?)',
-                    [postId, req.body.imageUrls[i], i]
-                );
+            if (Array.isArray(req.body.imageUrls)) {
+                await conn.query('DELETE FROM post_images WHERE post_id = ?', [postId]);
+                for (let i = 0; i < req.body.imageUrls.length; i += 1) {
+                    await conn.query(
+                        'INSERT INTO post_images (post_id, image_url, display_order) VALUES (?, ?, ?)',
+                        [postId, req.body.imageUrls[i], i]
+                    );
+                }
             }
-        }
+
+        });
 
         res.json({ success: true, post: await fetchPost(postId, req.currentUser.id) });
     } catch (error) {

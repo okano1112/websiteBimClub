@@ -82,7 +82,7 @@ async function updatePassword(req, res, next) {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ success: false, message: 'กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่' });
     }
-    if (newPassword.length < 8) {
+    if (newPassword.length < 8 || Buffer.byteLength(newPassword) > 72) {
       return res.status(400).json({ success: false, message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร' });
     }
     if (currentPassword === newPassword) {

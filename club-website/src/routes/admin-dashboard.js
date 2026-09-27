@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', requireAdmin, async (req, res) => {
     try {
         const [[users], [courses], [activities], [achievements], [requests], [posts]] = await Promise.all([
-            db.query('SELECT COUNT(*) AS total, SUM(is_verified = 0 AND deleted_at IS NULL) AS unverified FROM users'),
+            db.query('SELECT COUNT(*) AS total, SUM(is_verified = 0) AS unverified FROM users WHERE deleted_at IS NULL'),
             db.query('SELECT COUNT(*) AS total, SUM(is_published = 1) AS published FROM courses'),
             db.query('SELECT COUNT(*) AS total FROM activities'),
             db.query('SELECT COUNT(*) AS total FROM achievements'),

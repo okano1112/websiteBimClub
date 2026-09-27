@@ -16,14 +16,14 @@
   <site-navbar></site-navbar>
 
     <main class="auth-wrapper">
-        <div class="auth-card" >
+        <div class="auth-card register-card">
             <div class="auth-header">
                 <img src="../../../assets/img/logobranding/logobim.png" alt="BimClub">
                 <h1>สมัครสมาชิก</h1>
                 <p class="apple-auth-lead">เริ่มต้นเส้นทางการเรียนรู้ BIM ของคุณ</p>
             </div>
 
-            <div role="alert" id="registerError" class="text-danger text-center mb-3 d-none"></div>
+            <div role="alert" id="registerError" class="text-danger text-center mb-3 d-none" tabindex="-1"></div>
             <div role="status" id="registerSuccess" class="bg-success-light text-center mb-3 p-3 rounded-sm d-none"></div>
 
             <form id="otpForm" hidden>
@@ -37,26 +37,55 @@
             <button id="showOtp" type="button" class="btn btn-block">มีบัญชีแล้ว แต่ยังไม่ได้ยืนยันอีเมล</button>
             <a id="verifiedLogin" href="login.html" hidden>เข้าสู่ระบบ</a>
             <form id="registerForm">
+                <p class="register-intro">ช่องที่ระบุว่า “จำเป็น” ต้องกรอก ข้อมูลคณะ สาขา และรุ่นช่วยจัดข้อมูลสมาชิก และจะไม่เผยแพร่ในโปรไฟล์สาธารณะตอนสมัคร</p>
+                <h2 class="register-section-title">ข้อมูลบัญชี</h2>
                 <div class="grid grid-2">
                     <div class="form-group">
-                        <label class="form-label" for="regUsername">ชื่อผู้ใช้ (Username)</label>
-                        <input type="text" id="regUsername" maxlength="50" autocomplete="username" class="form-control" placeholder="ตั้งชื่อผู้ใช้งาน" required>
+                        <label class="form-label" for="regUsername">ชื่อผู้ใช้ <span class="required-note">จำเป็น</span></label>
+                        <input type="text" id="regUsername" minlength="3" maxlength="50" autocomplete="username" class="form-control" aria-describedby="usernameHelp" placeholder="เช่น bimstudent" required>
+                        <p id="usernameHelp" class="register-help">3–50 ตัวอักษร ใช้ตัวอักษร ตัวเลข จุด ขีด และขีดล่างได้</p>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="regEmail">อีเมล (Email)</label>
+                        <label class="form-label" for="regEmail">อีเมล <span class="required-note">จำเป็น</span></label>
                         <input type="email" id="regEmail" maxlength="100" autocomplete="email" class="form-control" placeholder="example@email.com" required>
                     </div>
                 </div>
+                <h2 class="register-section-title">ข้อมูลสมาชิก</h2>
                 <div class="form-group">
-                    <label class="form-label" for="regFullName">ชื่อ - นามสกุล (Full Name)</label>
+                    <label class="form-label" for="regFullName">ชื่อ-นามสกุล <span class="required-note">จำเป็น</span></label>
                     <input type="text" id="regFullName" maxlength="100" autocomplete="name" class="form-control" placeholder="ชื่อจริง นามสกุล" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="regPassword">รหัสผ่าน (Password)</label>
-                        <input type="password" id="regPassword" class="form-control" placeholder="อย่างน้อย 8 ตัวอักษร" required minlength="8" autocomplete="new-password">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="regPhone">เบอร์โทรศัพท์ <span class="optional-note">ไม่บังคับ</span></label>
+                        <input type="tel" id="regPhone" maxlength="30" autocomplete="tel" inputmode="tel" class="form-control" aria-describedby="phoneHelp" placeholder="เช่น 0812345678">
+                        <p id="phoneHelp" class="register-help">ใช้สำหรับติดต่อเรื่องสมาชิก หากเผยแพร่ Portfolio โปรดตรวจข้อมูลติดต่อที่จะแสดง</p>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="regConfirmPassword">ยืนยันรหัสผ่าน</label>
+                        <label class="form-label" for="regMemberType">ประเภทสมาชิก <span class="required-note">จำเป็น</span></label>
+                        <select id="regMemberType" class="form-control" required>
+                            <option value="">เลือกประเภทสมาชิก</option>
+                            <option value="member">นักศึกษา / สมาชิกทั่วไป</option>
+                            <option value="alumni">ศิษย์เก่า</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label" for="regDepartment">คณะหรือหน่วยงาน <span class="optional-note">ไม่บังคับ</span></label><input id="regDepartment" type="text" maxlength="150" autocomplete="organization" class="form-control" placeholder="เช่น คณะวิศวกรรมศาสตร์"></div>
+                    <div class="form-group"><label class="form-label" for="regProgram">สาขาหรือหลักสูตร <span class="optional-note">ไม่บังคับ</span></label><input id="regProgram" type="text" maxlength="150" class="form-control" placeholder="เช่น วิศวกรรมโยธา"></div>
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label" for="regGeneration">รุ่นชมรม <span class="optional-note">ไม่บังคับ</span></label><input id="regGeneration" type="text" maxlength="50" class="form-control" placeholder="เช่น รุ่นที่ 3"></div>
+                    <div class="form-group" id="alumniYearGroup" hidden><label class="form-label" for="regGraduationYear">ปีที่สำเร็จการศึกษา (ค.ศ.) <span class="optional-note">ไม่บังคับ</span></label><input id="regGraduationYear" type="text" inputmode="numeric" pattern="(19|20)[0-9]{2}" maxlength="4" class="form-control" placeholder="เช่น 2024" disabled></div>
+                </div>
+                <h2 class="register-section-title">ตั้งรหัสผ่าน</h2>
+                <div class="form-group">
+                    <label class="form-label" for="regPassword">รหัสผ่าน <span class="required-note">จำเป็น</span></label>
+                        <input type="password" id="regPassword" class="form-control" aria-describedby="passwordHelp" placeholder="อย่างน้อย 8 ตัวอักษร" required minlength="8" autocomplete="new-password">
+                    <p id="passwordHelp" class="register-help">ใช้อักขระได้หลายแบบ ไม่จำเป็นต้องมีตัวพิมพ์ใหญ่หรือตัวเลข</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regConfirmPassword">ยืนยันรหัสผ่าน <span class="required-note">จำเป็น</span></label>
                         <input type="password" id="regConfirmPassword" class="form-control" placeholder="กรอกรหัสผ่านอีกครั้ง" required minlength="8" autocomplete="new-password">
                 </div>
                 

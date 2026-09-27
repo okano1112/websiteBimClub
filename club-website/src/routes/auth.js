@@ -8,27 +8,29 @@ const requireLogin = require('../../middleware/requireLogin');
 const { normalizeUser } = require('../../middleware/requireRole');
 const accountController = require('../controllers/account.controller');
 
+const { credentialStamp } = require('../services/credentialSession');
+const resetDigest = token => crypto.createHash('sha256').update(token).digest('hex');
+
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
 const verification = require('../services/verification');
+const { parseRegistration } = require('../services/registrationData');
 
 // Registration commits the account before attempting delivery. A delivery failure is recoverable by resend.
 router.post('/register', async (req, res) => {
-    if (['username', 'email', 'password', 'fullName'].some(key => typeof req.body?.[key] !== 'string')) return res.status(400).json({ success: false, message: 'รูปแบบข้อมูลสมัครสมาชิกไม่ถูกต้อง' });
-    const username = String(req.body.username || '').trim();
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
-    const fullName = String(req.body.fullName || '').trim();
-    if (!username || username.length > 50 || !fullName || fullName.length > 100 || email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อและอีเมลให้ถูกต้อง' });
-    if (password.length < 8 || Buffer.byteLength(password) > 72) return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และไม่เกิน 72 ไบต์' });
+    const parsed = parseRegistration(req.body);
+    if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
+    const { username, email, fullName, phone, memberType, department, program, generation, graduationYear, password } = parsed.value;
     let conn;
     const token = verification.issue(email);
     try {
         const passwordHash = await bcrypt.hash(password, 12);
         conn = await db.getConnection();
         await conn.beginTransaction();
-        const [result] = await conn.query(`INSERT INTO users (username, email, password, full_name, is_verified, verify_token, verify_token_expires, verify_sent_at, verify_attempts) VALUES (?, ?, ?, ?, 0, ?, ?, NOW(), 0)`, [username, email, passwordHash, fullName, token.hash, token.expires]);
+        const [result] = await conn.query(`INSERT INTO users (username, email, password, full_name, phone, is_verified, verify_token, verify_token_expires, verify_sent_at, verify_attempts) VALUES (?, ?, ?, ?, ?, 0, ?, ?, NOW(), 0)`, [username, email, passwordHash, fullName, phone || null, token.hash, token.expires]);
         await conn.query('INSERT INTO portfolios (user_id) VALUES (?)', [result.insertId]);
+        await conn.query(`INSERT INTO member_profiles (user_id, department, program, member_type, graduation_year, generation, is_public)
+            VALUES (?, ?, ?, ?, ?, ?, 0)`, [result.insertId, department || null, program || null, memberType, graduationYear || null, generation || null]);
         await conn.commit();
     } catch (error) {
         if (conn) await conn.rollback();
@@ -93,7 +95,11 @@ router.post('/resend-verify', async (req, res) => {
 // ============================================================
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email: rawEmail, password } = req.body;
+        if (typeof rawEmail !== 'string' || typeof password !== 'string' || rawEmail.length > 100 || Buffer.byteLength(password) > 72) {
+            return res.status(400).json({ success: false, message: 'รูปแบบข้อมูลเข้าสู่ระบบไม่ถูกต้อง' });
+        }
+        const email = rawEmail.trim();
 
         if (!email || !password) {
             return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
@@ -134,6 +140,8 @@ router.post('/login', async (req, res) => {
             req.session.regenerate((error) => error ? reject(error) : resolve());
         });
         req.session.user = normalizeUser(user);
+        req.session.authenticatedAt = Date.now();
+        req.session.credentialStamp = credentialStamp(user.password);
         await new Promise((resolve, reject) => {
             req.session.save((error) => error ? reject(error) : resolve());
         });
@@ -201,7 +209,7 @@ router.post('/forgot-password', async (req, res) => {
 
         await db.query(
             'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?',
-            [resetToken, resetExpires, user.id]
+            [resetDigest(resetToken), resetExpires, user.id]
         );
 
         const resetUrl = `${APP_URL}/page/reset-password.html?token=${resetToken}`;
@@ -211,7 +219,7 @@ router.post('/forgot-password', async (req, res) => {
             `
             <div style="font-family: 'Noto Sans Thai', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h1 style="color: #ad0f0f; text-align:center;">BimClub</h1>
-                <h2>สวัสดี ${user.full_name}</h2>
+                <h2>สวัสดี ${String(user.full_name || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</h2>
                 <p>เราได้รับคำขอรีเซ็ตรหัสผ่านของคุณ กรุณากดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="${resetUrl}" 
@@ -239,35 +247,23 @@ router.post('/reset-password', async (req, res) => {
     try {
         const { token, newPassword } = req.body;
 
-        if (!token || !newPassword) {
+        if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token) || typeof newPassword !== 'string') {
             return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
         }
 
-        if (newPassword.length < 8) {
+        if (newPassword.length < 8 || Buffer.byteLength(newPassword) > 72) {
             return res.status(400).json({ success: false, message: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร' });
         }
 
-        const [users] = await db.query(
-            'SELECT id, reset_token_expires FROM users WHERE reset_token = ?',
-            [token]
-        );
-
-        if (users.length === 0) {
-            return res.status(400).json({ success: false, message: 'ลิงก์กู้คืนไม่ถูกต้อง หรือถูกใช้ไปแล้ว' });
-        }
-
-        const user = users[0];
-
-        if (new Date() > new Date(user.reset_token_expires)) {
-            return res.status(400).json({ success: false, message: 'ลิงก์กู้คืนหมดอายุแล้ว กรุณาขอลิงก์ใหม่' });
-        }
-
         const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-        await db.query(
-            'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
-            [hashedPassword, user.id]
+        // A single conditional write both changes the password and consumes the token.
+        const [result] = await db.query(
+            'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE reset_token = ? AND reset_token_expires > NOW() AND deleted_at IS NULL AND is_banned = 0',
+            [hashedPassword, resetDigest(token)]
         );
+        if (result.affectedRows !== 1) {
+            return res.status(400).json({ success: false, message: 'ลิงก์กู้คืนไม่ถูกต้อง หมดอายุ หรือถูกใช้ไปแล้ว กรุณาขอลิงก์ใหม่' });
+        }
 
         res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ! สามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้แล้ว' });
     } catch (error) {

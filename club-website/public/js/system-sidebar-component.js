@@ -7,7 +7,7 @@ class SystemSidebarComponent extends HTMLElement {
 
     this.innerHTML = `
       <div class="system-sidebar-backdrop" data-sidebar-close hidden></div>
-      <aside class="system-sidebar-panel" id="system-sidebar-panel" aria-label="เมนูระบบ" aria-hidden="true">
+      <aside class="system-sidebar-panel" id="system-sidebar-panel" role="dialog" aria-modal="true" aria-label="เมนูระบบ" aria-hidden="true">
         <header class="system-sidebar-header">
           <div>
             <p class="system-sidebar-eyebrow">BIMCLUB WORKSPACE</p>
@@ -58,12 +58,12 @@ class SystemSidebarComponent extends HTMLElement {
           ['admin-dashboard.html', 'Dashboard', 'ภาพรวมระบบ'],
           ['admin-users.html', 'Users', 'บัญชีและสิทธิ์'],
           ['manage-courses.html', 'Courses', 'หลักสูตรและการเผยแพร่'],
-          ['admin-cms.html', 'Content', 'กิจกรรมและผลงาน'],
-          ['admin-members.html', 'Members', 'สมาชิกชุมชน'],
-          ['admin-projects.html', 'Projects', 'ผลงานและผู้ร่วมงาน'],
+          ['admin-cms.html', 'เนื้อหาชมรม', 'กิจกรรมและผลงานทางการ'],
+          ['admin-members.html', 'รายชื่อสมาชิก', 'สมาชิกและอาจารย์ ไม่รวม Admin'],
+          ['admin-projects.html', 'โครงการสมาชิก', 'ผลงานและผู้ร่วมงาน'],
           ['admin-positions.html', 'Positions', 'ตำแหน่งและลำดับ'],
-          ['admin-reports.html', 'Reports', 'รายงานและแนวโน้ม'],
-          ['admin-system-settings.html', 'Settings', 'ตั้งค่าระบบ']
+
+          ['admin-personnel.html', 'ทีมงานปัจจุบัน', 'รายชื่อและหน้าที่']
         ]
       });
       sections.push({
@@ -71,7 +71,7 @@ class SystemSidebarComponent extends HTMLElement {
         items: [
           ['admin.html', 'Posts', 'ดูแลโพสต์'],
           ['admin-instructor-requests.html', 'Instructor Requests', 'คำขอสิทธิ์อาจารย์'],
-          ['admin-honor.html', 'Hall of Honor', 'บุคคลเกียรติยศ']
+          ['admin-honor.html', 'ศิษย์เก่า', 'ทำเนียบศิษย์เก่าของชมรม']
         ]
       });
     } else if (role === 'instructor') {
@@ -82,7 +82,8 @@ class SystemSidebarComponent extends HTMLElement {
     }
 
     const personalItems = [
-      ['portfolio.html', 'Profile', 'พอร์ตโฟลิโอของฉัน'],
+      ['portfolio.html', 'Portfolio', 'พอร์ตโฟลิโอของฉัน'],
+      ['cv.html', 'Resume / CV', 'ประวัติและประสบการณ์'],
       ['settings.html', 'Account Settings', 'ข้อมูลและความปลอดภัย']
     ];
     if (role === 'user') {
@@ -149,7 +150,7 @@ class SystemSidebarComponent extends HTMLElement {
   }
 
   open() {
-    if (!this.user) return;
+    if (!this.user || this.panel.classList.contains('open')) return;
     this.lastFocusedElement = document.activeElement;
     this.panel.classList.add('open');
     this.backdrop.hidden = false;
@@ -158,6 +159,8 @@ class SystemSidebarComponent extends HTMLElement {
     document.querySelectorAll('#system-sidebar-toggle, [data-open-system-sidebar]').forEach((toggle) => {
       toggle.setAttribute('aria-expanded', 'true');
     });
+    this.backgroundState = [...document.body.children].filter(e => e !== this).map(e => [e, e.inert]);
+    this.backgroundState.forEach(([e]) => { e.inert = true; });
     this.querySelector('.system-sidebar-close').focus();
   }
 
@@ -170,10 +173,18 @@ class SystemSidebarComponent extends HTMLElement {
     document.querySelectorAll('#system-sidebar-toggle, [data-open-system-sidebar]').forEach((toggle) => {
       toggle.setAttribute('aria-expanded', 'false');
     });
+    this.backgroundState?.forEach(([e, inert]) => { e.inert = inert; });
+    this.backgroundState = null;
     if (this.lastFocusedElement?.focus) this.lastFocusedElement.focus();
   }
 
   handleKeydown(event) {
+    if (event.key === 'Tab' && this.panel?.classList.contains('open')) {
+      const controls = [...this.panel.querySelectorAll('a[href], button:not([disabled])')].filter(e => e.getClientRects().length);
+      const first = controls[0], last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
     if (event.key === 'Escape' && this.panel?.classList.contains('open')) this.close();
   }
 

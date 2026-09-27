@@ -92,7 +92,7 @@
                     <section class="public-template-showcase">
                         <div class="public-template-toolbar">
                             <div>
-                                <span class="public-template-kicker">${escapeHtml(portfolioSettings.template)}</span>
+                                <span class="public-template-kicker">${escapeHtml(PortfolioTemplates.DESIGNS.find(design => design.id === portfolioSettings.template)?.title || 'Portfolio')}</span>
                                 <h1>${escapeHtml(userName)}</h1>
                                 <p>หน้าโชว์ผลงานตาม Template ที่เลือกไว้ • ${escapeHtml(portfolioSettings.pageSize.toUpperCase())} ${portfolioSettings.orientation === 'landscape' ? 'Landscape' : 'Portrait'}</p>
                             </div>

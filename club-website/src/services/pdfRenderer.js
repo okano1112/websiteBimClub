@@ -48,7 +48,7 @@ function allowedPdfRequest(value) {
 /**
  * Generate PDF buffer from document payload
  */
-async function generatePdf(payload) {
+async function renderPdf(payload, { launch, timeoutMs }) {
     const theme = payload.settings?.theme || {};
     for (const key of ['primary', 'secondary', 'textColor', 'accentColor']) {
         if (theme[key] && !/^#[0-9a-f]{6}$/i.test(theme[key])) throw new Error('Invalid PDF theme color');
@@ -63,7 +63,9 @@ async function generatePdf(payload) {
     const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || (fs.existsSync('/usr/bin/chromium-browser') ? '/usr/bin/chromium-browser' : undefined);
 
     // Launch headless Chromium
-    const browser = await puppeteer.launch({
+    const browser = await launch({
+        timeout: Math.min(timeoutMs, 15000),
+        protocolTimeout: timeoutMs,
         headless: true,
         ...(executablePath ? { executablePath } : {}),
         args: [
@@ -74,55 +76,100 @@ async function generatePdf(payload) {
         ]
     });
 
+    let timer;
     try {
-        const page = await browser.newPage();
-        await page.setJavaScriptEnabled(false);
-        await page.setRequestInterception(true);
-        page.on('request', request => {
-            const action = allowedPdfRequest(request.url()) ? request.continue() : request.abort();
-            action.catch(() => {});
-        });
-        
-        // Emulate screen/print media
-        await page.emulateMediaType('print');
+        const render = async () => {
+            const page = await browser.newPage();
+            page.setDefaultTimeout(timeoutMs);
+            await page.setJavaScriptEnabled(false);
+            await page.setRequestInterception(true);
+            page.on('request', request => {
+                const action = allowedPdfRequest(request.url()) ? request.continue() : request.abort();
+                action.catch(() => {});
+            });
 
-        // Set content and wait for fonts/images to finish loading
-        await page.setContent(renderedHtml, {
-            waitUntil: ['load', 'networkidle0'],
-            timeout: 30000
-        });
+            // Emulate screen/print media
+            await page.emulateMediaType('print');
 
-        await page.evaluate(() => document.fonts.ready);
-        // Determine format/dimensions
-        let pdfOptions = {
-            printBackground: true,
-            preferCSSPageSize: true,
-            landscape: isLandscape,
-            margin: {
-                top: '0mm',
-                right: '0mm',
-                bottom: '0mm',
-                left: '0mm'
-            }
+            // Set content and wait for fonts/images to finish loading
+            await page.setContent(renderedHtml, {
+                waitUntil: ['load', 'networkidle0'],
+                timeout: timeoutMs
+            });
+
+            await page.evaluate(() => document.fonts.ready);
+            // Determine format/dimensions
+            let pdfOptions = {
+                printBackground: true,
+                timeout: timeoutMs,
+                preferCSSPageSize: true,
+                landscape: isLandscape,
+                margin: {
+                    top: '0mm',
+                    right: '0mm',
+                    bottom: '0mm',
+                    left: '0mm'
+                }
+
         };
 
-        if (size === 'a3') {
-            pdfOptions.format = 'A3';
-        } else if (size === 'letter') {
-            pdfOptions.format = 'Letter';
-        } else {
-            pdfOptions.format = 'A4';
-        }
+          if (size === 'a3') {
+              pdfOptions.format = 'A3';
+          } else if (size === 'letter') {
+              pdfOptions.format = 'Letter';
+          } else {
+              pdfOptions.format = 'A4';
+          }
 
-        const buffer = await page.pdf(pdfOptions);
-        return buffer;
+          const buffer = await page.pdf(pdfOptions);
+          // Puppeteer returns Uint8Array; Express must receive binary PDF bytes.
+          return Buffer.from(buffer);
+        };
+        const deadline = new Promise((_, reject) => {
+            timer = setTimeout(() => {
+                const error = new Error('PDF rendering timed out');
+                error.status = 504;
+                reject(error);
+            }, timeoutMs);
+        });
+        return await Promise.race([render(), deadline]);
+    } catch (error) {
+        if (error.name === 'TimeoutError') error.status = 504;
+        throw error;
     } finally {
-        await browser.close();
+        clearTimeout(timer);
+        // A stuck renderer must not retain the only work slot indefinitely.
+        let cleanupTimer;
+        try {
+            await Promise.race([
+                browser.close(),
+                new Promise((_, reject) => {
+                    cleanupTimer = setTimeout(() => reject(new Error('Chromium close timeout')), 2000);
+                })
+            ]);
+        } catch {
+            browser.process()?.kill('SIGKILL');
+        } finally {
+            clearTimeout(cleanupTimer);
+        }
     }
 }
 
+function createPdfRenderer({ launch = options => puppeteer.launch(options), timeoutMs = 30000, maxConcurrent = 1 } = {}) {
+    const limit = require('./workLimit')(maxConcurrent);
+    return payload => limit(async () => {
+        try { return await renderPdf(payload, { launch, timeoutMs }); }
+        catch (error) {
+            if (error.name === 'TimeoutError') error.status = 504;
+            throw error;
+        }
+    });
+}
+const generatePdf = createPdfRenderer();
+
 module.exports = {
     generatePdf,
+    createPdfRenderer,
     resolveLocalUrls,
     resolveWithinRoot,
     localImageData,

@@ -7,7 +7,9 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || 'club_database',
     port: process.env.DB_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 10
+    connectionLimit: 10,
+    queueLimit: 100,
+    connectTimeout: 10000
 });
 
 // Export promise-based pool for async/await

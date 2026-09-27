@@ -6,6 +6,9 @@ const router = express.Router();
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  store: new (require('../services/mysqlRateLimitStore'))(require('../../config/database')),
   skip: (req) => req.method === 'GET',
   message: { success: false, message: 'คำขอมากเกินไป กรุณาลองใหม่ในภายหลัง' }
 });
